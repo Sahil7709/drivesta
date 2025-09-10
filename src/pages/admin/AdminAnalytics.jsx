@@ -72,7 +72,6 @@ const COLORS = {
   ],
 };
 
-
 const getChartConfig = () => ({
   responsive: true,
   maintainAspectRatio: false,
@@ -184,7 +183,9 @@ const AdminAnalytics = () => {
             new ApiService().apiget(ServerUrl.API_GET_ALLPDIREQUEST),
             new ApiService().apiget(ServerUrl.API_GET_LOCATIONS),
             new ApiService()
-              .apipost(ServerUrl.API_MODULE_USER + "/getUsersByRoles", { roles: ["engineer"] })
+              .apipost(ServerUrl.API_MODULE_USER + "/getUsersByRoles", {
+                roles: ["engineer"],
+              })
               .catch(() => ({ data: { data: [] } })),
             new ApiService()
               .apiget(ServerUrl.API_GET_REVENUE_TREND)
@@ -215,7 +216,8 @@ const AdminAnalytics = () => {
 
           const engineerMap = engineers.reduce((acc, eng) => {
             const engId = eng._id || eng.id;
-            const engName = eng.name || eng.engineer || eng.fullName || "Unknown";
+            const engName =
+              eng.name || eng.engineer || eng.fullName || "Unknown";
             if (engId && engName) acc[engId] = engName;
             return acc;
           }, {});
@@ -231,31 +233,41 @@ const AdminAnalytics = () => {
             });
             return {
               ...inspection,
-              PDIRequestID: inspection.PDIRequestID ||
+              PDIRequestID:
+                inspection.PDIRequestID ||
                 inspection.bookingId ||
                 inspection.id ||
                 inspection._id ||
                 "N/A",
-              address: inspection.address ||
+              address:
+                inspection.address ||
                 (inspection.location
-                  ? (typeof inspection.location === "string"
+                  ? typeof inspection.location === "string"
                     ? locationMap[inspection.location] || inspection.location
-                    : inspection.location.name || inspection.location.location || "N/A")
+                    : inspection.location.name ||
+                      inspection.location.location ||
+                      "N/A"
                   : "N/A"),
-              engineer_name: inspection.engineer_name ||
+              engineer_name:
+                inspection.engineer_name ||
                 (inspection.engineer
-                  ? (typeof inspection.engineer === "string"
+                  ? typeof inspection.engineer === "string"
                     ? engineerMap[inspection.engineer] || inspection.engineer
-                    : inspection.engineer.name || inspection.engineer.engineer || "N/A")
+                    : inspection.engineer.name ||
+                      inspection.engineer.engineer ||
+                      "N/A"
                   : "N/A"),
               price: inspection.price || inspection.amount || 0, // Revenue field
             };
           });
 
           // CHANGE: Calculate pending requests as total - completed
-          const pendingCount = (c.allRequests && c.completedJobs)
-            ? c.allRequests - c.completedJobs
-            : enrichedInspections.filter((item) => item.status.toUpperCase() === "PENDING").length;
+          const pendingCount =
+            c.allRequests && c.completedJobs
+              ? c.allRequests - c.completedJobs
+              : enrichedInspections.filter(
+                  (item) => item.status.toUpperCase() === "PENDING"
+                ).length;
           console.log("Pending Calculation:", {
             allRequests: c.allRequests,
             completedJobs: c.completedJobs,
@@ -293,8 +305,6 @@ const AdminAnalytics = () => {
             return acc;
           }, {});
 
-
-
           // Revenue Trend only for Completed requests
           const completedInspections = enrichedInspections.filter(
             (item) => item.status?.toUpperCase() === "COMPLETED"
@@ -306,13 +316,18 @@ const AdminAnalytics = () => {
             return acc;
           }, {});
 
-          // Revenue Trend: Only Completed
+          // Revenue Trend: Only include paid and completed
           const revenueTrendArray = Object.entries(
             enrichedInspections
-              .filter((item) => item.status?.toUpperCase() === "COMPLETED")
+              .filter(
+                (item) =>
+                  item.status?.toUpperCase() === "COMPLETED" &&
+                  item.paymentStatus?.toUpperCase() === "PAID"
+              )
               .reduce((acc, item) => {
                 const month = format(new Date(item.date), "MMM");
-                acc[month] = (acc[month] || 0) + (item.price || 0);
+                acc[month] =
+                  (acc[month] || 0) + (item.price || item.amount || 0);
                 return acc;
               }, {})
           ).map(([month, revenue]) => ({ month, revenue }));
@@ -448,20 +463,20 @@ const AdminAnalytics = () => {
                   type === "total"
                     ? "bg-indigo-100"
                     : type === "completed"
-                      ? "bg-green-100"
-                      : "bg-yellow-100";
+                    ? "bg-green-100"
+                    : "bg-yellow-100";
                 const textColor =
                   type === "total"
                     ? "text-indigo-600"
                     : type === "completed"
-                      ? "text-green-600"
-                      : "text-yellow-600";
+                    ? "text-green-600"
+                    : "text-yellow-600";
                 const borderColor =
                   type === "total"
                     ? "border-indigo-500"
                     : type === "completed"
-                      ? "border-green-500"
-                      : "border-yellow-500";
+                    ? "border-green-500"
+                    : "border-yellow-500";
 
                 return (
                   <div
@@ -474,8 +489,8 @@ const AdminAnalytics = () => {
                           {type === "total"
                             ? "Total Requests"
                             : type === "completed"
-                              ? "Completed Requests"
-                              : "Pending Requests"}
+                            ? "Completed Requests"
+                            : "Pending Requests"}
                         </p>
                         <h3 className="text-3xl font-bold text-gray-900 mt-1">
                           {filteredData.summary?.[type] || 0}
@@ -485,7 +500,7 @@ const AdminAnalytics = () => {
                             {Math.round(
                               (filteredData.summary?.[type] /
                                 filteredData.summary?.total) *
-                              100 || 0
+                                100 || 0
                             )}
                             % of total
                           </p>
@@ -532,7 +547,7 @@ const AdminAnalytics = () => {
 
               <ChartCard title="Status Distribution">
                 {filteredData.statusTrend &&
-                  Object.keys(filteredData.statusTrend).length ? (
+                Object.keys(filteredData.statusTrend).length ? (
                   <Pie
                     data={createChartData(
                       filteredData.statusTrend,
@@ -553,7 +568,7 @@ const AdminAnalytics = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
               <ChartCard title="By Engineer">
                 {filteredData.byEngineer &&
-                  Object.keys(filteredData.byEngineer).length ? (
+                Object.keys(filteredData.byEngineer).length ? (
                   <Pie
                     data={createChartData(
                       filteredData.byEngineer,
@@ -571,7 +586,7 @@ const AdminAnalytics = () => {
 
               <ChartCard title="By Location">
                 {filteredData.byLocation &&
-                  Object.keys(filteredData.byLocation).length ? (
+                Object.keys(filteredData.byLocation).length ? (
                   <Pie
                     data={createChartData(
                       filteredData.byLocation,
@@ -589,7 +604,7 @@ const AdminAnalytics = () => {
 
               <ChartCard title="By Brand">
                 {filteredData.byBrand &&
-                  Object.keys(filteredData.byBrand).length ? (
+                Object.keys(filteredData.byBrand).length ? (
                   <Pie
                     data={createChartData(
                       filteredData.byBrand,
@@ -646,56 +661,73 @@ const AdminAnalytics = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      {["PDIRequestID", "Date", "Location", "Brand", "Engineer", "Status"].map(
-                        (header) => (
-                          <th
-                            key={header}
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            {header}
-                          </th>
-                        )
-                      )}
+                      {[
+                        "PDIRequestID",
+                        "Date",
+                        "Location",
+                        "Brand",
+                        "Engineer",
+                        "Status",
+                      ].map((header) => (
+                        <th
+                          key={header}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {header}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredData.inspections?.slice(0, 10).map((inspection) => (
-                      <tr
-                        key={inspection.PDIRequestID || inspection._id || Math.random()}
-                        className="hover:bg-gray-50"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                          {inspection.PDIRequestID || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                          {inspection.date
-                            ? format(new Date(inspection.date), "MMM dd, yyyy")
-                            : "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                          {inspection.address || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                          {inspection.vehicle?.brand || inspection.brand || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                          {inspection.engineer_name || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                              ${inspection.status === "COMPLETED"
-                                ? "bg-green-100 text-green-800"
-                                : inspection.status === "IN_PROGRESS"
+                    {filteredData.inspections
+                      ?.slice(0, 10)
+                      .map((inspection) => (
+                        <tr
+                          key={
+                            inspection.PDIRequestID ||
+                            inspection._id ||
+                            Math.random()
+                          }
+                          className="hover:bg-gray-50"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                            {inspection.PDIRequestID || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {inspection.date
+                              ? format(
+                                  new Date(inspection.date),
+                                  "MMM dd, yyyy"
+                                )
+                              : "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {inspection.address || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {inspection.vehicle?.brand ||
+                              inspection.brand ||
+                              "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {inspection.engineer_name || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${
+                                inspection.status === "COMPLETED"
+                                  ? "bg-green-100 text-green-800"
+                                  : inspection.status === "IN_PROGRESS"
                                   ? "bg-yellow-100 text-yellow-800"
                                   : "bg-gray-100 text-gray-800"
                               }`}
-                          >
-                            {inspection.status || "N/A"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                            >
+                              {inspection.status || "N/A"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     {!filteredData.inspections?.length && (
                       <tr>
                         <td

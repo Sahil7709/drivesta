@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
+import {
+  AiOutlinePlus,
+  AiOutlineCamera,
+  AiOutlineUpload,
+} from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
 import { toast } from "react-toastify";
@@ -8,9 +12,19 @@ const BodyPanels = ({ data, onChange }) => {
   const photoCount = 5;
 
   const panels = [
-    "bonnet","bumper","front_left_fender","front_left_door","rear_left_door",
-    "rear_left_quarter_panel","boot","rear_bumper","rear_right_quarter_panel",
-    "rear_right_door","front_right_door","front_right_fender","roof","front_windshield"
+    "bonnet",
+    "bumper",
+    "front_left_fender",
+    "front_left_door",
+    "rear_left_door",
+    "rear_left_quarter_panel",
+    "boot",
+    "rear_bumper",
+    "rear_right_quarter_panel",
+    "rear_right_door",
+    "front_right_door",
+    "front_right_fender",
+    "roof",
   ];
 
   const labelNames = {
@@ -27,12 +41,16 @@ const BodyPanels = ({ data, onChange }) => {
     front_right_door: "11. Front Right Door",
     front_right_fender: "12. Front Right Fender",
     roof: "13. Roof",
-    front_windshield: "14. Front Windshield",
   };
 
   const imageKeys = panels.reduce((acc, key) => {
     acc[key] = `${key}_imageUrls`;
-    if (key === "front_left_fender" || key === "front_right_fender" || key.includes("door") || key.includes("quarter_panel")) {
+    if (
+      key === "front_left_fender" ||
+      key === "front_right_fender" ||
+      key.includes("door") ||
+      key.includes("quarter_panel")
+    ) {
       acc[`${key}_cladding`] = `${key}_cladding_imageUrls`;
     }
     if (key.includes("door") && key.includes("front")) {
@@ -45,11 +63,32 @@ const BodyPanels = ({ data, onChange }) => {
   }, {});
 
   const issueOptions = [
-    "Clear Coat Scratch","Primer Scratch","Paint Scratch","Dent","Swirl Marks",
-    "Bleeding","Blistering","Boiling","Clouding","Cracking","Cratering",
-    "Dust Contamination","Lifting","Loss Of Gloss","Orange Peel","Poor Adhesion",
-    "Poor Hiding","Runs","Rust","Sanding Scratches","Seeds","Stone Chipping",
-    "Paint Chipping","Water Spotting","Wrinkling","Pin Holes"
+    "Clear Coat Scratch",
+    "Primer Scratch",
+    "Paint Scratch",
+    "Dent",
+    "Swirl Marks",
+    "Bleeding",
+    "Blistering",
+    "Boiling",
+    "Clouding",
+    "Cracking",
+    "Cratering",
+    "Dust Contamination",
+    "Lifting",
+    "Loss Of Gloss",
+    "Orange Peel",
+    "Poor Adhesion",
+    "Poor Hiding",
+    "Runs",
+    "Rust",
+    "Sanding Scratches",
+    "Seeds",
+    "Stone Chipping",
+    "Paint Chipping",
+    "Water Spotting",
+    "Wrinkling",
+    "Pin Holes",
   ];
 
   const [panelValues, setPanelValues] = useState({});
@@ -62,10 +101,9 @@ const BodyPanels = ({ data, onChange }) => {
   const dropdownRefs = useRef({}); // ✅ track each dropdown
   const videoRefs = useRef({});
 
-
   useEffect(() => {
     const initialPanelValues = {};
-    panels.forEach(key => {
+    panels.forEach((key) => {
       initialPanelValues[key] = {
         repaint: data?.[`${key}_repaint`] || false,
         paintThickness: data?.[`${key}_paintThickness`] || "",
@@ -75,7 +113,7 @@ const BodyPanels = ({ data, onChange }) => {
     setPanelValues(initialPanelValues);
 
     const initialPhotos = {};
-    Object.values(imageKeys).forEach(key => {
+    Object.values(imageKeys).forEach((key) => {
       initialPhotos[key] = data?.[key] || [];
     });
     setPhotos(initialPhotos);
@@ -84,7 +122,11 @@ const BodyPanels = ({ data, onChange }) => {
   // ✅ close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (showDropdown && dropdownRefs.current[showDropdown] && !dropdownRefs.current[showDropdown].contains(e.target)) {
+      if (
+        showDropdown &&
+        dropdownRefs.current[showDropdown] &&
+        !dropdownRefs.current[showDropdown].contains(e.target)
+      ) {
         setShowDropdown(null);
       }
     };
@@ -93,7 +135,7 @@ const BodyPanels = ({ data, onChange }) => {
   }, [showDropdown]);
 
   const handleInputChange = (key, field, value) => {
-    setPanelValues(prev => {
+    setPanelValues((prev) => {
       const newValues = { ...prev, [key]: { ...prev[key], [field]: value } };
       if (onChange) onChange(`${key}_${field}`, value);
       return newValues;
@@ -103,24 +145,29 @@ const BodyPanels = ({ data, onChange }) => {
   const handleCheckboxChange = (key, field, option) => {
     const selected = panelValues[key][field] || [];
     const newSelected = selected.includes(option)
-      ? selected.filter(i => i !== option)
+      ? selected.filter((i) => i !== option)
       : [...selected, option];
     handleInputChange(key, field, newSelected);
   };
 
   const handleFileUpload = async (e, photoKey) => {
     const file = e.target.files[0];
-    if (!file || !file.type.startsWith("image/")) return toast.error("Select a valid image file");
+    if (!file || !file.type.startsWith("image/"))
+      return toast.error("Select a valid image file");
 
     const arr = photos[photoKey] ? [...photos[photoKey]] : [];
-    if (arr.length >= photoCount) return toast.error(`Maximum ${photoCount} photos allowed`);
+    if (arr.length >= photoCount)
+      return toast.error(`Maximum ${photoCount} photos allowed`);
 
     try {
-      const uploaded = await FileUploaderService.uploadFileToServer(file, photoKey);
+      const uploaded = await FileUploaderService.uploadFileToServer(
+        file,
+        photoKey
+      );
       const imageUrl = uploaded.files?.[0]?.fileUrl || null;
       if (imageUrl) {
         arr.push(imageUrl);
-        setPhotos(prev => ({ ...prev, [photoKey]: arr }));
+        setPhotos((prev) => ({ ...prev, [photoKey]: arr }));
         if (onChange) onChange(photoKey, arr);
         setShowDropdown(null);
       }
@@ -130,81 +177,99 @@ const BodyPanels = ({ data, onChange }) => {
     }
   };
 
- // Open camera on first click, capture on second click
-const handleCameraClick = async (photoKey) => {
-  const arr = photos[photoKey] ? [...photos[photoKey]] : [];
-  if (arr.length >= photoCount) {
-    return toast.error(`Maximum ${photoCount} photos allowed`);
-  }
-
-  const slotKey = `${photoKey}-${arr.length}`;
-
-  if (!isCameraActive[slotKey]) {
-    // 👉 First click: open camera preview
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRefs.current[slotKey]) {
-        videoRefs.current[slotKey].srcObject = stream;
-      }
-      setStreamStates((prev) => ({ ...prev, [slotKey]: stream }));
-      setIsCameraActive((prev) => ({ ...prev, [slotKey]: true }));
-    } catch {
-      toast.error("Camera not available");
+  // Open camera on first click, capture on second click
+  const handleCameraClick = async (photoKey) => {
+    const arr = photos[photoKey] ? [...photos[photoKey]] : [];
+    if (arr.length >= photoCount) {
+      return toast.error(`Maximum ${photoCount} photos allowed`);
     }
-  } else {
-    // 👉 Second click: capture photo
-    const video = videoRefs.current[slotKey];
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
 
-    canvas.toBlob(async (blob) => {
-      if (blob) {
-        try {
-          const file = new File([blob], `${slotKey}.png`, { type: "image/png" });
-          const uploaded = await FileUploaderService.uploadFileToServer(file, photoKey);
-          const imageUrl = uploaded.files?.[0]?.fileUrl || null;
+    const slotKey = `${photoKey}-${arr.length}`;
 
-          if (imageUrl) {
-            arr.push(imageUrl);
-            setPhotos((prev) => ({ ...prev, [photoKey]: arr }));
-            if (onChange) onChange(photoKey, arr);
-          }
-        } catch (err) {
-          console.error("Upload failed:", err);
-          toast.error("Failed to upload image");
+    if (!isCameraActive[slotKey]) {
+      // 👉 First click: open camera preview
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        if (videoRefs.current[slotKey]) {
+          videoRefs.current[slotKey].srcObject = stream;
         }
+        setStreamStates((prev) => ({ ...prev, [slotKey]: stream }));
+        setIsCameraActive((prev) => ({ ...prev, [slotKey]: true }));
+      } catch {
+        toast.error("Camera not available");
       }
-    }, "image/png");
+    } else {
+      // 👉 Second click: capture photo
+      const video = videoRefs.current[slotKey];
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
 
-    // 👉 Stop camera after capture
-    const stream = streamStates[slotKey];
-    if (stream) stream.getTracks().forEach((t) => t.stop());
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            const file = new File([blob], `${slotKey}.png`, {
+              type: "image/png",
+            });
+            const uploaded = await FileUploaderService.uploadFileToServer(
+              file,
+              photoKey
+            );
+            const imageUrl = uploaded.files?.[0]?.fileUrl || null;
 
-    setStreamStates((prev) => ({ ...prev, [slotKey]: null }));
-    setIsCameraActive((prev) => ({ ...prev, [slotKey]: false }));
-    setShowDropdown(null);
-  }
-};
+            if (imageUrl) {
+              arr.push(imageUrl);
+              setPhotos((prev) => ({ ...prev, [photoKey]: arr }));
+              if (onChange) onChange(photoKey, arr);
+            }
+          } catch (err) {
+            console.error("Upload failed:", err);
+            toast.error("Failed to upload image");
+          }
+        }
+      }, "image/png");
+
+      // 👉 Stop camera after capture
+      const stream = streamStates[slotKey];
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+
+      setStreamStates((prev) => ({ ...prev, [slotKey]: null }));
+      setIsCameraActive((prev) => ({ ...prev, [slotKey]: false }));
+      setShowDropdown(null);
+    }
+  };
 
   const toggleDropdown = (slotKey) =>
-    setShowDropdown(curr => (curr === slotKey ? null : slotKey));
+    setShowDropdown((curr) => (curr === slotKey ? null : slotKey));
 
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-lg w-full max-w-4xl text-white mx-auto">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">Body Panels</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">
+        Body Panels
+      </h2>
 
       <div className="grid grid-cols-1 gap-6 sm:gap-8">
-        {panels.map(panelKey => {
+        {panels.map((panelKey) => {
           const photosArr = photos[imageKeys[panelKey]] || [];
-          const { repaint, paintThickness, issues = [] } = panelValues[panelKey] || {};
+          const {
+            repaint,
+            paintThickness,
+            issues = [],
+          } = panelValues[panelKey] || {};
           const nextSlotKey = `${panelKey}-dropdown`;
 
           return (
-            <div key={panelKey} className="flex flex-col w-full relative border-b border-white/20 pb-4 mb-4">
+            <div
+              key={panelKey}
+              className="flex flex-col w-full relative border-b border-white/20 pb-4 mb-4"
+            >
               <div className="flex items-center justify-between mb-2">
-                <label className="text-md font-medium">{labelNames[panelKey]}</label>
+                <label className="text-md font-medium">
+                  {labelNames[panelKey]}
+                </label>
               </div>
 
               {/* Paint Thickness */}
@@ -213,14 +278,23 @@ const handleCameraClick = async (photoKey) => {
                 <input
                   type="number"
                   value={paintThickness || ""}
-                  onChange={e => handleInputChange(panelKey, "paintThickness", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      panelKey,
+                      "paintThickness",
+                      e.target.value
+                    )
+                  }
                   className="p-2 bg-transparent border border-green-200 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-lime-400"
                   placeholder="Enter thickness (mm)"
                 />
               </div>
 
               {/* Issues */}
-              <div className="mb-4 relative" ref={el => (dropdownRefs.current[nextSlotKey] = el)}>
+              <div
+                className="mb-4 relative"
+                ref={(el) => (dropdownRefs.current[nextSlotKey] = el)}
+              >
                 <label className="text-md mb-2 block">Issues</label>
                 <button
                   onClick={() => toggleDropdown(nextSlotKey)}
@@ -231,12 +305,17 @@ const handleCameraClick = async (photoKey) => {
                 </button>
                 {showDropdown === nextSlotKey && (
                   <div className="absolute z-20 bg-gray-800 border border-green-200 rounded-md mt-1 w-full max-h-64 overflow-y-auto p-2">
-                    {issueOptions.map(opt => (
-                      <label key={opt} className="flex items-center mb-1 cursor-pointer">
+                    {issueOptions.map((opt) => (
+                      <label
+                        key={opt}
+                        className="flex items-center mb-1 cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           checked={issues.includes(opt)}
-                          onChange={() => handleCheckboxChange(panelKey, "issues", opt)}
+                          onChange={() =>
+                            handleCheckboxChange(panelKey, "issues", opt)
+                          }
                           className="mr-2 w-4 h-4"
                         />
                         {opt}
@@ -258,19 +337,29 @@ const handleCameraClick = async (photoKey) => {
                         onClick={() => setShowPhoto(photoUrl)}
                       />
                     </div>
-                    
                   ))}
                   <video
-  ref={(el) => (videoRefs.current[`${imageKeys[panelKey]}-${photosArr.length}`] = el)}
-  autoPlay
-  className={isCameraActive[`${imageKeys[panelKey]}-${photosArr.length}`] ? "w-24 h-24 rounded-md mt-2" : "hidden"}
-/>
-
+                    ref={(el) =>
+                      (videoRefs.current[
+                        `${imageKeys[panelKey]}-${photosArr.length}`
+                      ] = el)
+                    }
+                    autoPlay
+                    className={
+                      isCameraActive[
+                        `${imageKeys[panelKey]}-${photosArr.length}`
+                      ]
+                        ? "w-24 h-24 rounded-md mt-2"
+                        : "hidden"
+                    }
+                  />
 
                   {photosArr.length < photoCount && (
                     <div
                       className="relative w-24 h-24 flex items-center justify-center"
-                      ref={el => (dropdownRefs.current[`${panelKey}-photo`] = el)}
+                      ref={(el) =>
+                        (dropdownRefs.current[`${panelKey}-photo`] = el)
+                      }
                     >
                       <button
                         onClick={() => toggleDropdown(`${panelKey}-photo`)}
@@ -282,12 +371,17 @@ const handleCameraClick = async (photoKey) => {
                       {showDropdown === `${panelKey}-photo` && (
                         <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-md shadow-lg z-10 w-48">
                           <button
-                            onClick={() => handleCameraClick(imageKeys[panelKey])}
+                            onClick={() =>
+                              handleCameraClick(imageKeys[panelKey])
+                            }
                             className="flex items-center px-4 py-3 w-full text-left hover:bg-gray-700"
                           >
-                            <AiOutlineCamera className="mr-2" /> 
-                            {isCameraActive[`${imageKeys[panelKey]}-${photosArr.length}`] ? "Capture Photo" : "Take Photo"}
-
+                            <AiOutlineCamera className="mr-2" />
+                            {isCameraActive[
+                              `${imageKeys[panelKey]}-${photosArr.length}`
+                            ]
+                              ? "Capture Photo"
+                              : "Take Photo"}
                           </button>
                           <label className="flex items-center px-4 py-3 w-full hover:bg-gray-700 cursor-pointer">
                             <AiOutlineUpload className="mr-2" /> Upload Photo
@@ -295,11 +389,12 @@ const handleCameraClick = async (photoKey) => {
                               type="file"
                               accept="image/*"
                               className="hidden"
-                              onChange={(e) => handleFileUpload(e, imageKeys[panelKey])}
+                              onChange={(e) =>
+                                handleFileUpload(e, imageKeys[panelKey])
+                              }
                             />
                           </label>
                         </div>
-                        
                       )}
                     </div>
                   )}
@@ -310,7 +405,12 @@ const handleCameraClick = async (photoKey) => {
         })}
       </div>
 
-      {showPhoto && <FullScreenPhotoViewer photo={showPhoto} onClose={() => setShowPhoto(null)} />}
+      {showPhoto && (
+        <FullScreenPhotoViewer
+          photo={showPhoto}
+          onClose={() => setShowPhoto(null)}
+        />
+      )}
     </div>
   );
 };
