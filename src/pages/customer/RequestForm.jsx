@@ -707,7 +707,7 @@ const Request = () => {
 
           <motion.img
             key={selectedImage}
-            src={selectedImage}
+            src={`${ServerUrl.IMAGE_URL}${selectedImage}`}
             alt="Vehicle"
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{

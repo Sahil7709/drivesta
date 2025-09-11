@@ -1,6 +1,7 @@
 // src/pages/admin/InspectionReportPdf.jsx
 import { jsPDF } from "jspdf";
 import ApiService from "./../../core/services/api.service";
+import ServerUrl from "../../core/constants/serverUrl.constant";
 
 /** =========================================================================
  * THEME + GEOMETRY
@@ -222,11 +223,7 @@ async function drawThumbRow(
   );
   for (let url of validUrls) {
     try {
-      const finalUrl = url.startsWith("http")
-        ? url.replace("http://", "https://")
-        : `https://api.carnomia.com${url}`;
-
-      // const finalUrl = url.startsWith("http") ? url : `http://localhost:3000${url}`;
+      const finalUrl = `${ServerUrl.REACT_APP_API_URL}${url}`;
       const dataURL = await urlToDataURL(finalUrl);
       if (dataURL) {
         const col = i % cols;
