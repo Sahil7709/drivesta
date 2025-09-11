@@ -34,7 +34,7 @@ const RequestSuccess = () => {
         
         {/* Heading */}
         <h1 className="text-green-700 text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mb-3">
-          🎉 Congratulations, your PDI is booked successfully!
+          Congratulations, your PDI is booked successfully!
         </h1>
 
         {/* Booking Details */}
@@ -60,7 +60,7 @@ const RequestSuccess = () => {
 
         {/* Vehicle Image */}
         <img
-          src={imageUrl}
+          src={`${ServerUrl.IMAGE_URL}${state.imageUrl}`}
           alt={`${brand} ${model}`}
           className="mx-auto w-full max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[500px] object-contain mb-6"
         />

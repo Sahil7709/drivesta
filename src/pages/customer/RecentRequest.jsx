@@ -235,7 +235,7 @@ const Recent = () => {
               <div className="relative w-full flex justify-center bg-white items-center">
                 <img
                   src={
-                    state.imageUrl ||
+                    `${ServerUrl.IMAGE_URL}${state.imageUrl}` ||
                     "https://via.placeholder.com/800x400?text=No+Image"
                   }
                   alt="Vehicle"
