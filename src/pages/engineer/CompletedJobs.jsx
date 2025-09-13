@@ -12,7 +12,6 @@ import generateInspectionPDF from "../admin/InspectionReportPdf";
 
 const statusColors = {
   COMPLETED: "bg-green-100 text-green-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
   PENDING: "bg-gray-100 text-gray-800",
 };
 
@@ -126,7 +125,12 @@ const CompletedJobs = () => {
       const res = await new ApiService().apiget(
         `${ServerUrl.API_GET_ALL_REQUESTS_BY_ENGINEER}/${user.userId}`
       );
-      return res.data?.data || [];
+        // Only show jobs with status WAITING_FOR_APPROVAL or COMPLETED
+        const jobs = res.data?.data || [];
+        return jobs.filter(
+          (job) =>
+            job.status === "WAITING_FOR_APPROVAL" || job.status === "COMPLETED"
+        );
     },
   };
 
