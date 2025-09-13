@@ -149,12 +149,13 @@ const ProfilePhotos = ({ data, onChange }) => {
             <div className="mt-2 flex flex-col items-center">
               <div className="mt-2 flex flex-wrap gap-4 justify-center">
                 <div className="relative">
-                  {photos[label] ? (
+                  {`${ServerUrl.IMAGE_URL}${photos[label]}`
+                   ? (
                     <img
-                      src={photos[label]}
+                      src={`${ServerUrl.IMAGE_URL}${photos[label]}`}
                       alt={labelNames[label]}
                       className="w-24 h-24 object-cover rounded-md cursor-pointer"
-                      onClick={() => setShowPhoto(photos[label])}
+                      onClick={() => setShowPhoto(`${ServerUrl.IMAGE_URL}${photos[label]}`)}
                     />
                   ) : (
                     <div className="w-24 h-24 bg-gray-700 rounded-md flex items-center justify-center">
