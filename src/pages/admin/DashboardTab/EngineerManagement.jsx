@@ -5,7 +5,7 @@ import ServerUrl from "../../../core/constants/serverUrl.constant";
 
 const EngineerManagement = withMaterialTable(() => null, {
   title: "Engineers Management",
-  hideAddButton: true,   // 🔥 this hides the Add button
+  hideAddButton: true, // 🔥 this hides the Add button
 
   columns: [
     {
@@ -41,52 +41,40 @@ const EngineerManagement = withMaterialTable(() => null, {
       accessorKey: "active",
       header: "Active",
       Cell: ({ row }) => {
-        const [active, setActive] = React.useState(row.original.active ?? false);
+        const active = row.original.active ?? false;
 
         const handleToggle = async () => {
           const newActiveStatus = !active;
-          setActive(newActiveStatus);
           try {
             await new ApiService().apipatch(
               `${ServerUrl.API_UPDATE_USER}/${row.original.id}`,
               { active: newActiveStatus }
             );
-            // await EngineerManagement.options.getData(); // refresh
+            // refresh table
+            if (EngineerManagement.options.getData) {
+              await EngineerManagement.options.getData();
+            }
           } catch (err) {
             console.error("Failed to update active status", err);
-            setActive(!newActiveStatus); // revert on failure
           }
         };
 
         return (
-          // <button
-          //   onClick={handleToggle}
-          //   className={`px-4 py-1 rounded-full font-semibold text-white transition-colors duration-300 ${
-          //     active ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 hover:bg-gray-500"
-          //   }`}
-          //   aria-pressed={active}
-          // >
-          //   {active ? "Active" : "Inactive"}
-          // </button>
-
-           <button
-      onClick={handleToggle}
-      className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors duration-300 ${
-        active ? "bg-green-500" : "bg-gray-400"
-      }`}
-    >
-      <span
-        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
-          active ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
-
+          <button
+            onClick={handleToggle}
+            className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors duration-300 ${
+              active ? "bg-green-500" : "bg-gray-400"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
+                active ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
         );
       },
     },
-
-
   ],
 
   getData: async () => {
@@ -112,6 +100,7 @@ const EngineerManagement = withMaterialTable(() => null, {
       mobile,
       city,
       role: "engineer",
+      active: true, // 🔥 default active
     });
     return await EngineerManagement.options.getData();
   },
