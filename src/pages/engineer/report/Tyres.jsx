@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FileUploaderService from "../../../services/upload-document.service";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
+import ServerUrl from "../../../core/constants/serverUrl.constant";
 
-const labelNames = {
+// ---------------- Constants ----------------
+const TYRE_LABELS = {
   tyre_front_left: "Front Left Tyre",
   tyre_rear_left: "Rear Left Tyre",
   tyre_rear_right: "Rear Right Tyre",
@@ -11,122 +13,126 @@ const labelNames = {
   tyre_spare: "Spare Tyre",
 };
 
-const photoCount = 5;
-const issueOptions = ["Worn Tread", "Puncture", "Sidewall Damage", "Uneven Wear", "No Issue"];
+const PHOTO_LIMIT = 5;
 
+const ISSUE_OPTIONS = [
+  "Worn Tread",
+  "Puncture",
+  "Sidewall Damage",
+  "Uneven Wear",
+  "No Issue",
+];
+
+const BRAND_OPTIONS = ["Michelin", "Bridgestone", "Goodyear", "Pirelli", "Continental"];
+const SUB_BRAND_OPTIONS = ["Pilot Sport", "Turanza", "Eagle F1", "P Zero", "ContiSportContact"];
+const VARIANT_OPTIONS = [
+  "Sport",
+  "All-Season",
+  "Winter",
+  "Performance",
+  "Touring",
+  "Eco",
+  "Mud-Terrain",
+];
+
+// ---------------- Tyre Card ----------------
 const TyreCard = ({
-  tyreName,
   tyreKey,
-  brand,
-  subBrand,
-  variant,
-  size,
-  manufacturingDate,
-  threadDepth,
-  issue,
-  photos,
-  onBrandChange,
-  onSubBrandChange,
-  onVariantChange,
-  onSizeChange,
-  onManufacturingDateChange,
-  onThreadDepthChange,
-  onIssueChange,
+  tyreName,
+  tyreData,
+  onFieldChange,
   onPhotoChange,
   setShowPhoto,
   idx,
 }) => {
+  const { brand, subBrand, variant, size, manufacturingDate, threadDepth, issue, photos } = tyreData;
+
   const videoRef = useRef(null);
+  const photoDropdownRef = useRef(null);
+  const issueDropdownRef = useRef(null);
+
   const [stream, setStream] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [issueDropdownOpen, setIssueDropdownOpen] = useState(false);
-  const photoDropdownRef = useRef(null); //change
-const issueDropdownRef = useRef(null);//change
 
-
-useEffect(() => {  //change
-  const handleClickOutside = (event) => {
-    if (photoDropdownRef.current && !photoDropdownRef.current.contains(event.target)) {
-      setShowDropdown(false);
-    }
-    if (issueDropdownRef.current && !issueDropdownRef.current.contains(event.target)) {
-      setIssueDropdownOpen(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
-
+  // Close dropdowns on outside click
   useEffect(() => {
-    return () => {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
+    const handleClickOutside = (e) => {
+      if (photoDropdownRef.current && !photoDropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+      if (issueDropdownRef.current && !issueDropdownRef.current.contains(e.target)) {
+        setIssueDropdownOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Stop camera when unmounting
+  useEffect(() => {
+    return () => stream?.getTracks().forEach((t) => t.stop());
   }, [stream]);
-  
 
   const toggleDropdown = () => setShowDropdown((curr) => !curr);
 
+  // -------- File Upload --------
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      try {
-        const uploadedData = await FileUploaderService.uploadFileToServer(file, tyreKey);
-        const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
-        if (imageUrl) {
-          const emptyIndex = photos.findIndex((p) => !p);
-          if (emptyIndex !== -1) {
-            onPhotoChange(emptyIndex, imageUrl);
-          }
-          setShowDropdown(false);
+    if (!file || !file.type.startsWith("image/")) return;
+
+    try {
+      const uploaded = await FileUploaderService.uploadFileToServer(file, tyreKey);
+      const imageUrl = uploaded.files?.[0]?.fileUrl || null;
+      if (imageUrl) {
+        const emptyIndex = photos.findIndex((p) => !p);
+        if (emptyIndex !== -1) {
+          onPhotoChange(tyreKey, emptyIndex, `${ServerUrl.IMAGE_URL}${imageUrl}`);
         }
-      } catch (error) {
-        console.error("Upload failed:", error);
-        alert("Failed to upload image. Try again.");
       }
+      setShowDropdown(false);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Failed to upload image. Try again.");
     }
   };
 
+  // -------- Camera Capture --------
   const handleCameraClick = async () => {
-  if (!isCameraActive) {
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = s;
-      setStream(s);
-      setIsCameraActive(true);
-    } catch {
-      alert("Camera not available.");
+    if (!isCameraActive) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoRef.current.srcObject = s;
+        setStream(s);
+        setIsCameraActive(true);
+      } catch {
+        alert("Camera not available.");
+      }
+      return;
     }
-  } else {
+
     const canvas = document.createElement("canvas");
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
 
-    // ✅ convert canvas to blob
     canvas.toBlob(async (blob) => {
-      if (blob) {
-        try {
-          // make a File object from the blob
-          const file = new File([blob], "captured.png", { type: "image/png" });
+      if (!blob) return;
+      try {
+        const file = new File([blob], "captured.png", { type: "image/png" });
+        const uploaded = await FileUploaderService.uploadFileToServer(file, tyreKey);
+        const imageUrl = uploaded.files?.[0]?.fileUrl || null;
 
-          // upload to server
-          const uploadedData = await FileUploaderService.uploadFileToServer(file, tyreKey);
-          const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
-
-          if (imageUrl) {
-            const emptyIndex = photos.findIndex((p) => !p);
-            if (emptyIndex !== -1) {
-              onPhotoChange(emptyIndex, imageUrl);
-            }
+        if (imageUrl) {
+          const emptyIndex = photos.findIndex((p) => !p);
+          if (emptyIndex !== -1) {
+            onPhotoChange(tyreKey, emptyIndex, `${ServerUrl.IMAGE_URL}${imageUrl}`);
           }
-        } catch (error) {
-          console.error("Upload failed:", error);
-          alert("Failed to upload image. Try again.");
         }
+      } catch (err) {
+        console.error("Upload failed:", err);
+        alert("Failed to upload image. Try again.");
       }
     }, "image/png");
 
@@ -135,18 +141,13 @@ useEffect(() => {  //change
     setStream(null);
     setIsCameraActive(false);
     setShowDropdown(false);
-  }
-};
+  };
 
-
-  const toggleIssueOption = (option) => {
+  // -------- Toggle Issues --------
+  const toggleIssueOption = (opt) => {
     let updated = [...(issue || [])];
-    if (updated.includes(option)) {
-      updated = updated.filter((i) => i !== option);
-    } else {
-      updated.push(option);
-    }
-    onIssueChange({ target: { value: updated } });
+    updated = updated.includes(opt) ? updated.filter((i) => i !== opt) : [...updated, opt];
+    onFieldChange(tyreKey, "issue", updated);
   };
 
   return (
@@ -156,111 +157,36 @@ useEffect(() => {  //change
       </h3>
 
       {/* Brand */}
-      <div>
-        <label className="text-sm text-white font-medium mb-1 block">Brand</label>
-        <select
-          value={brand || ""}
-          onChange={onBrandChange}
-          className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full"
-        >
-          <option value="">Select Brand</option>
-          <option value="Michelin">Michelin</option>
-          <option value="Bridgestone">Bridgestone</option>
-          <option value="Goodyear">Goodyear</option>
-          <option value="Pirelli">Pirelli</option>
-          <option value="Continental">Continental</option>
-        </select>
-      </div>
+      <SelectField label="Brand" value={brand} options={BRAND_OPTIONS} onChange={(v) => onFieldChange(tyreKey, "brand", v)} />
 
       {/* Sub-Brand */}
-      <div>
-        <label className="text-sm text-white font-medium mb-1 block">Sub-Brand</label>
-        <select
-          value={subBrand || ""}
-          onChange={onSubBrandChange}
-          className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full"
-        >
-          <option value="">Select Sub-Brand</option>
-          <option value="Pilot Sport">Pilot Sport</option>
-          <option value="Turanza">Turanza</option>
-          <option value="Eagle F1">Eagle F1</option>
-          <option value="P Zero">P Zero</option>
-          <option value="ContiSportContact">ContiSportContact</option>
-        </select>
-      </div>
+      <SelectField label="Sub-Brand" value={subBrand} options={SUB_BRAND_OPTIONS} onChange={(v) => onFieldChange(tyreKey, "subBrand", v)} />
 
       {/* Variant */}
-      <div>
-        <label className="text-sm text-white font-medium mb-1 block">Variant</label>
-        <select
-          value={variant || ""}
-          onChange={onVariantChange}
-          className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full"
-        >
-          <option value="">Select Variant</option>
-          <option value="Sport">Sport</option>
-          <option value="All-Season">All-Season</option>
-          <option value="Winter">Winter</option>
-          <option value="Performance">Performance</option>
-          <option value="Touring">Touring</option>
-          <option value="Eco">Eco</option>
-          <option value="Mud-Terrain">Mud-Terrain</option>
-        </select>
-      </div>
+      <SelectField label="Variant" value={variant} options={VARIANT_OPTIONS} onChange={(v) => onFieldChange(tyreKey, "variant", v)} />
 
       {/* Size */}
-      <div>
-        <label className="text-sm text-white font-medium mb-1 block">Size</label>
-        <input
-          type="text"
-          value={size || ""}
-          onChange={onSizeChange}
-          placeholder="Enter tyre size"
-          className="w-full p-2 border border-white/20 rounded bg-[#ffffff0a] text-white"
-        />
-      </div>
+      <InputField label="Size" placeholder="Enter tyre size" value={size} onChange={(v) => onFieldChange(tyreKey, "size", v)} />
 
       {/* Manufacturing Date */}
-      <div>
-        <label className="text-sm text-white font-medium mb-1 block">Manufacturing Date (MM/YY)</label>
-        <input
-          type="text"
-          value={manufacturingDate || ""}
-          onChange={onManufacturingDateChange}
-          placeholder="MM/YY"
-          className="w-full p-2 border border-white/20 rounded bg-[#ffffff0a] text-white"
-        />
-      </div>
+      <InputField label="Manufacturing Date (MM/YY)" placeholder="MM/YY" value={manufacturingDate} onChange={(v) => onFieldChange(tyreKey, "manufacturingDate", v)} />
 
       {/* Thread Depth */}
-      <div>
-        <label className="text-sm text-white font-medium mb-1 block">Thread Depth (mm)</label>
-        <input
-          type="text"
-          value={threadDepth || ""}
-          onChange={onThreadDepthChange}
-          placeholder="Enter thread depth"
-          className="w-full p-2 border border-white/20 rounded bg-[#ffffff0a] text-white"
-        />
-      </div>
+      <InputField label="Thread Depth (mm)" placeholder="Enter thread depth" value={threadDepth} onChange={(v) => onFieldChange(tyreKey, "threadDepth", v)} validate={(val) => /^\d*\.?\d*$/.test(val)} />
 
-      {/* Issue (Multi-select with checkboxes) */}
-<div className="relative" ref={issueDropdownRef}>     
+      {/* Issues */}
+      <div className="relative" ref={issueDropdownRef}>
         <label className="text-sm text-white font-medium mb-1 block">Issue</label>
         <div
           className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full cursor-pointer"
-          onClick={() => setIssueDropdownOpen((prev) => !prev)}
+          onClick={() => setIssueDropdownOpen((p) => !p)}
         >
-          {issue && issue.length > 0 ? issue.join(", ") : "Select Issue"}
+          {issue?.length > 0 ? issue.join(", ") : "Select Issue"}
         </div>
-
         {issueDropdownOpen && (
           <div className="absolute z-10 mt-1 bg-gray-800 border border-green-200 rounded-md w-full max-h-60 overflow-y-auto">
-            {issueOptions.map((opt) => (
-              <label
-                key={opt}
-                className="flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
-              >
+            {ISSUE_OPTIONS.map((opt) => (
+              <label key={opt} className="flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer text-white">
                 <input
                   type="checkbox"
                   className="mr-2"
@@ -275,7 +201,7 @@ useEffect(() => {  //change
       </div>
 
       {/* Photos */}
-      {issue && issue.length > 0 && (
+      {issue?.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-4 items-center">
           {photos.map(
             (photoUrl, i) =>
@@ -291,9 +217,8 @@ useEffect(() => {  //change
               )
           )}
 
-          {/* Plus button */}
-          {photos.filter((p) => p).length < photoCount && (
-            <div className="relative w-24 h-24 flex items-center justify-center rounded-md">
+          {photos.filter((p) => p).length < PHOTO_LIMIT && (
+            <div className="relative w-24 h-24 flex items-center justify-center rounded-md" ref={photoDropdownRef}>
               <button
                 onClick={toggleDropdown}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-500 text-white text-2xl hover:bg-gray-600"
@@ -318,22 +243,50 @@ useEffect(() => {  //change
             </div>
           )}
 
-          <video
-            ref={videoRef}
-            autoPlay
-            className={isCameraActive ? "w-24 h-24 rounded-md" : "hidden"}
-          />
+          <video ref={videoRef} autoPlay className={isCameraActive ? "w-24 h-24 rounded-md" : "hidden"} />
         </div>
       )}
     </div>
   );
 };
 
-const Tyres = ({ data = {}, onChange }) => {
-  const tyreKeys = ["tyre_front_left", "tyre_rear_left", "tyre_rear_right", "tyre_front_right", "tyre_spare"];
-  const [autoCopiedFields, setAutoCopiedFields] = useState({});
-  const [showPhoto, setShowPhoto] = useState(null);
+// ---------------- Reusable Fields ----------------
+const InputField = ({ label, placeholder, value, onChange, validate }) => (
+  <div>
+    <label className="text-sm text-white font-medium mb-1 block">{label}</label>
+    <input
+      type="text"
+      value={value || ""}
+      placeholder={placeholder}
+      onChange={(e) => (!validate || validate(e.target.value)) && onChange(e.target.value)}
+      className="w-full p-2 border border-white/20 rounded bg-[#ffffff0a] text-white"
+    />
+  </div>
+);
 
+const SelectField = ({ label, value, options, onChange }) => (
+  <div>
+    <label className="text-sm text-white font-medium mb-1 block">{label}</label>
+    <select
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full"
+    >
+      <option value="">Select {label}</option>
+      {options.map((opt) => (
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
+// ---------------- Tyres Wrapper ----------------
+const Tyres = ({ data = {}, onChange }) => {
+  const tyreKeys = Object.keys(TYRE_LABELS);
+  const [showPhoto, setShowPhoto] = useState(null);
+  const [autoCopied, setAutoCopied] = useState({});
   const [tyreState, setTyreState] = useState(() => {
     const initial = {};
     tyreKeys.forEach((key) => {
@@ -343,67 +296,56 @@ const Tyres = ({ data = {}, onChange }) => {
         variant: data[`${key}_variant`] || "",
         size: data[`${key}_size`] || "",
         manufacturingDate: data[`${key}_manufacturingDate`] || "",
-        threadDepth: data[`${key}_treadDepth`] || "",
+        treadDepth: data[`${key}_treadDepth`] || "",
         issue: Array.isArray(data[`${key}_issue`]) ? data[`${key}_issue`] : [],
         photos: Array.isArray(data[`${key}_imageUrls`])
-          ? data[`${key}_imageUrls`].slice(0, photoCount).concat(Array(photoCount).fill(null)).slice(0, photoCount)
-          : Array(photoCount).fill(null),
+          ? data[`${key}_imageUrls`].slice(0, PHOTO_LIMIT).concat(Array(PHOTO_LIMIT).fill(null)).slice(0, PHOTO_LIMIT)
+          : Array(PHOTO_LIMIT).fill(null),
         ...(key === "tyre_spare" ? { toggle: !!data[`${key}_toggle`] } : {}),
       };
     });
     return initial;
   });
 
-  const handleFieldChange = (tyreKey, field) => (e) => {
-    const value = e.target.value;
-
+  // Universal field handler
+  const handleFieldChange = (tyreKey, field, value) => {
     setTyreState((prev) => {
-      const updated = { ...prev };
-      updated[tyreKey][field] = value;
+      const updated = { ...prev, [tyreKey]: { ...prev[tyreKey] } };
 
-      if (tyreKey === "tyre_front_left" && !autoCopiedFields[field]) {
-        ["tyre_rear_left", "tyre_rear_right", "tyre_front_right"].forEach((key) => {
-          updated[key][field] = value;
-        });
-        setAutoCopiedFields((prevFields) => ({ ...prevFields, [field]: true }));
+      if (field === "photos") {
+        updated[tyreKey].photos = value;
+        onChange?.(`${tyreKey}_imageUrls`, value);
+      } else {
+        updated[tyreKey][field] = value;
+
+        if (tyreKey === "tyre_front_left" && !autoCopied[field]) {
+          ["tyre_rear_left", "tyre_rear_right", "tyre_front_right"].forEach((k) => {
+            updated[k][field] = value;
+          });
+          setAutoCopied((p) => ({ ...p, [field]: true }));
+        }
+
+        onChange?.(`${tyreKey}_${field}`, value);
       }
 
       return updated;
     });
-
-    if (onChange) onChange(`${tyreKey}_${field}`, value);
   };
 
-  const handleThreadDepthChange = (tyreKey) => (e) => {
-    const val = e.target.value;
-    if (/^\d*\.?\d*$/.test(val)) {
-      setTyreState((prev) => {
-        const updated = { ...prev };
-        updated[tyreKey].threadDepth = val;
-        return updated;
-      });
-      if (onChange) onChange(`${tyreKey}_treadDepth`, val);
-    }
-  };
-
-  const handlePhotoChange = (tyreKey) => (index, url) => {
+  const handlePhotoChange = (tyreKey, index, url) => {
     setTyreState((prev) => {
-      const updated = { ...prev };
+      const updated = { ...prev, [tyreKey]: { ...prev[tyreKey] } };
       const newPhotos = [...updated[tyreKey].photos];
       newPhotos[index] = url;
       updated[tyreKey].photos = newPhotos;
+      onChange?.(`${tyreKey}_imageUrls`, newPhotos);
       return updated;
     });
-    if (onChange) {
-      const newArr = [...tyreState[tyreKey].photos];
-      newArr[index] = url;
-      onChange(`${tyreKey}_imageUrls`, newArr);
-    }
   };
 
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white text-left">Tyres</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">Tyres</h2>
       <div className="grid grid-cols-1 gap-6 sm:gap-8">
         {tyreKeys.map((key, idx) => (
           <React.Fragment key={key}>
@@ -413,13 +355,12 @@ const Tyres = ({ data = {}, onChange }) => {
                 <input
                   type="checkbox"
                   checked={!!tyreState[key].toggle}
-                  onChange={(e) => {
+                  onChange={(e) =>
                     setTyreState((prev) => ({
                       ...prev,
                       [key]: { ...prev[key], toggle: e.target.checked },
-                    }));
-                    if (onChange) onChange(`${key}_toggle`, e.target.checked);
-                  }}
+                    }))
+                  }
                   className="form-checkbox h-5 w-5 text-lime-500"
                 />
               </div>
@@ -427,23 +368,10 @@ const Tyres = ({ data = {}, onChange }) => {
             {key !== "tyre_spare" || tyreState[key].toggle ? (
               <TyreCard
                 tyreKey={key}
-                tyreName={labelNames[key]}
-                brand={tyreState[key].brand}
-                subBrand={tyreState[key].subBrand}
-                variant={tyreState[key].variant}
-                size={tyreState[key].size}
-                manufacturingDate={tyreState[key].manufacturingDate}
-                threadDepth={tyreState[key].threadDepth}
-                issue={tyreState[key].issue}
-                photos={tyreState[key].photos}
-                onBrandChange={handleFieldChange(key, "brand")}
-                onSubBrandChange={handleFieldChange(key, "subBrand")}
-                onVariantChange={handleFieldChange(key, "variant")}
-                onSizeChange={handleFieldChange(key, "size")}
-                onManufacturingDateChange={handleFieldChange(key, "manufacturingDate")}
-                onThreadDepthChange={handleThreadDepthChange(key)}
-                onIssueChange={handleFieldChange(key, "issue")}
-                onPhotoChange={handlePhotoChange(key)}
+                tyreName={TYRE_LABELS[key]}
+                tyreData={tyreState[key]}
+                onFieldChange={handleFieldChange}
+                onPhotoChange={handlePhotoChange}
                 setShowPhoto={setShowPhoto}
                 idx={idx}
               />
