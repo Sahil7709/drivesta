@@ -166,7 +166,8 @@ const BodyPanels = ({ data, onChange }) => {
       );
       const imageUrl = uploaded.files?.[0]?.fileUrl || null;
       if (imageUrl) {
-        arr.push(imageUrl);
+        const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
+        arr.push(fullImageUrl);
         setPhotos((prev) => ({ ...prev, [photoKey]: arr }));
         if (onChange) onChange(photoKey, arr);
         setShowDropdown(null);
