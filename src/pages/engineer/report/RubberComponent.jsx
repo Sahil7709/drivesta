@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
-import ServerUrl from "../../../core/constants/serverUrl.constant";
 import ToggleButton from "../report/ToggleButton";
-
 
 const rubberPanels = [
   "rubber_bonnet",
@@ -124,8 +122,7 @@ useEffect(() => {     // add
       const uploaded = await FileUploaderService.uploadFileToServer(file, panel);
       const imageUrl = uploaded.files?.[0]?.fileUrl || null;
       if (imageUrl) {
-        const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
-        arr[idx] = fullImageUrl;
+        arr[idx] = imageUrl;
         updatePhotos(panel, arr);
         setShowPhotoDropdown(null);
       }

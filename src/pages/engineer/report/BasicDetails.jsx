@@ -3,7 +3,6 @@ import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai"
 import ToggleButton from "./ToggleButton";
 import FullScreenPhotoViewer from "./FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
-import ServerUrl from "../../../core/constants/serverUrl.constant";
 import { toast } from "react-toastify";
 
 const BasicDetails = ({ data, onChange, showPhoto, setShowPhoto }) => {
@@ -60,11 +59,10 @@ const BasicDetails = ({ data, onChange, showPhoto, setShowPhoto }) => {
         );
         const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
         if (imageUrl) {
-          const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
           // field is e.g. vinNumber, photo key is vinNumber_imageUrl
           const photoKey = field + "_imageUrl";
-          setPhotos((prev) => ({ ...prev, [photoKey]: fullImageUrl }));
-          if (onChange) onChange(photoKey, fullImageUrl);
+          setPhotos((prev) => ({ ...prev, [photoKey]: imageUrl }));
+          if (onChange) onChange(photoKey, imageUrl);
           setShowDropdown(null);
         }
       } catch (error) {
@@ -108,10 +106,9 @@ const handleCameraClick = async (field) => {
         const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
 
         if (imageUrl) {
-          const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;          
           const photoKey = field + "_imageUrl";
-          setPhotos((prev) => ({ ...prev, [photoKey]: fullImageUrl }));
-          if (onChange) onChange(photoKey, fullImageUrl);
+          setPhotos((prev) => ({ ...prev, [photoKey]: imageUrl }));
+          if (onChange) onChange(photoKey, imageUrl);
           setShowDropdown(null);
         }
       } catch (error) {

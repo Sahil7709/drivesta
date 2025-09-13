@@ -6,7 +6,6 @@ import {
 } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
-import ServerUrl from "../../../core/constants/serverUrl.constant";
 import { toast } from "react-toastify";
 
 const BodyPanels = ({ data, onChange }) => {
@@ -167,8 +166,7 @@ const BodyPanels = ({ data, onChange }) => {
       );
       const imageUrl = uploaded.files?.[0]?.fileUrl || null;
       if (imageUrl) {
-        const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
-        arr.push(fullImageUrl);
+        arr.push(imageUrl);
         setPhotos((prev) => ({ ...prev, [photoKey]: arr }));
         if (onChange) onChange(photoKey, arr);
         setShowDropdown(null);

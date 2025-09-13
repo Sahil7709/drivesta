@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
-import ServerUrl from "../../../core/constants/serverUrl.constant";
 
 const glassPanels = [
   "front_windshield",
@@ -152,8 +151,7 @@ useEffect(() => {
       const uploaded = await FileUploaderService.uploadFileToServer(file, panel);
       const imageUrl = uploaded.files?.[0]?.fileUrl || null;
       if (imageUrl) {
-        const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
-        arr.push(fullImageUrl);
+        arr.push(imageUrl);
         setPhotos((prev) => ({ ...prev, [panel]: arr }));
         onChange && onChange(`${panel}_imageUrls`, arr);
         setShowPhotoDropdown(null);

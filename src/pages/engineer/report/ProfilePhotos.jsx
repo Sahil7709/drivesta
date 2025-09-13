@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
-import ServerUrl from "../../../core/constants/serverUrl.constant";
 
 const ProfilePhotos = ({ data, onChange }) => {
   const labels = [
@@ -35,7 +34,14 @@ const ProfilePhotos = ({ data, onChange }) => {
   const [showDropdown, setShowDropdown] = useState(null);
   const [showPhoto, setShowPhoto] = useState(null);
 
-  // Sync incoming data (when editing existing profile)
+  // Attach refs to service
+  useEffect(() => {
+    labels.forEach((label) => {
+      FileUploaderService.setVideoRef(label, videoRefs.current[label]);
+    });
+  }, []);
+
+  // Sync incoming data
   useEffect(() => {
     setPhotos({
       front_left_imageUrl: data?.front_left_imageUrl || null,
@@ -45,7 +51,7 @@ const ProfilePhotos = ({ data, onChange }) => {
     });
   }, [data]);
 
-  // Cleanup streams on unmount
+  // Cleanup camera streams on unmount
   useEffect(() => {
     return () => {
       Object.values(streamStates).forEach((stream) => {
@@ -54,82 +60,28 @@ const ProfilePhotos = ({ data, onChange }) => {
     };
   }, [streamStates]);
 
-  // ---- Upload from gallery ----
-  const handleFileUpload = async (e, field) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      try {
-        const uploadedData = await FileUploaderService.uploadFileToServer(file, field);
-        const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
-
-        if (imageUrl) {
-            const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
-          setPhotos((prev) => {
-            const updated = { ...prev, [field]: fullImageUrl };
-            if (onChange) onChange(field, fullImageUrl); // ✅ notify parent with uploaded URL
-            return updated;
-          });
-          setShowDropdown(null);
+  // Wrapper for photo capture
+  const takePhoto = (label) => {
+    FileUploaderService.takePhoto(label, setPhotos, setIsCameraActive, setShowDropdown)
+      .then(() => {
+        if (onChange && photos[label]) {
+          onChange(label, photos[label]);
         }
-      } catch (error) {
-        console.error("Image upload failed:", error);
-        alert("Failed to upload image. Please try again.");
-      }
-    } else {
-      alert("Please select a valid image file.");
-    }
+      })
+      .catch((err) => {
+        console.error("Photo capture failed:", err);
+      });
   };
 
-  // ---- Camera open + capture ----
-  const handleCameraClick = async (field) => {
-    if (!isCameraActive[field]) {
-      // 👉 first click: open camera
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRefs.current[field]) {
-          videoRefs.current[field].srcObject = stream;
-        }
-        setStreamStates((prev) => ({ ...prev, [field]: stream }));
-        setIsCameraActive((prev) => ({ ...prev, [field]: true }));
-      } catch {
-        alert("Camera not available.");
+  // Handle file upload (from gallery)
+  const handleFileUpload = async (e, field) => {
+    try {
+      await FileUploaderService.handleFileUpload(e, field, setPhotos, setShowDropdown);
+      if (onChange && photos[field]) {
+        onChange(field, photos[field]);
       }
-    } else {
-      // 👉 second click: capture
-      const video = videoRefs.current[field];
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d").drawImage(video, 0, 0);
-
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          try {
-            const file = new File([blob], `${field}.png`, { type: "image/png" });
-            const uploadedData = await FileUploaderService.uploadFileToServer(file, field);
-            const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
-
-            if (imageUrl) {
-              const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
-              setPhotos((prev) => {
-                const updated = { ...prev, [field]: fullImageUrl };
-                if (onChange) onChange(field, fullImageUrl); // ✅ notify parent with uploaded URL
-                return updated;
-              });
-            }
-          } catch (err) {
-            console.error("Upload failed:", err);
-            alert("Failed to upload image. Try again.");
-          }
-        }
-      }, "image/png");
-
-      // stop camera after capture
-      const stream = streamStates[field];
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-      setStreamStates((prev) => ({ ...prev, [field]: null }));
-      setIsCameraActive((prev) => ({ ...prev, [field]: false }));
-      setShowDropdown(null);
+    } catch (err) {
+      console.error("Image upload failed:", err);
     }
   };
 
@@ -170,15 +122,21 @@ const ProfilePhotos = ({ data, onChange }) => {
                     </div>
                   )}
 
-                  {/* Dropdown */}
+                  {/* Dropdown options */}
                   {showDropdown === label && (
                     <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-md shadow-lg z-10 w-48">
                       <button
-                        onClick={() => handleCameraClick(label)}
+                        onClick={() =>
+                          FileUploaderService.handleCameraClick(
+                            label,
+                            setStreamStates,
+                            setIsCameraActive,
+                            takePhoto
+                          )
+                        }
                         className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 w-full text-left"
                       >
-                        <AiOutlineCamera className="mr-2" />{" "}
-                        {isCameraActive[label] ? "Capture" : "Take Photo"}
+                        <AiOutlineCamera className="mr-2" /> Take Photo
                       </button>
                       <label className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 cursor-pointer w-full">
                         <AiOutlineUpload className="mr-2" /> Upload Photo
@@ -207,7 +165,7 @@ const ProfilePhotos = ({ data, onChange }) => {
         ))}
       </div>
 
-      {/* Fullscreen view */}
+      {/* Fullscreen Photo View */}
       {showPhoto && (
         <FullScreenPhotoViewer
           photo={showPhoto}

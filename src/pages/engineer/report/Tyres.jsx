@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FileUploaderService from "../../../services/upload-document.service";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
-import ServerUrl from "../../../core/constants/serverUrl.constant";
 
 // ---------------- Constants ----------------
 const TYRE_LABELS = {
@@ -88,7 +87,7 @@ const TyreCard = ({
       if (imageUrl) {
         const emptyIndex = photos.findIndex((p) => !p);
         if (emptyIndex !== -1) {
-          onPhotoChange(tyreKey, emptyIndex, `${ServerUrl.IMAGE_URL}${imageUrl}`);
+          onPhotoChange(tyreKey, emptyIndex, imageUrl);
         }
       }
       setShowDropdown(false);
@@ -127,7 +126,7 @@ const TyreCard = ({
         if (imageUrl) {
           const emptyIndex = photos.findIndex((p) => !p);
           if (emptyIndex !== -1) {
-            onPhotoChange(tyreKey, emptyIndex, `${ServerUrl.IMAGE_URL}${imageUrl}`);
+            onPhotoChange(tyreKey, emptyIndex, imageUrl);
           }
         }
       } catch (err) {

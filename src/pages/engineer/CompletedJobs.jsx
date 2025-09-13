@@ -8,6 +8,7 @@ import ServerUrl from "../../core/constants/serverUrl.constant";
 import StorageService from "../../core/services/storage.service";
 import { APPLICATION_CONSTANTS } from "../../core/constants/app.constant";
 import { IconButton, Tooltip } from "@mui/material";
+import generateInspectionPDF from "../admin/InspectionReportPdf";
 
 const statusColors = {
   COMPLETED: "bg-green-100 text-green-800",
@@ -105,7 +106,7 @@ const CompletedJobs = () => {
             >
               <span>
                 <IconButton
-                  onClick={() => isInspectionCompleted && downloadPDF(job)}
+                  onClick={() => isInspectionCompleted && generateInspectionPDF(job)}
                   disabled={!isInspectionCompleted}
                 >
                   <PictureAsPdf
