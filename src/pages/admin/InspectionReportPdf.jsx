@@ -838,8 +838,17 @@ async function addBodyPanelsPage(doc, r) {
       let x = mm(20);
       for (let i = 0; i < maxImages; i++) {
         try {
-          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
-          x += imageSize + spacing;
+          if (urls[i]) {
+            doc.addImage(
+              `${ServerUrl.IMAGE_URL}${urls[i]}`,
+              "JPEG",
+              x,
+              y,
+              imageSize,
+              imageSize
+            );
+            x += imageSize + spacing;
+          }
         } catch (err) {
           console.warn("Image load failed:", err);
         }
@@ -952,8 +961,17 @@ async function addGlassesPage(doc, r) {
       let x = mm(20);
       for (let i = 0; i < maxImages; i++) {
         try {
-          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
-          x += imageSize + spacing;
+          if (urls[i]) {
+            doc.addImage(
+              `${ServerUrl.IMAGE_URL}${urls[i]}`,
+              "JPEG",
+              x,
+              y,
+              imageSize,
+              imageSize
+            );
+            x += imageSize + spacing;
+          }
         } catch (err) {
           console.warn("Image load failed:", err);
         }
@@ -1066,8 +1084,17 @@ async function addRubberPage(doc, r) {
       let x = PAGE_PAD_X;
       for (let i = 0; i < maxImages; i++) {
         try {
-          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
-          x += imageSize + spacing;
+          if (urls[i]) {
+            doc.addImage(
+              `${ServerUrl.IMAGE_URL}${urls[i]}`,
+              "JPEG",
+              x,
+              y,
+              imageSize,
+              imageSize
+            );
+            x += imageSize + spacing;
+          }
         } catch (err) {
           console.warn("Image load failed:", err);
         }
@@ -1096,176 +1123,6 @@ async function addRubberPage(doc, r) {
 /** =========================================================================
  * PAGE 6: SEATS & Fabrics
  * ========================================================================= */
-
-// async function addSeatsBeltsPage(doc, r) {
-//   // Common columns for both sections
-//   const col = {
-//     part: PAGE_PAD_X,
-//     status: PAGE_PAD_X + 80,
-//   };
-
-//   // --- Seats & Fabrics Section ---
-//   doc.addPage("a4", "portrait");
-//   drawTopBand(doc);
-//   sectionHeader(doc, "Seats & Fabrics", mm(28));
-
-//   // Seats table headers
-//   setText(doc, THEME.header, 9.2);
-//   doc.text("Part", col.part, mm(36));
-//   doc.text("Issues", col.status, mm(36));
-//   setText(doc);
-
-//   let y = mm(42);
-//   const rowHeight = 24;
-//   const thumbSize = 24;
-//   const thumbGap = 6;
-
-//   const rows = [
-//     { label: "Driver Seat", key: "seat_driver", arr: r.seat_driver_imageUrls },
-//     { label: "Driver Head Rest", key: "seat_driver_head_rest", arr: r.seat_driver_head_rest_imageUrls },
-//     { label: "Co-driver Seat", key: "seat_codriver", arr: r.seat_codriver_imageUrls },
-//     { label: "Co-driver Head Rest", key: "seat_codriver_head_rest", arr: r.seat_codriver_head_rest_imageUrls },
-//     { label: "Rear Seat", key: "seat_rear", arr: r.seat_rear_imageUrls },
-//     { label: "Rear Head Rest", key: "seat_rear_head_rest", arr: r.seat_rear_head_rest_imageUrls },
-//     { label: "Third Row", key: "seat_third_row", arr: r.seat_third_row_imageUrls, toggle: r.seat_third_row_toggle },
-//     { label: "Third Row Head Rest", key: "seat_third_row_head_rest", arr: r.seat_third_row_head_rest_imageUrls },
-//     { label: "Roof Lining", key: "seat_roof", arr: r.seat_roof_imageUrls },
-//     { label: "Sunroof Cover", key: "seat_sunroof", arr: r.seat_sunroof_imageUrls },
-//   ];
-
-//   for (const row of rows) {
-//     setText(doc, THEME.text, 9.3);
-//     doc.text(row.label, col.part, y);
-
-//     setText(doc, THEME.subtext, 8.5);
-//     const issuesText = r[`${row.key}_issues`] ?? "—";
-//     doc.text(issuesText, col.status, y);
-
-//     // Toggle/status if exists
-//     if (row.toggle !== undefined) {
-//       setText(doc, THEME.subtext, 8.5);
-//       doc.text("Available", PAGE_PAD_X + 40, y + 0.3);
-//       checkmark(doc, PAGE_PAD_X + 54, y + 0.6, !!row.toggle);
-//       setText(doc);
-//     }
-
-//     let imgX = PAGE_PAD_X;
-//     const imgY = y + 8;
-
-//     if (Array.isArray(row.arr) && row.arr.length > 0) {
-//       for (let i = 0; i < Math.min(row.arr.length, 5); i++) {
-//         if (row.arr[i]) {
-//           try {
-//             const imgData = await urlToDataURL(row.arr[i]);
-//             if (imgData) {
-//               doc.addImage(imgData, "JPEG", imgX + 2, imgY + 2, thumbSize - 4, thumbSize - 4, undefined, "FAST");
-//             }
-//           } catch {}
-//         }
-//         imgX += thumbSize + thumbGap;
-//       }
-//     } else {
-//       setText(doc, THEME.subtext, 8.4);
-//       doc.text("No photos available", imgX, imgY + 12);
-//       setText(doc);
-//     }
-
-//     y += rowHeight + thumbSize + 2;
-
-//     // Pagination for Seats & Fabrics section
-//     if (y > mm(270)) {
-//       drawFooter(doc);
-//       doc.addPage("a4", "portrait");
-//       drawTopBand(doc);
-//       sectionHeader(doc, "Seats & Fabrics (contd.)", mm(28));
-//       setText(doc, THEME.header, 9.2);
-//       doc.text("Part", col.part, mm(36));
-//       doc.text("Issues", col.status, mm(36));
-//       setText(doc);
-//       y = mm(42);
-//     }
-//   }
-
-//   // --- End of Seats & Fabrics Section ---
-//   drawFooter(doc);
-
-//   // --- Start Seatbelts Section on a new page ---
-//   doc.addPage("a4", "portrait");
-//   drawTopBand(doc);
-//   sectionHeader(doc, "Seatbelts", mm(28));
-
-//   // Seatbelts table headers
-//   setText(doc, THEME.header, 9.2);
-//   doc.text("Part", col.part, mm(36));
-//   doc.text("Issues / Status", col.status, mm(36));
-//   setText(doc);
-
-//   y = mm(42);
-
-//   const belts = [
-//     { label: "Driver Seatbelt", key: "seatbelt_driver", arr: r.seatbelt_driver_imageUrls },
-//     { label: "Co-driver Seatbelt", key: "seatbelt_codriver", arr: r.seatbelt_codriver_imageUrls },
-//     { label: "Rear Left Passenger Seatbelt", key: "seatbelt_rear_left_passenger", arr: r.seatbelt_rear_left_passenger_imageUrls },
-//     { label: "Rear Right Passenger Seatbelt", key: "seatbelt_rear_right_passenger", arr: r.seatbelt_rear_right_passenger_imageUrls },
-//     { label: "Third Row Seatbelts", key: "seatbelt_third_row", arr: r.seatbelt_third_row_imageUrls, toggle: r.seatbelt_third_row_toggle },
-//   ];
-
-//   for (const row of belts) {
-//     setText(doc, THEME.text, 9.3);
-//     doc.text(row.label, col.part, y);
-
-//     setText(doc, THEME.subtext, 8.5);
-//     const issuesText = r[`${row.key}_issues`] ?? "—";
-//     doc.text(issuesText, col.status, y);
-
-//     // Toggle/status if exists
-//     if (row.toggle !== undefined) {
-//       setText(doc, THEME.subtext, 8.5);
-//       doc.text("Available", PAGE_PAD_X + 40, y + 0.3);
-//       checkmark(doc, PAGE_PAD_X + 54, y + 0.6, !!row.toggle);
-//       setText(doc);
-//     }
-
-//     let imgX = PAGE_PAD_X;
-//     const imgY = y + 8;
-
-//     if (Array.isArray(row.arr) && row.arr.length > 0) {
-//       for (let i = 0; i < Math.min(row.arr.length, 5); i++) {
-//         if (row.arr[i]) {
-//           try {
-//             const imgData = await urlToDataURL(row.arr[i]);
-//             if (imgData) {
-//               doc.addImage(imgData, "JPEG", imgX + 2, imgY + 2, thumbSize - 4, thumbSize - 4, undefined, "FAST");
-//             }
-//           } catch {}
-//         }
-//         imgX += thumbSize + thumbGap;
-//       }
-//     } else {
-//       setText(doc, THEME.subtext, 8.4);
-//       doc.text("No photos available", imgX, imgY + 12);
-//       setText(doc);
-//     }
-
-//     y += rowHeight + thumbSize + 2;
-
-//     // Pagination for Seatbelts section
-//     if (y > mm(270)) {
-//       drawFooter(doc);
-//       doc.addPage("a4", "portrait");
-//       drawTopBand(doc);
-//       sectionHeader(doc, "Seatbelts (contd.)", mm(28));
-//       setText(doc, THEME.header, 9.2);
-//       doc.text("Part", col.part, mm(36));
-//       doc.text("Issues / Status", col.status, mm(36));
-//       setText(doc);
-//       y = mm(42);
-//     }
-//   }
-
-//   // Draw footer on last page
-//   drawFooter(doc);
-// }
 
 async function addSeatsAndFabricsSection(doc, r) {
   const col = {
@@ -1351,9 +1208,13 @@ async function addSeatsAndFabricsSection(doc, r) {
 
     if (Array.isArray(row.arr) && row.arr.length > 0) {
       for (let i = 0; i < Math.min(row.arr.length, 5); i++) {
-        if (row.arr[i]) {
+        const imgUrl = row.arr[i];
+
+        if (imgUrl) {
           try {
-            const imgData = await urlToDataURL(`${ServerUrl.IMAGE_URL}${row.arr[i]}`);
+            const imgData = await urlToDataURL(
+              `${ServerUrl.IMAGE_URL}${imgUrl}`
+            );
             if (imgData) {
               doc.addImage(
                 imgData,
@@ -1366,9 +1227,12 @@ async function addSeatsAndFabricsSection(doc, r) {
                 "FAST"
               );
             }
-          } catch {}
+          } catch (err) {
+            console.warn("Image load failed:", imgUrl, err);
+          }
         }
-        imgX += thumbSize + thumbGap;
+
+        imgX += thumbSize + thumbGap; // ✅ move X even if image missing
       }
     } else {
       setText(doc, THEME.subtext, 8.4);
@@ -1468,7 +1332,9 @@ async function addSeatbeltsSection(doc, r) {
       for (let i = 0; i < Math.min(row.arr.length, 5); i++) {
         if (row.arr[i]) {
           try {
-            const imgData = await urlToDataURL(`${ServerUrl.IMAGE_URL}${row.arr[i]}`);
+            const imgData = await urlToDataURL(
+              `${ServerUrl.IMAGE_URL}${row.arr[i]}`
+            );
             if (imgData) {
               doc.addImage(
                 imgData,
@@ -1633,7 +1499,14 @@ async function addPlasticsPage(doc, r) {
     for (let i = 0; i < maxImages; i++) {
       if (urls[i]) {
         try {
-          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
+          doc.addImage(
+            `${ServerUrl.IMAGE_URL}${urls[i]}`,
+            "JPEG",
+            x,
+            y,
+            imageSize,
+            imageSize
+          );
         } catch (err) {
           console.warn("Image load failed:", err);
           doc.roundedRect(x, y, imageSize, imageSize, 2, 2);
@@ -2124,22 +1997,30 @@ async function addTyresPage(doc, r) {
       const maxImages = Math.min(row.arr.length, 5);
       for (let i = 0; i < maxImages; i++) {
         try {
-          const imgData = await urlToDataURL(`${ServerUrl.IMAGE_URL}${row.arr[i]}`);
-          if (imgData) {
-            doc.addImage(
-              imgData,
-              "JPEG",
-              imgX + 2,
-              imgY + 2,
-              thumbSize - 4,
-              thumbSize - 4,
-              undefined,
-              "FAST"
+          if (row.arr[i]) {
+            const imgData = await urlToDataURL(
+              `${ServerUrl.IMAGE_URL}${row.arr[i]}`
             );
+            if (imgData) {
+              doc.addImage(
+                imgData,
+                "JPEG",
+                imgX + 2,
+                imgY + 2,
+                thumbSize - 4,
+                thumbSize - 4,
+                undefined,
+                "FAST"
+              );
+            }
           }
-        } catch {}
-        imgX += thumbSize + thumbGap;
+        } catch (err) {
+          console.warn("Image load failed:", row.arr[i], err);
+        }
+
+        imgX += thumbSize + thumbGap; // keep spacing consistent
       }
+
       y += thumbSize + 6;
     } else {
       setText(doc, THEME.subtext, 8);
@@ -2159,7 +2040,7 @@ async function addTyresPage(doc, r) {
  * PAGE 11: Other Observations
  * ========================================================================= */
 
-async function addOtherObservationsPage(doc) {
+async function addOtherObservationsPage(doc, r) {
   doc.addPage("a4", "portrait");
 
   // Header
