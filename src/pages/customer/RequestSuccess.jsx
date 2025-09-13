@@ -60,7 +60,7 @@ const RequestSuccess = () => {
 
         {/* Vehicle Image */}
         <img
-          src={`${ServerUrl.IMAGE_URL}${state.imageUrl}`}
+          src={`${ServerUrl.IMAGE_URL}${imageUrl}`}
           alt={`${brand} ${model}`}
           className="mx-auto w-full max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[500px] object-contain mb-6"
         />
