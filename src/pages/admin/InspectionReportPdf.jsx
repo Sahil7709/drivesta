@@ -640,25 +640,25 @@ async function addProfilePhotosPage(doc, r) {
       label: "1. Front Left View",
       x: startX,
       y: mm(50),
-      url: `${ServerUrl.IMAGE_URL}${r.front_left_imageUrl}`,
+      url: r.front_left_imageUrl,
     },
     {
       label: "2. Rear Left View",
       x: startX + photoBoxWidth + gap,
       y: mm(50),
-      url: `${ServerUrl.IMAGE_URL}${r.rear_left_imageUrl}`,
+      url: r.rear_left_imageUrl,
     },
     {
       label: "3. Rear Right View",
       x: startX,
       y: mm(120),
-      url: `${ServerUrl.IMAGE_URL}${r.rear_right_imageUrl}`,
+      url: r.rear_right_imageUrl,
     },
     {
       label: "4. Front Right View",
       x: startX + photoBoxWidth + gap,
       y: mm(120),
-      url: `${ServerUrl.IMAGE_URL}${r.front_right_imageUrl}`,
+      url: r.front_right_imageUrl,
     },
   ];
 
