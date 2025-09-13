@@ -6,6 +6,7 @@ import {
 } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
+import ServerUrl from "../../../core/constants/serverUrl.constant";
 import { toast } from "react-toastify";
 
 const BodyPanels = ({ data, onChange }) => {
