@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
+import ServerUrl from "../../../core/constants/serverUrl.constant";
 
 const ProfilePhotos = ({ data, onChange }) => {
   const labels = [
