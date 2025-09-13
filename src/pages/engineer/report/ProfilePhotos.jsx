@@ -63,9 +63,10 @@ const ProfilePhotos = ({ data, onChange }) => {
         const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
 
         if (imageUrl) {
+            const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
           setPhotos((prev) => {
-            const updated = { ...prev, [field]: imageUrl };
-            if (onChange) onChange(field, imageUrl); // ✅ notify parent with uploaded URL
+            const updated = { ...prev, [field]: fullImageUrl };
+            if (onChange) onChange(field, fullImageUrl); // ✅ notify parent with uploaded URL
             return updated;
           });
           setShowDropdown(null);
@@ -109,9 +110,10 @@ const ProfilePhotos = ({ data, onChange }) => {
             const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
 
             if (imageUrl) {
+              const fullImageUrl = `${ServerUrl.IMAGE_URL}${imageUrl}`;
               setPhotos((prev) => {
-                const updated = { ...prev, [field]: imageUrl };
-                if (onChange) onChange(field, imageUrl); // ✅ notify parent with uploaded URL
+                const updated = { ...prev, [field]: fullImageUrl };
+                if (onChange) onChange(field, fullImageUrl); // ✅ notify parent with uploaded URL
                 return updated;
               });
             }
@@ -150,13 +152,12 @@ const ProfilePhotos = ({ data, onChange }) => {
             <div className="mt-2 flex flex-col items-center">
               <div className="mt-2 flex flex-wrap gap-4 justify-center">
                 <div className="relative">
-                  {`${ServerUrl.IMAGE_URL}${photos[label]}`
-                   ? (
+                  {photos[label] ? (
                     <img
-                      src={`${ServerUrl.IMAGE_URL}${photos[label]}`}
+                      src={photos[label]}
                       alt={labelNames[label]}
                       className="w-24 h-24 object-cover rounded-md cursor-pointer"
-                      onClick={() => setShowPhoto(`${ServerUrl.IMAGE_URL}${photos[label]}`)}
+                      onClick={() => setShowPhoto(photos[label])}
                     />
                   ) : (
                     <div className="w-24 h-24 bg-gray-700 rounded-md flex items-center justify-center">
