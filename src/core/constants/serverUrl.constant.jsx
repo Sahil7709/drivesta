@@ -3,7 +3,7 @@ class ServerUrl {
     // Base URL
     //  static REACT_APP_API_URL = "http://localhost:3000/api"
     //  static IMAGE_URL = "http://localhost:3000"
-     static IMAGE_URL = "https://api.carnomia.com"
+    static IMAGE_URL = "https://api.carnomia.com"
     static REACT_APP_API_URL = "https://api.carnomia.com/api/"
     // static REACT_APP_API_URL = "http://31.97.231.187:3000/api"
 

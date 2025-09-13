@@ -151,12 +151,12 @@ const handleCameraClick = async (field) => {
               placeholder="Enter VIN Number"
             />
             <div className="mt-2 flex items-center relative">
-              {photos.vinNumber_imageUrl ? (
+              {`${ServerUrl.IMAGE_URL}${photos.vinNumber_imageUrl}` ? (
                 <img
-                  src={photos.vinNumber_imageUrl}
+                  src={`${ServerUrl.IMAGE_URL}${photos.vinNumber_imageUrl}`}
                   alt="VIN Number Photo"
                   className="w-16 h-16 rounded-md cursor-pointer mr-2"
-                  onClick={() => setShowPhoto(photos.vinNumber_imageUrl)}
+                  onClick={() => setShowPhoto(`${ServerUrl.IMAGE_URL}${photos.vinNumber_imageUrl}`)}
                 />
               ) : (
                 <button
@@ -220,12 +220,12 @@ const handleCameraClick = async (field) => {
               disabled={!isEngineNumberEnabled}
             />
             <div className="mt-2 flex items-center relative">
-              {photos.engineNumber_imageUrl ? (
+              {`${ServerUrl.IMAGE_URL}${photos.engineNumber_imageUrl}` ? (
                 <img
-                  src={photos.engineNumber_imageUrl}
+                  src={`${ServerUrl.IMAGE_URL}${photos.engineNumber_imageUrl}`}
                   alt="Engine Number Photo"
                   className="w-16 h-16 rounded-md cursor-pointer mr-2"
-                  onClick={() => setShowPhoto(photos.engineNumber_imageUrl)}
+                  onClick={() => setShowPhoto(`${ServerUrl.IMAGE_URL}${photos.engineNumber_imageUrl}`)}
                 />
               ) : (
                 <button
@@ -292,12 +292,12 @@ const handleCameraClick = async (field) => {
                   placeholder="Enter ODO"
                 />
                 <div className="mt-2 flex items-center relative">
-                  {photos.odo_imageUrl ? (
+                  {`${ServerUrl.IMAGE_URL}${photos.odo_imageUrl}` ? (
                     <img
-                      src={photos.odo_imageUrl}
+                      src={`${ServerUrl.IMAGE_URL}${photos.odo_imageUrl}`}
                       alt="ODO Photo"
                       className="w-16 h-16 rounded-md cursor-pointer mr-2"
-                      onClick={() => setShowPhoto(photos.odo_imageUrl)}
+                      onClick={() => setShowPhoto(`${ServerUrl.IMAGE_URL}${photos.odo_imageUrl}`)}
                     />
                   ) : (
                     <button
@@ -350,12 +350,12 @@ const handleCameraClick = async (field) => {
                   placeholder="Enter Keys Info"
                 />
                 <div className="mt-2 flex items-center relative">
-                  {photos.keys_imageUrl ? (
+                  {`${ServerUrl.IMAGE_URL}${photos.keys_imageUrl}` ? (
                     <img
-                      src={photos.keys_imageUrl}
+                      src={`${ServerUrl.IMAGE_URL}${photos.keys_imageUrl}`}
                       alt="Keys Photo"
                       className="w-16 h-16 rounded-md cursor-pointer mr-2"
-                      onClick={() => setShowPhoto(photos.keys_imageUrl)}
+                      onClick={() => setShowPhoto(`${ServerUrl.IMAGE_URL}${photos.keys_imageUrl}`)}
                     />
                   ) : (
                     <button

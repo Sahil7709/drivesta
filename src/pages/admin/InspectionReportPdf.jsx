@@ -1,6 +1,5 @@
 // src/pages/admin/InspectionReportPdf.jsx
 import { jsPDF } from "jspdf";
-import ApiService from "./../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
 
 /** =========================================================================
@@ -68,43 +67,6 @@ async function urlToDataURL(url, preferPngFallback = false, timeoutMs = 10000) {
       return null;
     }
   }
-
-  // Fallback using <img> + canvas with timeout
-  // try {
-  //   return await new Promise((resolve, reject) => {
-  //     const img = new Image();
-  //     img.crossOrigin = "anonymous";
-
-  //     const timer = setTimeout(() => {
-  //       img.src = ""; // Cancel loading
-  //       reject(new Error(`Image load timeout after ${timeoutMs}ms: ${url}`));
-  //     }, timeoutMs);
-
-  //     img.onload = () => {
-  //       clearTimeout(timer);
-  //       try {
-  //         const canvas = document.createElement("canvas");
-  //         canvas.width = img.naturalWidth;
-  //         canvas.height = img.naturalHeight;
-  //         const ctx = canvas.getContext("2d");
-  //         ctx.drawImage(img, 0, 0);
-  //         const format = preferPngFallback ? "image/png" : "image/jpeg";
-  //         resolve(canvas.toDataURL(format, 0.92));
-  //       } catch (ex) {
-  //         reject(ex);
-  //       }
-  //     };
-
-  //     img.onerror = () => {
-  //       clearTimeout(timer);
-  //       reject(new Error(`Image load failed (canvas fallback): ${url}`));
-  //     };
-  //     img.src = url;
-  //   });
-  // } catch (err) {
-  //   console.warn(`Canvas fallback failed for ${url}: ${err.message}`);
-  //   return null;
-  // }
 
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
   const imageInput = document.getElementById("imageInput");
@@ -223,7 +185,8 @@ async function drawThumbRow(
   );
   for (let url of validUrls) {
     try {
-      const finalUrl = `${ServerUrl.REACT_APP_API_URL}${url}`;
+      const finalUrl = `${url}`;
+      debugger;
       const dataURL = await urlToDataURL(finalUrl);
       if (dataURL) {
         const col = i % cols;
@@ -243,48 +206,6 @@ async function drawThumbRow(
     }
   }
 }
-
-
-// async function drawThumbRow(
-//   doc,
-//   urls = [],
-//   x,
-//   y,
-//   w = 14,
-//   h = 14,
-//   cols = 3,
-//   gap = 4
-// ) {
-//   let i = 0;
-//   // Filter out invalid URLs
-//   const validUrls = (urls || []).filter(
-//     (url) => typeof url === "string" && url.trim() !== ""
-//   );
-//   for (let url of validUrls) {
-//     try {
-//       // Ensure URL uses HTTPS, replace http:// with https:// (case insensitive)
-//       const finalUrl = url.startsWith("http")
-//         ? url.replace(/^http:\/\//i, "https://")
-//         : `https://api.carnomia.com${url}`;
-
-//       const dataURL = await urlToDataURL(finalUrl);
-//       if (dataURL) {
-//         const col = i % cols;
-//         const row = Math.floor(i / cols);
-//         const posX = x + col * (w + gap);
-//         const posY = y - row * (h + gap);
-//         const format =
-//           dataURL.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() || "JPEG";
-//         doc.addImage(dataURL, format, posX, posY, w, h, undefined, "FAST");
-//         i++;
-//       } else {
-//         console.warn(`Image not loaded: ${url}`);
-//       }
-//     } catch (err) {
-//       console.error(`Error loading image: ${url}`, err);
-//     }
-//   }
-// }
 
 function checkmark(doc, x, y, checked) {
   roundedRect(doc, x, y - 3.5, 3.5, 3.5, 0.8, "#fff", THEME.boxStroke);
@@ -328,7 +249,7 @@ async function drawTopBand(doc) {
   );
 
   // Load logo from public folder (put your logo in /public/carnomia.png)
-  const logoBase64 = await loadImageAsBase64("/carnomia.png");
+  const logoBase64 = await loadImageAsBase64(`/carnomia.png`);
 
   // Add logo inside the band
   const logoWidth = 20; // adjust
@@ -358,175 +279,6 @@ function drawFooter(doc) {
 /** =========================================================================
  *   Cover Page
  * ========================================================================= */
-
-// async function addCoverPage(doc, r) {
-//   drawTopBand(doc);
-
-//   /** ==============================
-//    * BOOKING HEADER
-//    * ============================== */
-//   setText(doc, THEME.subtext, 8.5);
-//   doc.text(`Booking ID: ${String(r.bookingId ?? "—")}`, PAGE_PAD_X, mm(18));
-//   setText(doc);
-
-//   /** ==============================
-//    * HERO IMAGE + SCORE CARD
-//    * ============================== */
-//   const TOP_OFFSET = 20;
-//   const HERO = { x: 18, y: TOP_OFFSET + 20, w: 110, h: 55 };
-//   const SCORE = { x: HERO.x + HERO.w + 10, y: HERO.y, w: 65, h: HERO.h };
-
-//   // Hero box
-//   roundedRect(doc, mm(HERO.x), mm(HERO.y), mm(HERO.w), mm(HERO.h), 6, "#fff", THEME.softLine);
-
-//   if (r.imageUrl) {
-//     try {
-//       doc.addImage(r.imageUrl, "JPEG", mm(HERO.x), mm(HERO.y), mm(HERO.w), mm(HERO.h), undefined, "FAST");
-//     } catch (err) {
-//       console.warn("Hero image failed:", err);
-//     }
-//   }
-
-//   // Score Card box
-//   roundedRect(doc, mm(SCORE.x), mm(SCORE.y), mm(SCORE.w), mm(SCORE.h), 6, "#fff", THEME.softLine);
-
-//   setText(doc, THEME.subtext, 8);
-//   doc.text("Overall Vehicle Score", mm(SCORE.x + 4), mm(SCORE.y + 8));
-
-//   // Circle
-//   doc.setDrawColor(THEME.good);
-//   doc.circle(mm(SCORE.x + SCORE.w / 2), mm(SCORE.y + 20), 10, "S");
-
-//   // Score value
-//   setText(doc, THEME.text, 16);
-//   doc.text(String(r.vehicleScore ?? "9.2"), mm(SCORE.x + SCORE.w / 2 - 4), mm(SCORE.y + 23));
-
-//   // Status "GOOD"
-//   setText(doc, THEME.good, 9);
-//   doc.text("GOOD", mm(SCORE.x + SCORE.w / 2 - 10), mm(SCORE.y + 35));
-
-//   // Description
-//   setText(doc, THEME.subtext, 6.5);
-//   const desc = r.scoreComment ??
-//     "This score signifies that the car is free of defects arising out of manufacturing, mishandling at dealer premise / during travel & shipment. Asset and Driver Safety is not compromised.";
-//   doc.text(desc, mm(SCORE.x + 4), mm(SCORE.y + 42), {
-//     maxWidth: mm(SCORE.w - 8),
-//     align: "left"
-//   });
-
-//   /** ==============================
-//    * METRICS ROW
-//    * ============================== */
-//   const metrics = [
-//     { label: "BHPs", value: String(r.BHPs ?? "150") },
-//     { label: "Airbags", value: String(r.Airbags ?? "6") },
-//     { label: "NCAP", value: String(r.NCAP ?? "5 Star") },
-//     { label: "Mileage", value: String(r.Mileage ?? "17 kmpl") },
-//   ];
-
-//   const METRIC_Y = HERO.y + HERO.h + 15;
-//   const BOX_W = 35, BOX_H = 14, SPACING = 6;
-
-//   metrics.forEach((m, i) => {
-//     const x = mm(HERO.x + i * (BOX_W + SPACING));
-//     roundedRect(doc, x, mm(METRIC_Y), mm(BOX_W), mm(BOX_H), 3, "#fff", THEME.softLine);
-
-//     setText(doc, THEME.subtext, 7.5);
-//     doc.text(m.label, x + mm(BOX_W / 2), mm(METRIC_Y + 5), { align: "center" });
-
-//     setText(doc, THEME.text, 10);
-//     doc.text(m.value, x + mm(BOX_W / 2), mm(METRIC_Y + 11), { align: "center" });
-//   });
-
-//   /** ==============================
-//    * INFO CARDS (Customer + Vehicle)
-//    * ============================== */
-//   const CARD_Y = METRIC_Y + BOX_H + 12;
-//   const CARD_W = 85, CARD_H = 68, GAP = 10;
-
-//   const leftX = HERO.x;
-//   const rightX = HERO.x + CARD_W + GAP;
-
-//   // CUSTOMER INFO
-//   roundedRect(doc, mm(leftX), mm(CARD_Y), mm(CARD_W), mm(CARD_H), 4, "#fff", THEME.softLine);
-//   setText(doc, THEME.text, 9.5);
-//   doc.text("Customer Info", mm(leftX + 5), mm(CARD_Y + 8));
-//   divider(doc, mm(leftX + 4), mm(CARD_Y + 10), mm(leftX + CARD_W - 4), THEME.faintLine);
-
-//   labelValue(doc, "Name", r.customerName, mm(leftX + 5), mm(CARD_Y + 16));
-//   labelValue(doc, "Location", r.address, mm(leftX + 45), mm(CARD_Y + 16));
-//   labelValue(doc, "Engineer Name", r.engineer_name, mm(leftX + 5), mm(CARD_Y + 24));
-//   labelValue(doc, "PDI Date & Time",
-//     `${r.date ? new Date(r.date).toLocaleDateString() : "—"} ${r.engineer_assignedSlot ?? ""}`,
-//     mm(leftX + 5), mm(CARD_Y + 32)
-//   );
-//   labelValue(doc, "Address", r.address, mm(leftX + 5), mm(CARD_Y + 40));
-
-//   // VEHICLE INFO
-//   roundedRect(doc, mm(rightX), mm(CARD_Y), mm(CARD_W), mm(CARD_H), 4, "#fff", THEME.softLine);
-//   setText(doc, THEME.text, 9.5);
-//   doc.text("Vehicle Info", mm(rightX + 5), mm(CARD_Y + 8));
-//   divider(doc, mm(rightX + 4), mm(CARD_Y + 10), mm(rightX + CARD_W - 4), THEME.faintLine);
-
-//   labelValue(doc, "Brand", r.brand, mm(rightX + 5), mm(CARD_Y + 16));
-//   labelValue(doc, "Model", r.model, mm(rightX + 45), mm(CARD_Y + 16));
-//   labelValue(doc, "Car Status", r.carStatus, mm(rightX + 5), mm(CARD_Y + 24));
-//   labelValue(doc, "VIN No.", r.vinNumber, mm(rightX + 45), mm(CARD_Y + 24));
-//   labelValue(doc, "Variant", r.variant, mm(rightX + 5), mm(CARD_Y + 32));
-//   labelValue(doc, "Transmission", r.transmissionType, mm(rightX + 45), mm(CARD_Y + 32));
-//   labelValue(doc, "Fuel", r.fuelType, mm(rightX + 5), mm(CARD_Y + 40));
-//   labelValue(doc, "Engine", r.engineNumber, mm(rightX + 45), mm(CARD_Y + 40));
-//   // labelValue(doc, "Engine Type", r.engineType, mm(rightX + 5), mm(CARD_Y + 48));
-//   // labelValue(doc, "Emission", r.emission, mm(rightX + 45), mm(CARD_Y + 48));
-//   labelValue(doc, "Keys", String(r.keys), mm(rightX + 45), mm(CARD_Y + 56));
-
-//   /** ==============================
-//    * RUNNING BAR
-//    * ============================== */
-//   const BAR_Y = CARD_Y + CARD_H + 18;
-//   const BAR_W = 160, BAR_H = 8;
-
-//   sectionHeader(doc, "How Much Has My Car Been Driven Before The PDI Date?", BAR_Y);
-
-//   // Background bar
-//   roundedRect(doc, mm(leftX), mm(BAR_Y + 10), mm(BAR_W), mm(BAR_H), 3, "#e5e5e5", "#e5e5e5");
-
-//   // Foreground bar
-//   const kms = isNaN(parseInt(r.kmsDriven)) ? 55 : parseInt(r.kmsDriven);
-//   const fgWidth = Math.min((kms / 130) * BAR_W, BAR_W);
-//   roundedRect(doc, mm(leftX), mm(BAR_Y + 10), mm(fgWidth), mm(BAR_H), 3, "#4CAF50", "#4CAF50");
-
-//   // Labels
-//   setText(doc, "#065f46", 9);
-//   doc.text("My Car's Running", mm(leftX), mm(BAR_Y + 8));
-
-//   doc.setFont(undefined, "bold");
-//   doc.text(String(r.kmsDriven ?? "55 Kms"), mm(leftX + BAR_W), mm(BAR_Y + 8), { align: "right" });
-//   doc.setFont(undefined, "normal");
-
-//   // Chip
-//   chip(doc, String(r.tamperingStatus ?? "No Tampering"), mm(leftX + BAR_W - 40), mm(BAR_Y + 22));
-
-//   // Avg Running
-//   setText(doc, THEME.text, 9.5);
-//   doc.text("Avg. Running Before Delivery", mm(leftX), mm(BAR_Y + 38));
-//   doc.setFont(undefined, "bold");
-//   doc.text(String(r.avgRunning ?? "39 Kms"), mm(leftX), mm(BAR_Y + 44));
-
-//   // Details
-//   setText(doc, THEME.subtext, 8);
-//   doc.text(
-//     `Details - At the time of PDI, your car's ODO reading was ${String(r.kmsDriven ?? "55 Kms")}, which is slightly above the city average of ${String(r.avgRunning ?? "39 Kms")}.`,
-//     mm(leftX),
-//     mm(BAR_Y + 54),
-//     { maxWidth: mm(BAR_W) }
-//   );
-
-//   /** ==============================
-//    * FOOTER
-//    * ============================== */
-//   drawFooter(doc);
-// }
 
 async function addCoverPage(doc, r) {
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -559,7 +311,7 @@ async function addCoverPage(doc, r) {
   if (r.imageUrl) {
     try {
       doc.addImage(
-        r.imageUrl,
+        `${ServerUrl.IMAGE_URL}${r.imageUrl}`,
         "JPEG",
         heroX,
         mm(TOP_OFFSET + 16),
@@ -888,25 +640,25 @@ async function addProfilePhotosPage(doc, r) {
       label: "1. Front Left View",
       x: startX,
       y: mm(50),
-      url: r.front_left_imageUrl,
+      url: `${ServerUrl.IMAGE_URL}${r.front_left_imageUrl}`,
     },
     {
       label: "2. Rear Left View",
       x: startX + photoBoxWidth + gap,
       y: mm(50),
-      url: r.rear_left_imageUrl,
+      url: `${ServerUrl.IMAGE_URL}${r.rear_left_imageUrl}`,
     },
     {
       label: "3. Rear Right View",
       x: startX,
       y: mm(120),
-      url: r.rear_right_imageUrl,
+      url: `${ServerUrl.IMAGE_URL}${r.rear_right_imageUrl}`,
     },
     {
       label: "4. Front Right View",
       x: startX + photoBoxWidth + gap,
       y: mm(120),
-      url: r.front_right_imageUrl,
+      url: `${ServerUrl.IMAGE_URL}${r.front_right_imageUrl}`,
     },
   ];
 
@@ -1086,7 +838,7 @@ async function addBodyPanelsPage(doc, r) {
       let x = mm(20);
       for (let i = 0; i < maxImages; i++) {
         try {
-          doc.addImage(urls[i], "JPEG", x, y, imageSize, imageSize);
+          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
           x += imageSize + spacing;
         } catch (err) {
           console.warn("Image load failed:", err);
@@ -1200,7 +952,7 @@ async function addGlassesPage(doc, r) {
       let x = mm(20);
       for (let i = 0; i < maxImages; i++) {
         try {
-          doc.addImage(urls[i], "JPEG", x, y, imageSize, imageSize);
+          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
           x += imageSize + spacing;
         } catch (err) {
           console.warn("Image load failed:", err);
@@ -1314,7 +1066,7 @@ async function addRubberPage(doc, r) {
       let x = PAGE_PAD_X;
       for (let i = 0; i < maxImages; i++) {
         try {
-          doc.addImage(urls[i], "JPEG", x, y, imageSize, imageSize);
+          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
           x += imageSize + spacing;
         } catch (err) {
           console.warn("Image load failed:", err);
@@ -1601,7 +1353,7 @@ async function addSeatsAndFabricsSection(doc, r) {
       for (let i = 0; i < Math.min(row.arr.length, 5); i++) {
         if (row.arr[i]) {
           try {
-            const imgData = await urlToDataURL(row.arr[i]);
+            const imgData = await urlToDataURL(`${ServerUrl.IMAGE_URL}${row.arr[i]}`);
             if (imgData) {
               doc.addImage(
                 imgData,
@@ -1701,6 +1453,7 @@ async function addSeatbeltsSection(doc, r) {
     const issuesText = r[`${row.key}_issues`] ?? "—";
     doc.text(issuesText, col.status, y);
 
+    // Toggle/status if exists
     if (row.toggle !== undefined) {
       setText(doc, THEME.subtext, 8.5);
       doc.text("Available", PAGE_PAD_X + 40, y + 0.3);
@@ -1715,7 +1468,7 @@ async function addSeatbeltsSection(doc, r) {
       for (let i = 0; i < Math.min(row.arr.length, 5); i++) {
         if (row.arr[i]) {
           try {
-            const imgData = await urlToDataURL(row.arr[i]);
+            const imgData = await urlToDataURL(`${ServerUrl.IMAGE_URL}${row.arr[i]}`);
             if (imgData) {
               doc.addImage(
                 imgData,
@@ -1880,7 +1633,7 @@ async function addPlasticsPage(doc, r) {
     for (let i = 0; i < maxImages; i++) {
       if (urls[i]) {
         try {
-          doc.addImage(urls[i], "JPEG", x, y, imageSize, imageSize);
+          doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
         } catch (err) {
           console.warn("Image load failed:", err);
           doc.roundedRect(x, y, imageSize, imageSize, 2, 2);
@@ -2191,7 +1944,7 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
 /** =========================================================================
  * PAGE 10: TYRES
  * ========================================================================= */
-async function addTyresPaymentPage(doc, r) {
+async function addTyresPage(doc, r) {
   const PAGE_TOP_SPACING = mm(36);
   const PAGE_PAD_X = mm(12);
   const A4 = { w: mm(210), h: mm(297) };
@@ -2371,7 +2124,7 @@ async function addTyresPaymentPage(doc, r) {
       const maxImages = Math.min(row.arr.length, 5);
       for (let i = 0; i < maxImages; i++) {
         try {
-          const imgData = await urlToDataURL(row.arr[i]);
+          const imgData = await urlToDataURL(`${ServerUrl.IMAGE_URL}${row.arr[i]}`);
           if (imgData) {
             doc.addImage(
               imgData,
@@ -2429,12 +2182,9 @@ async function addOtherObservationsPage(doc) {
   y += 18;
 
   // Dummy observations data
-  const observations = [
-    {
-      category: " other_observations",
-      notes: "No abnormal noise observed during inspection.",
-    },
-  ];
+  const observations = r.other_observations
+    ? [{ category: "Other Observations", notes: r.other_observations }]
+    : [];
 
   const col1 = leftX + 6; // Category
   const col2 = leftX + boxWidth / 3; // Notes (start from 1/3rd)
@@ -2483,7 +2233,7 @@ export default async function generateInspectionPDF(report) {
   await addPlasticsPage(doc, report);
   await addFeaturesPage(doc, report);
   await addLiveFluidsDiagnosticsPage(doc, report);
-  await addTyresPaymentPage(doc, report);
+  await addTyresPage(doc, report);
   await addOtherObservationsPage(doc, report);
 
   // Save
