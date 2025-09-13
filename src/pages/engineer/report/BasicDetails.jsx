@@ -3,6 +3,7 @@ import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai"
 import ToggleButton from "./ToggleButton";
 import FullScreenPhotoViewer from "./FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
+import ServerUrl from "../../../core/constants/serverUrl.constant";
 import { toast } from "react-toastify";
 
 const BasicDetails = ({ data, onChange, showPhoto, setShowPhoto }) => {
