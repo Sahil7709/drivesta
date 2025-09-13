@@ -665,7 +665,7 @@ async function addProfilePhotosPage(doc, r) {
   for (const c of cells) {
     labeledPhotoBox(doc, c.label, c.x, c.y, photoBoxWidth, photoBoxWidth);
     if (typeof c.url === "string" && c.url.trim()) {
-      const data = await urlToDataURL(c.url);
+      const data = await urlToDataURL(`${ServerUrl.IMAGE_URL}${c.url}`);
       if (data) {
         const format =
           data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() ||
