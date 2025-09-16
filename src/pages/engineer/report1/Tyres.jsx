@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
+import {
+  AiOutlinePlus,
+  AiOutlineCamera,
+  AiOutlineUpload,
+} from "react-icons/ai";
 import FileUploaderService from "../../../services/upload-document.service";
 import FullScreenPhotoViewer from "./FullScreenPhotoViewer";
 
@@ -12,7 +16,13 @@ const labelNames = {
 };
 
 const photoCount = 5;
-const issueOptions = ["Worn Tread", "Puncture", "Sidewall Damage", "Uneven Wear", "No Issue"];
+const issueOptions = [
+  "Worn Tread",
+  "Puncture",
+  "Sidewall Damage",
+  "Uneven Wear",
+  "No Issue",
+];
 
 const TyreCard = ({
   tyreName,
@@ -42,31 +52,36 @@ const TyreCard = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [issueDropdownOpen, setIssueDropdownOpen] = useState(false);
   const photoDropdownRef = useRef(null); //change
-const issueDropdownRef = useRef(null);//change
+  const issueDropdownRef = useRef(null); //change
 
+  useEffect(() => {
+    //change
+    const handleClickOutside = (event) => {
+      if (
+        photoDropdownRef.current &&
+        !photoDropdownRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+      if (
+        issueDropdownRef.current &&
+        !issueDropdownRef.current.contains(event.target)
+      ) {
+        setIssueDropdownOpen(false);
+      }
+    };
 
-useEffect(() => {  //change
-  const handleClickOutside = (event) => {
-    if (photoDropdownRef.current && !photoDropdownRef.current.contains(event.target)) {
-      setShowDropdown(false);
-    }
-    if (issueDropdownRef.current && !issueDropdownRef.current.contains(event.target)) {
-      setIssueDropdownOpen(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
   }, [stream]);
-  
 
   const toggleDropdown = () => setShowDropdown((curr) => !curr);
 
@@ -74,7 +89,10 @@ useEffect(() => {  //change
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
       try {
-        const uploadedData = await FileUploaderService.uploadFileToServer(file, tyreKey);
+        const uploadedData = await FileUploaderService.uploadFileToServer(
+          file,
+          tyreKey
+        );
         const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
         if (imageUrl) {
           const emptyIndex = photos.findIndex((p) => !p);
@@ -91,53 +109,57 @@ useEffect(() => {  //change
   };
 
   const handleCameraClick = async () => {
-  if (!isCameraActive) {
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = s;
-      setStream(s);
-      setIsCameraActive(true);
-    } catch {
-      alert("Camera not available.");
-    }
-  } else {
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
-
-    // ✅ convert canvas to blob
-    canvas.toBlob(async (blob) => {
-      if (blob) {
-        try {
-          // make a File object from the blob
-          const file = new File([blob], "captured.png", { type: "image/png" });
-
-          // upload to server
-          const uploadedData = await FileUploaderService.uploadFileToServer(file, tyreKey);
-          const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
-
-          if (imageUrl) {
-            const emptyIndex = photos.findIndex((p) => !p);
-            if (emptyIndex !== -1) {
-              onPhotoChange(emptyIndex, imageUrl);
-            }
-          }
-        } catch (error) {
-          console.error("Upload failed:", error);
-          alert("Failed to upload image. Try again.");
-        }
+    if (!isCameraActive) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoRef.current.srcObject = s;
+        setStream(s);
+        setIsCameraActive(true);
+      } catch {
+        alert("Camera not available.");
       }
-    }, "image/png");
+    } else {
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
 
-    // stop camera
-    stream?.getTracks().forEach((t) => t.stop());
-    setStream(null);
-    setIsCameraActive(false);
-    setShowDropdown(false);
-  }
-};
+      // ✅ convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            // make a File object from the blob
+            const file = new File([blob], "captured.png", {
+              type: "image/png",
+            });
 
+            // upload to server
+            const uploadedData = await FileUploaderService.uploadFileToServer(
+              file,
+              tyreKey
+            );
+            const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
+
+            if (imageUrl) {
+              const emptyIndex = photos.findIndex((p) => !p);
+              if (emptyIndex !== -1) {
+                onPhotoChange(emptyIndex, imageUrl);
+              }
+            }
+          } catch (error) {
+            console.error("Upload failed:", error);
+            alert("Failed to upload image. Try again.");
+          }
+        }
+      }, "image/png");
+
+      // stop camera
+      stream?.getTracks().forEach((t) => t.stop());
+      setStream(null);
+      setIsCameraActive(false);
+      setShowDropdown(false);
+    }
+  };
 
   const toggleIssueOption = (option) => {
     let updated = [...(issue || [])];
@@ -146,7 +168,7 @@ useEffect(() => {  //change
     } else {
       updated.push(option);
     }
-    onIssueChange({ target: { value: updated } });
+    onIssueChange(updated);
   };
 
   return (
@@ -157,7 +179,9 @@ useEffect(() => {  //change
 
       {/* Brand */}
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Brand</label>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Brand
+        </label>
         <select
           value={brand || ""}
           onChange={onBrandChange}
@@ -174,7 +198,9 @@ useEffect(() => {  //change
 
       {/* Sub-Brand */}
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Sub-Brand</label>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Sub-Brand
+        </label>
         <select
           value={subBrand || ""}
           onChange={onSubBrandChange}
@@ -191,7 +217,9 @@ useEffect(() => {  //change
 
       {/* Variant */}
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Variant</label>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Variant
+        </label>
         <select
           value={variant || ""}
           onChange={onVariantChange}
@@ -210,7 +238,9 @@ useEffect(() => {  //change
 
       {/* Size */}
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Size</label>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Size
+        </label>
         <input
           type="text"
           value={size || ""}
@@ -222,7 +252,9 @@ useEffect(() => {  //change
 
       {/* Manufacturing Date */}
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Manufacturing Date (MM/YY)</label>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Manufacturing Date (MM/YY)
+        </label>
         <input
           type="text"
           value={manufacturingDate || ""}
@@ -234,7 +266,9 @@ useEffect(() => {  //change
 
       {/* Thread Depth */}
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Thread Depth (mm)</label>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Thread Depth (mm)
+        </label>
         <input
           type="text"
           value={threadDepth || ""}
@@ -245,8 +279,10 @@ useEffect(() => {  //change
       </div>
 
       {/* Issue (Multi-select with checkboxes) */}
-<div className="relative" ref={issueDropdownRef}>     
-        <label className="text-sm text-white font-medium mb-1 block">Issue</label>
+      <div className="relative" ref={issueDropdownRef}>
+        <label className="text-sm text-white font-medium mb-1 block">
+          Issue
+        </label>
         <div
           className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full cursor-pointer"
           onClick={() => setIssueDropdownOpen((prev) => !prev)}
@@ -311,7 +347,12 @@ useEffect(() => {  //change
                   </button>
                   <label className="flex items-center px-4 py-3 w-full text-white hover:bg-gray-700 cursor-pointer">
                     <AiOutlineUpload className="mr-2" /> Upload Photo
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
                   </label>
                 </div>
               )}
@@ -330,7 +371,13 @@ useEffect(() => {  //change
 };
 
 const Tyres = ({ data = {}, onChange }) => {
-  const tyreKeys = ["tyre_front_left", "tyre_rear_left", "tyre_rear_right", "tyre_front_right", "tyre_spare"];
+  const tyreKeys = [
+    "tyre_front_left",
+    "tyre_rear_left",
+    "tyre_rear_right",
+    "tyre_front_right",
+    "tyre_spare",
+  ];
   const [autoCopiedFields, setAutoCopiedFields] = useState({});
   const [showPhoto, setShowPhoto] = useState(null);
 
@@ -346,7 +393,10 @@ const Tyres = ({ data = {}, onChange }) => {
         threadDepth: data[`${key}_treadDepth`] || "",
         issue: Array.isArray(data[`${key}_issue`]) ? data[`${key}_issue`] : [],
         photos: Array.isArray(data[`${key}_imageUrls`])
-          ? data[`${key}_imageUrls`].slice(0, photoCount).concat(Array(photoCount).fill(null)).slice(0, photoCount)
+          ? data[`${key}_imageUrls`]
+              .slice(0, photoCount)
+              .concat(Array(photoCount).fill(null))
+              .slice(0, photoCount)
           : Array(photoCount).fill(null),
         ...(key === "tyre_spare" ? { toggle: !!data[`${key}_toggle`] } : {}),
       };
@@ -355,16 +405,18 @@ const Tyres = ({ data = {}, onChange }) => {
   });
 
   const handleFieldChange = (tyreKey, field) => (e) => {
-    const value = e.target.value;
+    const value = Array.isArray(e) ? e : e.target.value;
 
     setTyreState((prev) => {
       const updated = { ...prev };
       updated[tyreKey][field] = value;
 
       if (tyreKey === "tyre_front_left" && !autoCopiedFields[field]) {
-        ["tyre_rear_left", "tyre_rear_right", "tyre_front_right"].forEach((key) => {
-          updated[key][field] = value;
-        });
+        ["tyre_rear_left", "tyre_rear_right", "tyre_front_right"].forEach(
+          (key) => {
+            updated[key][field] = value;
+          }
+        );
         setAutoCopiedFields((prevFields) => ({ ...prevFields, [field]: true }));
       }
 
@@ -403,13 +455,17 @@ const Tyres = ({ data = {}, onChange }) => {
 
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white text-left">Tyres</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white text-left">
+        Tyres
+      </h2>
       <div className="grid grid-cols-1 gap-6 sm:gap-8">
         {tyreKeys.map((key, idx) => (
           <React.Fragment key={key}>
             {key === "tyre_spare" && (
               <div className="mb-4 flex items-center">
-                <label className="text-white font-medium mr-2">Spare Tyre Present</label>
+                <label className="text-white font-medium mr-2">
+                  Spare Tyre Present
+                </label>
                 <input
                   type="checkbox"
                   checked={!!tyreState[key].toggle}
@@ -440,7 +496,10 @@ const Tyres = ({ data = {}, onChange }) => {
                 onSubBrandChange={handleFieldChange(key, "subBrand")}
                 onVariantChange={handleFieldChange(key, "variant")}
                 onSizeChange={handleFieldChange(key, "size")}
-                onManufacturingDateChange={handleFieldChange(key, "manufacturingDate")}
+                onManufacturingDateChange={handleFieldChange(
+                  key,
+                  "manufacturingDate"
+                )}
                 onThreadDepthChange={handleThreadDepthChange(key)}
                 onIssueChange={handleFieldChange(key, "issue")}
                 onPhotoChange={handlePhotoChange(key)}
@@ -451,7 +510,12 @@ const Tyres = ({ data = {}, onChange }) => {
           </React.Fragment>
         ))}
       </div>
-      {showPhoto && <FullScreenPhotoViewer photo={showPhoto} onClose={() => setShowPhoto(null)} />}
+      {showPhoto && (
+        <FullScreenPhotoViewer
+          photo={showPhoto}
+          onClose={() => setShowPhoto(null)}
+        />
+      )}
     </div>
   );
 };
