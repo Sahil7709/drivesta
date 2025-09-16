@@ -775,8 +775,10 @@ async function addBodyPanelsPage(doc, r) {
       claddingKey: "front_right_fender_cladding",
       repaintKey: "front_right_fender_repaint",
     },
-    { label: "Roof", key: "roof", repaintKey: "roof_repaint" },
-    { label: "Front Windshield", key: "front_windshield" },
+    { label: "Roof", 
+      key: "roof", 
+      repaintKey: "roof_repaint" 
+    },
   ];
 
   for (const row of rows) {
