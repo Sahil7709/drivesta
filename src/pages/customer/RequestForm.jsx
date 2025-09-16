@@ -211,7 +211,11 @@ const Request = () => {
 
           <motion.img
             key={selectedImage}
-            src={`${ServerUrl.IMAGE_URL}${selectedImage}`}
+            src={
+              selectedImage === jeepImage
+                ? jeepImage
+                : `${ServerUrl.IMAGE_URL}${selectedImage}`
+            }
             alt="Vehicle"
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{
@@ -394,7 +398,7 @@ const SelectField = ({
         disabled={disabled}
         onChange={onChange}
         onFocus={toggle}
-          onBlur={() => setTimeout(() => setOpen(false), 200)} 
+        onBlur={() => setTimeout(() => setOpen(false), 200)}
         className={`w-full border border-gray-300 rounded-xl p-3 text-base appearance-none focus:outline-none focus:ring-2 focus:ring-button ${
           disabled ? "bg-gray-50 cursor-not-allowed" : "cursor-pointer"
         }`}
