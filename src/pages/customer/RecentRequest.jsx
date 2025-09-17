@@ -108,40 +108,40 @@ const Recent = () => {
   }, [state]);
 
   const handleUpdateInspection = async () => {
-  try {
-    setIsSaving(true);
+    try {
+      setIsSaving(true);
 
-    const payload = {
-      brand: state.brand,
-      model: state.model,
-      variant: state.variant,
-      transmissionType: state.transmissionType,
-      fuelType: state.fuelType,
-      address: state.address,
-      date: state.date,
-      notes: state.notes,
-    };
+      const payload = {
+        brand: state.brand,
+        model: state.model,
+        variant: state.variant,
+        transmissionType: state.transmissionType,
+        fuelType: state.fuelType,
+        address: state.address,
+        date: state.date,
+        notes: state.notes,
+      };
 
-    const response = await new ApiService().apiput(
-      `${ServerUrl.API_GET_INSPECTION_UPDATE}/${state._id}`,
-      payload
-    );
+      const response = await new ApiService().apiput(
+        `${ServerUrl.API_GET_INSPECTION_UPDATE}/${state._id}`,
+        payload
+      );
 
-    if (response?.data?.success) {
-      setState(prev => ({ ...prev, ...payload })); // update state
-      setShowEditModal(false);                     // close modal immediately
-      setShowToast(true);                          // show toast
-      setTimeout(() => setShowToast(false), 3000);
-    } else {
-      toast.error("Failed to update inspection");  // optional
+      if (response?.data?.success) {
+        setState((prev) => ({ ...prev, ...payload })); // update state
+        setShowEditModal(false); // close modal immediately
+        setShowToast(true); // show toast
+        setTimeout(() => setShowToast(false), 3000);
+      } else {
+        toast.error("Failed to update inspection"); // optional
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsSaving(false);
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong!");
-  } finally {
-    setIsSaving(false);
-  }
-};
+  };
 
   const handleAssistanceClick = (i) => {
     if (i === 0) navigate("/customer/dashboard/contact-support");
@@ -296,18 +296,22 @@ const Recent = () => {
                   Details
                 </h3>
                 <motion.button
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.98 }}
-  onClick={() => setShowEditModal(true)}
-  disabled={state.status !== APPLICATION_CONSTANTS.REQUEST_STATUS.NEW.value} // ✅ Only enable if NEW
-  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-sm text-xs sm:text-sm font-medium flex items-center ${
-    state.status === APPLICATION_CONSTANTS.REQUEST_STATUS.NEW.value
-      ? "bg-button text-white hover:bg-green-700"
-      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-  }`}
->
-  <BsPencil className="mr-1 sm:mr-2" /> Edit Details
-</motion.button>
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowEditModal(true)}
+                  disabled={
+                    state.status !==
+                    APPLICATION_CONSTANTS.REQUEST_STATUS.NEW.value
+                  } // ✅ Only enable if NEW
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-sm text-xs sm:text-sm font-medium flex items-center ${
+                    state.status ===
+                    APPLICATION_CONSTANTS.REQUEST_STATUS.NEW.value
+                      ? "bg-button text-white hover:bg-green-700"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  <BsPencil className="mr-1 sm:mr-2" /> Edit Details
+                </motion.button>
               </div>
 
               <div className="space-y-3">
@@ -598,31 +602,31 @@ const Recent = () => {
             null
           )}
           <AnimatePresence>
-  {showToast && (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 
+            {showToast && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 
                  bg-white rounded-lg sm:rounded-xl shadow-lg 
                  border border-green-200 overflow-hidden max-w-xs sm:max-w-sm"
-    >
-      <div className="flex items-center p-3 sm:p-4">
-        <div className="bg-green-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-3">
-          <BsCheck className="text-button text-lg sm:text-xl" />
-        </div>
-        <div>
-          <h4 className="font-heading text-gray-900 text-sm sm:text-base">
-            Updated Successfully!
-          </h4>
-          <p className="text-gray-600 text-xs sm:text-sm">
-            Your booking details were saved.
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  )}
-</AnimatePresence>
+              >
+                <div className="flex items-center p-3 sm:p-4">
+                  <div className="bg-green-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-3">
+                    <BsCheck className="text-button text-lg sm:text-xl" />
+                  </div>
+                  <div>
+                    <h4 className="font-heading text-gray-900 text-sm sm:text-base">
+                      Updated Successfully!
+                    </h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">
+                      Your booking details were saved.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Toast Notification */}
           <AnimatePresence>

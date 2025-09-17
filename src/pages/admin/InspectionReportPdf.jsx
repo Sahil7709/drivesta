@@ -1,4 +1,3 @@
-// src/pages/admin/InspectionReportPdf.jsx
 import { jsPDF } from "jspdf";
 import ServerUrl from "../../core/constants/serverUrl.constant";
 
@@ -325,7 +324,7 @@ async function addCoverPage(doc, r) {
     }
   }
 
-  // Top Metrics Row
+  // Top Metrics Row 
   const metrics = [
     { label: "BHPs", value: String(r.BHPs ?? "0") },
     { label: "Airbags", value: String(r.Airbags ?? "6") },
