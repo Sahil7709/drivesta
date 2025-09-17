@@ -357,31 +357,33 @@ export default function Report() {
         </div>
       </div>
       {confirmConfig && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-opacity-50">
-          <div className="bg-emerald-50 rounded-lg shadow-lg p-3 w-80 mt-10">
-            <h2 className="text-lg font-semibold mb-4">Confirmation</h2>
-            <p className="text-gray-700 mb-6">{confirmConfig.message}</p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setConfirmConfig(null)}
-                className="px-2 py-1 text-sm rounded-md border"
-              >
-                Cancel
-              </button>
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm">
+    <div className="bg-primary rounded-2xl shadow-xl p-6 w-96 transform transition-all duration-300 scale-95 hover:scale-100">
+      <h2 className="text-xl font-bold text-gray-900 mb-3">Confirmation</h2>
+      <p className="text-gray-600 mb-6">{confirmConfig.message}</p>
 
-              <button
-                onClick={async () => {
-                  await confirmConfig.onConfirm();
-                  setConfirmConfig(null);
-                }}
-                className="px-2 py-1 text-sm rounded-md bg-green-600 text-white"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setConfirmConfig(null)}
+          className="px-4 py-2 rounded-lg border border-button text-gray-700 hover:bg-green-400 transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            await confirmConfig.onConfirm();
+            setConfirmConfig(null);
+          }}
+          className="px-4 py-2 rounded-lg bg-button text-white font-medium shadow-md hover:bg-green-400 transition"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Photo Viewer */}
       {showPhoto && (

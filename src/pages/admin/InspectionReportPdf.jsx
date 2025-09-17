@@ -326,10 +326,10 @@ async function addCoverPage(doc, r) {
 
   // Top Metrics Row 
   const metrics = [
-    { label: "BHPs", value: String(r.BHPs ?? "0") },
-    { label: "Airbags", value: String(r.Airbags ?? "6") },
-    { label: "NCAP", value: String(r.NCAP ?? "0") },
-    { label: "Mileage (kmpl)", value: String(r.Mileage ?? "17.0") },
+    { label: "BHPs", value: String(r.vehicleInfo?.BHPs ?? "0") },
+    { label: "Airbags", value: String(r.vehicleInfo?.Airbags ?? "6") },
+    { label: "NCAP", value: String(r.vehicleInfo?.NCAP ?? "0") },
+    { label: "Mileage (kmpl)", value: String(r.vehicleInfo?.Mileage ?? "17.0") },
   ];
 
   const METRIC_Y = TOP_OFFSET - 10;
@@ -595,7 +595,7 @@ async function addCoverPage(doc, r) {
   doc.text("Actual running before delivery", mm(barXStart), mm(BAR_Y + 38));
 
   doc.setFont(undefined, "bold");
-  doc.text(String(r.live_distance_in_current_lock_block ?? "39 Kms"), mm(barXStart), mm(BAR_Y + 44));
+  doc.text(String(r.live_distance_in_current_lock_block ?? "40 Kms"), mm(barXStart), mm(BAR_Y + 44));
 
   // Details text under bar
   setText(doc, THEME.subtext, 8);

@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
-import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
+import {
+  AiOutlinePlus,
+  AiOutlineCamera,
+  AiOutlineUpload,
+} from "react-icons/ai";
+import FullScreenPhotoViewer from "./FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
 
-const ProfilePhotos = ({ data, onChange }) => {
+const ProfilePhotos = ({data, onChange }) => {
   const labels = [
     "front_left_imageUrl",
     "rear_left_imageUrl",
@@ -11,17 +15,18 @@ const ProfilePhotos = ({ data, onChange }) => {
     "front_right_imageUrl",
   ];
 
-  const labelNames = {
-    front_left_imageUrl: "1. Front Left",
-    rear_left_imageUrl: "2. Rear Left",
-    rear_right_imageUrl: "3. Rear Right",
-    front_right_imageUrl: "4. Front Right",
-  };
+  useEffect(() => {
+
+    setPhotos({"front_left_imageUrl":data?.front_left_imageUrl || null,
+    "rear_left_imageUrl":data?.rear_left_imageUrl || null,
+    "rear_right_imageUrl":data?.rear_right_imageUrl || null,
+    "front_right_imageUrl":data?.front_right_imageUrl || null});
+
+  },[data])
 
   const videoRefs = useRef(
     labels.reduce((acc, label) => ({ ...acc, [label]: null }), {})
   );
-
   const [streamStates, setStreamStates] = useState(
     labels.reduce((acc, label) => ({ ...acc, [label]: null }), {})
   );
@@ -34,22 +39,12 @@ const ProfilePhotos = ({ data, onChange }) => {
   const [showDropdown, setShowDropdown] = useState(null);
   const [showPhoto, setShowPhoto] = useState(null);
 
-  // Attach refs to service
-  useEffect(() => {
-    labels.forEach((label) => {
-      FileUploaderService.setVideoRef(label, videoRefs.current[label]);
-    });
-  }, []);
-
-  // Sync incoming data
-  useEffect(() => {
-    setPhotos({
-      front_left_imageUrl: data?.front_left_imageUrl || null,
-      rear_left_imageUrl: data?.rear_left_imageUrl || null,
-      rear_right_imageUrl: data?.rear_right_imageUrl || null,
-      front_right_imageUrl: data?.front_right_imageUrl || null,
-    });
-  }, [data]);
+  const labelNames = {
+    front_left_imageUrl: "1. Front Left",
+    rear_left_imageUrl: "2. Rear Left",
+    rear_right_imageUrl: "3. Rear Right",
+    front_right_imageUrl: "4. Front Right",
+  };
 
   // Cleanup camera streams on unmount
   useEffect(() => {
@@ -60,39 +55,48 @@ const ProfilePhotos = ({ data, onChange }) => {
     };
   }, [streamStates]);
 
-// takePhoto
-const takePhoto = (label) => {
-  FileUploaderService.takePhoto(label, setPhotos, setIsCameraActive, setShowDropdown)
-    .then((photoUrl) => {
-      setPhotos((prev) => {
-        const updated = { ...prev, [label]: photoUrl };
-        if (onChange) onChange(label, photoUrl, updated); // pass new value
-        return updated;
-      });
-    })
-    .catch((err) => {
-      console.error("Photo capture failed:", err);
-    });
-};
+  // Handle file upload
+  const handleFileUpload = async (e, field) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      try {
+        const uploadedData = await FileUploaderService.uploadFileToServer(
+          file,
+          field
+        );
+        const imageUrl = uploadedData.files?.[0]?.fileUrl || null;
+        if (imageUrl) {
+          setPhotos((prev) => ({ ...prev, [field]: imageUrl }));
+          if (onChange) onChange(field, imageUrl);
+          setShowDropdown(null);
+        }
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        alert("Failed to upload image. Please try again.");
+      }
+    } else {
+      alert("Please select a valid image file.");
+    }
+  };
 
-// handleFileUpload
-const handleFileUpload = async (e, field) => {
-  try {
-    const photoUrl = await FileUploaderService.handleFileUpload(
-      e,
+  // Handle camera capture
+  const handleCameraClick = (field) =>
+    FileUploaderService.handleCameraClick(
       field,
-      setPhotos,
-      setShowDropdown
+      setStreamStates,
+      setIsCameraActive,
+      () =>
+        FileUploaderService.takePhoto(
+          field,
+          (photo) => {
+            setPhotos((prev) => ({ ...prev, [field]: photo }));
+            if (onChange) onChange(field, photo);
+            setShowDropdown(null);
+          },
+          setIsCameraActive,
+          () => setShowPhoto(null)
+        )
     );
-    setPhotos((prev) => {
-      const updated = { ...prev, [field]: photoUrl };
-      if (onChange) onChange(field, photoUrl, updated);
-      return updated;
-    });
-  } catch (err) {
-    console.error("Image upload failed:", err);
-  }
-};
 
   const toggleDropdown = (label) => {
     setShowDropdown(showDropdown === label ? null : label);
@@ -135,14 +139,7 @@ const handleFileUpload = async (e, field) => {
                   {showDropdown === label && (
                     <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-md shadow-lg z-10 w-48">
                       <button
-                        onClick={() =>
-                          FileUploaderService.handleCameraClick(
-                            label,
-                            setStreamStates,
-                            setIsCameraActive,
-                            takePhoto
-                          )
-                        }
+                        onClick={() => handleCameraClick(label)}
                         className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 w-full text-left"
                       >
                         <AiOutlineCamera className="mr-2" /> Take Photo
