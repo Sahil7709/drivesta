@@ -592,18 +592,18 @@ async function addCoverPage(doc, r) {
 
   // Avg Running Before Delivery
   setText(doc, THEME.text, 9.5);
-  doc.text("Avg. Running Before Delivery", mm(barXStart), mm(BAR_Y + 38));
+  doc.text("Actual running before delivery", mm(barXStart), mm(BAR_Y + 38));
 
   doc.setFont(undefined, "bold");
-  doc.text(String(r.odo ?? "39 Kms"), mm(barXStart), mm(BAR_Y + 44));
+  doc.text(String(r.live_distance_in_current_lock_block ?? "39 Kms"), mm(barXStart), mm(BAR_Y + 44));
 
   // Details text under bar
   setText(doc, THEME.subtext, 8);
   doc.text(
     `Details - At the time of PDI, your car's ODO reading was ${String(
-      r.odo ?? "55 Kms"
+      r.odo ?? "60 Kms"
     )}, which is slightly above the city average of ${String(
-      r.odo ?? "39 Kms"
+      r.live_distance_in_current_lock_block ?? "40 Kms"
     )}.`,
     mm(barXStart),
     mm(BAR_Y + 54),
