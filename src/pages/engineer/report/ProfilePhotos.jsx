@@ -60,30 +60,39 @@ const ProfilePhotos = ({ data, onChange }) => {
     };
   }, [streamStates]);
 
-  // Wrapper for photo capture
-  const takePhoto = (label) => {
-    FileUploaderService.takePhoto(label, setPhotos, setIsCameraActive, setShowDropdown)
-      .then(() => {
-        if (onChange && photos[label]) {
-          onChange(label, photos[label]);
-        }
-      })
-      .catch((err) => {
-        console.error("Photo capture failed:", err);
+// takePhoto
+const takePhoto = (label) => {
+  FileUploaderService.takePhoto(label, setPhotos, setIsCameraActive, setShowDropdown)
+    .then((photoUrl) => {
+      setPhotos((prev) => {
+        const updated = { ...prev, [label]: photoUrl };
+        if (onChange) onChange(label, photoUrl, updated); // pass new value
+        return updated;
       });
-  };
+    })
+    .catch((err) => {
+      console.error("Photo capture failed:", err);
+    });
+};
 
-  // Handle file upload (from gallery)
-  const handleFileUpload = async (e, field) => {
-    try {
-      await FileUploaderService.handleFileUpload(e, field, setPhotos, setShowDropdown);
-      if (onChange && photos[field]) {
-        onChange(field, photos[field]);
-      }
-    } catch (err) {
-      console.error("Image upload failed:", err);
-    }
-  };
+// handleFileUpload
+const handleFileUpload = async (e, field) => {
+  try {
+    const photoUrl = await FileUploaderService.handleFileUpload(
+      e,
+      field,
+      setPhotos,
+      setShowDropdown
+    );
+    setPhotos((prev) => {
+      const updated = { ...prev, [field]: photoUrl };
+      if (onChange) onChange(field, photoUrl, updated);
+      return updated;
+    });
+  } catch (err) {
+    console.error("Image upload failed:", err);
+  }
+};
 
   const toggleDropdown = (label) => {
     setShowDropdown(showDropdown === label ? null : label);

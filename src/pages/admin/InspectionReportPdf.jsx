@@ -556,7 +556,7 @@ async function addCoverPage(doc, r) {
   );
 
   // Foreground bar width by kmsDriven
-  const kms = isNaN(parseInt(r.kmsDriven)) ? 55 : parseInt(r.kmsDriven);
+  const kms = isNaN(parseInt(r.odo)) ? 55 : parseInt(r.odo);
   const fgWidth = Math.min((kms / 130) * BAR_W, BAR_W);
   roundedRect(
     doc,
@@ -575,7 +575,7 @@ async function addCoverPage(doc, r) {
 
   doc.setFont(undefined, "bold");
   doc.text(
-    String(r.kmsDriven ?? "55 Kms"),
+    String(r.odo ?? "55 Kms"),
     mm(barXStart + BAR_W),
     mm(BAR_Y + 8),
     { align: "right" }
@@ -595,15 +595,15 @@ async function addCoverPage(doc, r) {
   doc.text("Avg. Running Before Delivery", mm(barXStart), mm(BAR_Y + 38));
 
   doc.setFont(undefined, "bold");
-  doc.text(String(r.avgRunning ?? "39 Kms"), mm(barXStart), mm(BAR_Y + 44));
+  doc.text(String(r.odo ?? "39 Kms"), mm(barXStart), mm(BAR_Y + 44));
 
   // Details text under bar
   setText(doc, THEME.subtext, 8);
   doc.text(
     `Details - At the time of PDI, your car's ODO reading was ${String(
-      r.kmsDriven ?? "55 Kms"
+      r.odo ?? "55 Kms"
     )}, which is slightly above the city average of ${String(
-      r.avgRunning ?? "39 Kms"
+      r.odo ?? "39 Kms"
     )}.`,
     mm(barXStart),
     mm(BAR_Y + 54),
