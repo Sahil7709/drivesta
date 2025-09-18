@@ -1,7 +1,6 @@
 import React from "react";
 import { PictureAsPdf } from "@mui/icons-material";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { toast } from "react-toastify";
 import withMaterialTable from "../../components/constants/withMaterialTable";
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
@@ -16,43 +15,15 @@ const statusColors = {
 };
 
 const CompletedJobs = () => {
-  const downloadPDF = (job) => {
-    const doc = new jsPDF();
-    doc.setTextColor(46, 125, 50);
-    doc.text(`Job Report - ${job.bookingId}`, 14, 15);
-    autoTable(doc, {
-      startY: 25,
-      head: [
-        [
-          "Booking ID",
-          "Brand",
-          "Model",
-          "Variant",
-          "Engineer",
-          "Customer",
-          "Inspection",
-          "Payment",
-          "Status",
-        ],
-      ],
-      body: [
-        [
-          job.bookingId,
-          job.customerName,
-          job.engineer_name,
-          `${job.brand} - ${job.model} - ${job.variant}`,
-          job.date,
-          `${job.paymentStatus} - ${job.amount}`,
-          job.status,
-        ],
-      ],
-    });
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 10,
-      head: [["Description"]],
-      body: [[job.description || "-"]],
-    });
-    doc.save(`Job_${job.bookingId}.pdf`);
+  
+    const downloadReport = async (job) => {
+    try {
+      toast.info("Your Inspection Report is being generated, please wait...");
+      await generateInspectionPDF(job); 
+      toast.success("Report downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate report.");
+    }
   };
 
   const tableConfig = {
@@ -105,7 +76,7 @@ const CompletedJobs = () => {
             >
               <span>
                 <IconButton
-                  onClick={() => isInspectionCompleted && generateInspectionPDF(job)}
+                  onClick={() => isInspectionCompleted && downloadReport(job)}
                   disabled={!isInspectionCompleted}
                 >
                   <PictureAsPdf

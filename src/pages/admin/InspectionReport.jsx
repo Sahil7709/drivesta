@@ -4,8 +4,7 @@ import ServerUrl from '../../core/constants/serverUrl.constant';
 import ApiService from '../../core/services/api.service';
 import { useNavigate } from 'react-router-dom';
 import { APPLICATION_CONSTANTS } from '../../core/constants/app.constant';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toast } from 'react-toastify';
 import { useAuth } from "../../core/contexts/AuthContext";
 import generateInspectionPDF from './InspectionReportPdf';
 
@@ -57,6 +56,16 @@ const handleViewReport = (report) => {
     navigate(`/${user.role}/dashboard/report/${report._id}?isAdm=true`);
   }
 };
+
+  const downloadReport = async (r) => {
+    try {
+      toast.info("Your Inspection Report is being generated, please wait...");
+      await generateInspectionPDF(r);
+      toast.success("Report downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate report.");
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 bg-primary min-h-screen font-sans">
@@ -117,7 +126,7 @@ const handleViewReport = (report) => {
                     </button>
 
                     <button
-                      onClick={() => generateInspectionPDF(r)}
+                      onClick={() => downloadReport(r)}
                       className={`flex items-center gap-1 px-3 py-1 text-sm border rounded-md
                         ${r.paymentStatus === 'PAID' && r.status === 'COMPLETED'
                           ? 'text-green-600 border-green-300 hover:bg-green-50'

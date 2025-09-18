@@ -235,73 +235,47 @@ class FileUploaderService {
   }
 
   // Open camera
-  // async handleCameraClick(label, setStreamStates, setIsCameraActive, takePhoto) {
-  //   if (!this.streamStates[label]) {
-  //     try {
-  //       const devices = await navigator.mediaDevices.enumerateDevices();
-  //       const videoDevices = devices.filter(
-  //         (device) => device.kind === "videoinput"
-  //       );
-
-  //       if (!videoDevices.length) {
-  //         alert("No camera found on this device.");
-  //         return;
-  //       }
-
-  //       // Prefer second camera if exists, else fallback to first
-  //       const chosenDevice = videoDevices[1] || videoDevices[0];
-  //       const constraints = { video: { deviceId: chosenDevice.deviceId } };
-
-  //       // Stop previous camera if running
-  //       if (this.streamStates[label]) {
-  //         this.stopCamera(label);
-  //       }
-
-  //       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-  //       if (this.videoRefs[label]) {
-  //         this.videoRefs[label].srcObject = stream;
-  //         this.videoRefs[label].play();
-  //       }
-
-  //       this.streamStates[label] = stream;
-  //       setStreamStates((prev) => ({ ...prev, [label]: stream }));
-  //       setIsCameraActive((prev) => ({ ...prev, [label]: true }));
-  //     } catch (err) {
-  //       console.error("Error accessing camera:", err);
-  //       alert("Camera access denied or unavailable.");
-  //     }
-  //   } else {
-  //     // If camera already active → take photo
-  //     takePhoto(label);
-  //   }
-  // }
-
   async handleCameraClick(label, setStreamStates, setIsCameraActive, takePhoto) {
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Camera API not supported.");
-      return;
-    }
-    
     if (!this.streamStates[label]) {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      console.log("Stream started", stream);
-      if(this.videoRefs[label]) {
-        this.videoRefs[label].srcObject = stream;
-        this.videoRefs[label].play();
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(
+          (device) => device.kind === "videoinput"
+        );
+
+        if (!videoDevices.length) {
+          alert("No camera found on this device.");
+          return;
+        }
+
+        // Prefer second camera if exists, else fallback to first
+        const chosenDevice = videoDevices[1] || videoDevices[0];
+        const constraints = { video: { deviceId: chosenDevice.deviceId } };
+
+        // Stop previous camera if running
+        if (this.streamStates[label]) {
+          this.stopCamera(label);
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        if (this.videoRefs[label]) {
+          this.videoRefs[label].srcObject = stream;
+          this.videoRefs[label].play();
+        }
+
+        this.streamStates[label] = stream;
+        setStreamStates((prev) => ({ ...prev, [label]: stream }));
+        setIsCameraActive((prev) => ({ ...prev, [label]: true }));
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+        alert("Camera access denied or unavailable.");
       }
-      this.streamStates[label] = stream;
-      setStreamStates((prev) => ({ ...prev, [label]: stream }));
-      setIsCameraActive((prev) => ({ ...prev, [label]: true }));
     } else {
+      // If camera already active → take photo
       takePhoto(label);
     }
-  } catch (err) {
-    console.error("Error accessing camera:", err);
-    alert("Camera access denied or unavailable.");
   }
-}
 
   // Take photo from video stream
   async takePhoto(label, setPhotos, setIsCameraActive, setShowDropdown) {

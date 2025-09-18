@@ -1,161 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { FiEye, FiDownload, FiCheck, FiX } from "react-icons/fi";
-import { jsPDF } from "jspdf";
 import { toast } from "react-toastify";
-import autoTable from "jspdf-autotable";
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
 import { APPLICATION_CONSTANTS } from "../../core/constants/app.constant";
 import { useAuth } from "../../core/contexts/AuthContext";
-
-const generateInvoicePdf = (payment) => {
-  const doc = new jsPDF();
-
-  const invoiceGreen = [60, 184, 120]; // #3cb878
-  const darkBlue = [27, 43, 75];       // #1b2b4b
-  const textGray = [100, 100, 100];
-  const newGreen = [125, 217, 87];     // rgba(125,217,87,255)
-
-  // Header background
-  doc.setFillColor(...darkBlue);
-  doc.rect(0, 0, 210, 50, "F");
-
-  // Logo at top-left
-  try {
-    const logo = "/carnomia.png";
-    doc.addImage(logo, "PNG", 6, 1, 70, 37);
-  } catch {
-    doc.setFillColor(...invoiceGreen);
-    doc.circle(35, 25, 20, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("C", 33, 28);
-  }
-
-  // Slogan
-  doc.setFont("times", "italic");
-  doc.setFontSize(16);
-  doc.setTextColor(...newGreen);
-  doc.text("We Inspect Before We Invest", 8, 35);
-
-  // INVOICE title
-  doc.setFont("times", "bold");
-  doc.setFontSize(28);
-  doc.setTextColor(...invoiceGreen);
-  doc.text("INVOICE", 195, 27, { align: "right" });
-
-  // Separator
-  doc.setDrawColor(...textGray);
-  doc.setLineWidth(0.5);
-  doc.line(15, 55, 195, 55);
-
-  // Invoice details
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`Booking ID: ${payment.bookingId}`, 195, 65, { align: "right" });
-  doc.text(`PDI Date: ${payment.pdiDate || "N/A"}`, 195, 72, { align: "right" });
-
-  // Invoice To & From
-  const startY = 85;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(...invoiceGreen);
-  doc.text("Invoice To:", 15, startY);
-
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.text(payment.customerName, 15, startY + 10);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...textGray);
-  doc.text(`Phone: ${payment.customerMobile}`, 15, startY + 18);
-  doc.text(`Address: ${payment.address || "N/A"}`, 15, startY + 26);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(...invoiceGreen);
-  doc.text("Invoice From:", 195, startY, { align: "right" });
-
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.text("Carnomia", 195, startY + 10, { align: "right" });
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...textGray);
-  doc.text("Managing Director, Company Ltd.", 195, startY + 18, { align: "right" });
-  doc.text("Phone: +91 7385978109", 195, startY + 26, { align: "right" });
-  doc.text("Email: example@carnomia.com", 195, startY + 34, { align: "right" });
-
-  // Vehicle and Payment Table
-  const tableStartY = startY + 50;
-  const tableData = [[
-    `${payment.brand || "-"} ${payment.model || "-"} ${payment.variant || "-"}`,
-    `₹${payment.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-    payment.paymentStatus || "N/A"
-  ]];
-
-  autoTable(doc, {
-    startY: tableStartY,
-    head: [["Vehicle", "Amount", "Payment Status"]],
-    body: tableData,
-    theme: "grid",
-    tableWidth: 180,
-    headStyles: {
-      fillColor: invoiceGreen,
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-      fontSize: 11,
-      cellPadding: { top: 4, bottom: 4, left: 6, right: 6 }
-    },
-    bodyStyles: {
-      textColor: [0, 0, 0],
-      fontSize: 10,
-      cellPadding: { top: 5, bottom: 5, left: 6, right: 6 }
-    },
-    columnStyles: {
-      0: { cellWidth: 90, halign: "left" },
-      1: { cellWidth: 45, halign: "center" },
-      2: { cellWidth: 45, halign: "center" }
-    },
-    alternateRowStyles: { fillColor: [245, 245, 245] },
-    margin: { left: 15, right: 15 }
-  });
-
-  // Total Box
-  const finalY = doc.lastAutoTable.finalY + 10;
-  const tableRight = 195;
-  const totalWidth = 45;
-  const totalHeight = 10;
-  const totalX = tableRight - totalWidth;
-
-  doc.setFillColor(...invoiceGreen);
-  doc.rect(totalX, finalY, totalWidth, totalHeight, "F");
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(255, 255, 255);
-
-  const totalText = `Total: ₹${payment.amount.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-
-  doc.text(totalText, totalX + 3, finalY + totalHeight - 3);
-
-  // Footer
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(9);
-  doc.setTextColor(...textGray);
-  doc.text("Thank you for choosing Carnomia!", 105, 280, { align: "center" });
-
-  doc.save(`invoice_${payment.bookingId}.pdf`);
-};
+import generateInvoicePdf from "./InvoiceGeneratePdf";
 
 const PaymentManagement = () => {
   const { id } = useParams();
@@ -208,6 +59,16 @@ const PaymentManagement = () => {
 
     fetchPayments();
   }, [id]);
+
+  const downloadInvoice = async (p) => {
+    try {
+      toast.info("Your Invoice is being generated, please wait...");
+      await generateInvoicePdf(p);
+      toast.success("Invoice downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate invoice.");
+    }
+  };
 
   const filteredPayments = payments.filter(
     (p) =>
@@ -289,7 +150,7 @@ const PaymentManagement = () => {
               <th className="p-3">Booking ID</th>
               <th className="p-3">Vehicle</th>
               <th className="p-3">Amount</th>
-              <th className="p-3">Payment Status</th>
+              <th className="p-3">Status</th>
               <th className="p-3">Actions</th>
             </tr>
           </thead>
@@ -309,7 +170,8 @@ const PaymentManagement = () => {
                 </td>
                 <td className="p-3">{p.bookingId}</td>
                 <td className="p-3">
-                  {p.brand} {p.model} {p.variant}
+                  <div>{p.brand} {p.model}</div>
+                  <div>{p.variant}</div>
                 </td>
                 <td className="p-3">
                   ₹{p.amount.toLocaleString("en-IN")}
@@ -335,7 +197,7 @@ const PaymentManagement = () => {
                   </button>
                   {/* Download (all roles) */}
                   <button
-                    onClick={() => generateInvoicePdf(p)}
+                    onClick={() => downloadInvoice(p)}
                     className="text-gray-600 hover:text-gray-800"
                   >
                     <FiDownload className="w-5 h-5" />
@@ -369,14 +231,14 @@ const PaymentManagement = () => {
               <p><strong>Vehicle:</strong> {selectedPayment.brand} {selectedPayment.model} {selectedPayment.variant}</p>
               <p><strong>Amount:</strong> ₹{selectedPayment.amount.toLocaleString("en-IN")}</p>
               <p><strong>PDI Date:</strong> {selectedPayment.pdiDate}</p>
-              <p><strong>Payment Status:</strong> {selectedPayment.paymentStatus}</p>
+              <p><strong>Status:</strong> {selectedPayment.paymentStatus}</p>
               <p><strong>Request Status:</strong> {selectedPayment.status}</p>
             </div>
 
             <div className="mt-6 flex gap-3">
               {/* Download (all roles) */}
               <button
-                onClick={() => generateInvoicePdf(selectedPayment)}
+                onClick={() => downloadInvoice(selectedPayment)}
                 className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center"
               >
                 <FiDownload className="w-5 h-5 mr-1" /> Download
