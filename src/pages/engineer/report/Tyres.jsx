@@ -18,12 +18,12 @@ const TYRE_LABELS = {
 
 const PHOTO_LIMIT = 5;
 
-const ISSUE_OPTIONS = [
+const issues_OPTIONS = [
   "Worn thread",
   "Puncture",
   "Sidewall Damage",
   "Uneven Wear",
-  "No Issue",
+  "No issues",
 ];
 
 const BRAND_OPTIONS = [
@@ -73,12 +73,12 @@ const TyreCard = ({
 
   const videoRef = useRef(null);
   const photoDropdownRef = useRef(null);
-  const issueDropdownRef = useRef(null);
+  const issuesDropdownRef = useRef(null);
 
   const [stream, setStream] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [issueDropdownOpen, setIssueDropdownOpen] = useState(false);
+  const [issuesDropdownOpen, setissuesDropdownOpen] = useState(false);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -90,10 +90,10 @@ const TyreCard = ({
         setShowDropdown(false);
       }
       if (
-        issueDropdownRef.current &&
-        !issueDropdownRef.current.contains(e.target)
+        issuesDropdownRef.current &&
+        !issuesDropdownRef.current.contains(e.target)
       ) {
-        setIssueDropdownOpen(false);
+        setissuesDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -179,13 +179,13 @@ const TyreCard = ({
     setShowDropdown(false);
   };
 
-  // -------- Toggle Issues --------
-  const toggleIssueOption = (opt) => {
-    let updated = [...(issue || [])];
+  // -------- Toggle issuess --------
+  const toggleissuesOption = (opt) => {
+    let updated = [...(issues || [])];
     updated = updated.includes(opt)
       ? updated.filter((i) => i !== opt)
       : [...updated, opt];
-    onFieldChange(tyreKey, "issue", updated);
+    onFieldChange(tyreKey, "issues", updated);
   };
 
   return (
@@ -243,20 +243,20 @@ const TyreCard = ({
         validate={(val) => /^\d*\.?\d*$/.test(val)}
       />
 
-      {/* Issues */}
-      <div className="relative" ref={issueDropdownRef}>
+      {/* issuess */}
+      <div className="relative" ref={issuesDropdownRef}>
         <label className="text-sm text-white font-medium mb-1 block">
-          Issue
+          issues
         </label>
         <div
           className="p-2 bg-gray-800 text-white border border-green-200 rounded-md w-full cursor-pointer"
-          onClick={() => setIssueDropdownOpen((p) => !p)}
+          onClick={() => setissuesDropdownOpen((p) => !p)}
         >
-          {issue?.length > 0 ? issue.join(", ") : "Select Issue"}
+          {issues?.length > 0 ? issues.join(", ") : "Select issues"}
         </div>
-        {issueDropdownOpen && (
+        {issuesDropdownOpen && (
           <div className="absolute z-10 mt-1 bg-gray-800 border border-green-200 rounded-md w-full max-h-60 overflow-y-auto">
-            {ISSUE_OPTIONS.map((opt) => (
+            {issues_OPTIONS.map((opt) => (
               <label
                 key={opt}
                 className="flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
@@ -264,8 +264,8 @@ const TyreCard = ({
                 <input
                   type="checkbox"
                   className="mr-2"
-                  checked={issue?.includes(opt)}
-                  onChange={() => toggleIssueOption(opt)}
+                  checked={issues?.includes(opt)}
+                  onChange={() => toggleissuesOption(opt)}
                 />
                 {opt}
               </label>
@@ -275,7 +275,7 @@ const TyreCard = ({
       </div>
 
       {/* Photos */}
-      {issue?.length > 0 && (
+      {issues?.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-4 items-center">
           {photos.map(
             (photoUrl, i) =>
@@ -385,7 +385,7 @@ const Tyres = ({ data = {}, onChange }) => {
         size: data[`${key}_size`] || "",
         manufacturingDate: data[`${key}_manufacturingDate`] || "",
         threadDepth: data[`${key}_threadDepth`] || "",
-        issue: Array.isArray(data[`${key}_issue`]) ? data[`${key}_issue`] : [],
+        issues: Array.isArray(data[`${key}_issues`]) ? data[`${key}_issues`] : [],
         photos: Array.isArray(data[`${key}_imageUrls`])
           ? data[`${key}_imageUrls`]
               .slice(0, PHOTO_LIMIT)
