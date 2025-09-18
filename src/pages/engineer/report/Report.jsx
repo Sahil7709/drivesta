@@ -285,8 +285,8 @@ export default function Report() {
               onClick={() => setStep(index)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
                 step === index
-                  ? "bg-gradient-to-r from-lime-300 to-green-300 text-white shadow-md"
-                  : "bg-white/30 text-gray-700 hover:bg-white/40"
+                  ? "bg-gradient-to-r from-lime-300 to-button text-white shadow-md cursor-pointer"
+                  : "bg-white/30 text-gray-700 hover:bg-white/40 cursor-pointer"
               }`}
               style={{ minWidth: "8rem" }}
             >

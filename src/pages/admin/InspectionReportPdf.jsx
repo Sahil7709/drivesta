@@ -324,12 +324,15 @@ async function addCoverPage(doc, r) {
     }
   }
 
-  // Top Metrics Row 
+  // Top Metrics Row
   const metrics = [
     { label: "BHPs", value: String(r.vehicleInfo?.BHPs ?? "0") },
     { label: "Airbags", value: String(r.vehicleInfo?.Airbags ?? "6") },
     { label: "NCAP", value: String(r.vehicleInfo?.NCAP ?? "0") },
-    { label: "Mileage (kmpl)", value: String(r.vehicleInfo?.Mileage ?? "17.0") },
+    {
+      label: "Mileage (kmpl)",
+      value: String(r.vehicleInfo?.Mileage ?? "17.0"),
+    },
   ];
 
   const METRIC_Y = TOP_OFFSET - 10;
@@ -574,12 +577,9 @@ async function addCoverPage(doc, r) {
   doc.text("My Car's Running", mm(barXStart + 2), mm(BAR_Y + 8));
 
   doc.setFont(undefined, "bold");
-  doc.text(
-    String(r.odo ?? "55 Kms"),
-    mm(barXStart + BAR_W),
-    mm(BAR_Y + 8),
-    { align: "right" }
-  );
+  doc.text(String(r.odo ?? "55 Kms"), mm(barXStart + BAR_W), mm(BAR_Y + 8), {
+    align: "right",
+  });
   doc.setFont(undefined, "normal");
 
   // Tampering chip
@@ -595,7 +595,11 @@ async function addCoverPage(doc, r) {
   doc.text("Actual running before delivery", mm(barXStart), mm(BAR_Y + 38));
 
   doc.setFont(undefined, "bold");
-  doc.text(String(r.live_distance_in_current_lock_block ?? "40 Kms"), mm(barXStart), mm(BAR_Y + 44));
+  doc.text(
+    String(r.live_distance_in_current_lock_block ?? "40 Kms"),
+    mm(barXStart),
+    mm(BAR_Y + 44)
+  );
 
   // Details text under bar
   setText(doc, THEME.subtext, 8);
@@ -703,7 +707,8 @@ async function addBodyPanelsPage(doc, r) {
       "Cladding",
       "Repaint",
     ];
-    const colX = [mm(20), mm(64), mm(97), mm(124), mm(142)];
+
+    const colX = [mm(20), mm(64), mm(97), mm(137), mm(170)];
     const headerY = y + mm(14); // space below title
 
     setText(doc, THEME.subtext, 9);
@@ -748,8 +753,12 @@ async function addBodyPanelsPage(doc, r) {
       claddingKey: "rear_left_quarter_panel_cladding",
       repaintKey: "rear_left_quarter_panel_repaint",
     },
-    { label: "Boot", key: "boot" },
-    { label: "Rear Bumper", key: "rear_bumper" },
+    { label: "Boot", key: "boot", repaintKey: "boot_repaint" },
+    {
+      label: "Rear Bumper",
+      key: "rear_bumper",
+      repaintKey: "rear_bumper_repaint",
+    },
     {
       label: "Rear Right Quarter Panel",
       key: "rear_right_quarter_panel",
@@ -774,10 +783,8 @@ async function addBodyPanelsPage(doc, r) {
       claddingKey: "front_right_fender_cladding",
       repaintKey: "front_right_fender_repaint",
     },
-    { label: "Roof", 
-      key: "roof", 
-      repaintKey: "roof_repaint" 
-    },
+    { label: "Roof", key: "roof", repaintKey: "roof_repaint" },
+    // { label: "Front Windshield", key: "front_windshield" },
   ];
 
   for (const row of rows) {
