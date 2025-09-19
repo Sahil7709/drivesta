@@ -563,22 +563,20 @@ const VehicleTable = withMaterialTable(null, {
               p={1}
               display="inline-block"
             >
-
-              <img
-                src={
-                  selectedRow.imageFile
-                    ? URL.createObjectURL(`${ServerUrl.IMAGE_URL}${selectedRow.imageFile}`) // preview uploaded file
-                    : `${ServerUrl.IMAGE_URL}${selectedRow.imageUrl}` // API image
-                }
-                alt="preview"
-                style={{
-                  width: 150,
-                  height: 90,
-                  objectFit: "cover",
-                  borderRadius: 4,
-                }}
-              />
-
+            <img
+              src={
+                selectedRow.imageFile
+                  ? URL.createObjectURL(selectedRow.imageFile) // ✅ just the file
+                  : `${ServerUrl.IMAGE_URL}${selectedRow.imageUrl}` // ✅ API path
+              }
+              alt="preview"
+              style={{
+                width: 150,
+                height: 90,
+                objectFit: "cover",
+                borderRadius: 4,
+              }}
+            />
             </Box>
           )}
         </Box>
