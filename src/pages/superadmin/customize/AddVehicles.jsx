@@ -298,7 +298,7 @@ const VehicleTable = withMaterialTable(null, {
       Cell: ({ row }) =>
         row?.original?.imageUrl ? (
           <img
-            src={row.original.imageUrl}
+            src={`${ServerUrl.IMAGE_URL}${row.original.imageUrl}`}
             alt="Vehicle"
             style={{ width: 80, height: 50, objectFit: "cover" }}
           />
@@ -563,11 +563,12 @@ const VehicleTable = withMaterialTable(null, {
               p={1}
               display="inline-block"
             >
+
               <img
                 src={
                   selectedRow.imageFile
-                    ? URL.createObjectURL(selectedRow.imageFile)
-                    : selectedRow.imageUrl
+                    ? URL.createObjectURL(`${ServerUrl.IMAGE_URL}${selectedRow.imageFile}`) // preview uploaded file
+                    : `${ServerUrl.IMAGE_URL}${selectedRow.imageUrl}` // API image
                 }
                 alt="preview"
                 style={{
@@ -577,6 +578,7 @@ const VehicleTable = withMaterialTable(null, {
                   borderRadius: 4,
                 }}
               />
+
             </Box>
           )}
         </Box>

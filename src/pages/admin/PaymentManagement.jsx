@@ -198,7 +198,7 @@ const PaymentManagement = () => {
                   {/* Download (all roles) */}
                   <button
                     onClick={() => downloadInvoice(p)}
-                    className="text-gray-600 hover:text-gray-800"
+                    className="text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
                     <FiDownload className="w-5 h-5" />
                   </button>
@@ -206,7 +206,7 @@ const PaymentManagement = () => {
                   {isAdminRole && p.paymentStatus !== "PAID" && (
                     <button
                       onClick={() => updatePaymentStatus(p)}
-                      className="text-green-600 hover:text-green-800"
+                      className="text-green-600 hover:text-green-800 "
                     >
                       <FiCheck className="w-5 h-5" />
                     </button>

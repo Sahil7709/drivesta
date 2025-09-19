@@ -127,7 +127,7 @@ const handleViewReport = (report) => {
 
                     <button
                       onClick={() => downloadReport(r)}
-                      className={`flex items-center gap-1 px-3 py-1 text-sm border rounded-md
+                      className={`flex items-center gap-1 px-3 py-1 text-sm border rounded-md cursor-pointer
                         ${r.paymentStatus === 'PAID' && r.status === 'COMPLETED'
                           ? 'text-green-600 border-green-300 hover:bg-green-50'
                           : 'text-gray-400 border-gray-300 cursor-not-allowed hover:bg-transparent'}`}

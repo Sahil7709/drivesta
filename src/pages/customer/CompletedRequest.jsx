@@ -176,13 +176,13 @@ const CompletedRequests = () => {
                     <div className="flex flex-wrap gap-3 mt-3 sm:mt-0">
                       <button
                         onClick={() => downloadReport(order)}
-                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90"
+                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90 cursor-pointer"
                       >
                         <FiDownload className="mr-2" /> Download Report
                       </button>
                       <button
                         onClick={() => downloadInvoice(order)}
-                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90"
+                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90 cursor-pointer"
                       >
                         <FiDownload className="mr-2" /> Download Invoice
                       </button>

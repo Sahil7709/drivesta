@@ -8,16 +8,38 @@ import {
   FiCreditCard,
   FiCheckCircle,
 } from "react-icons/fi";
+import { toast } from "react-toastify";
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
 import { APPLICATION_CONSTANTS } from "../../core/constants/app.constant";
 import generateInspectionPDF from "../admin/InspectionReportPdf";
+import generateInvoicePdf from "../admin/InvoiceGeneratePdf";
 
 const AllCustomerRequests = () => {
 
   const [allRequests, setAllRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+    const downloadReport = async (order) => {
+    try {
+      toast.info("Your Inspection Report is being generated, please wait...");
+      await generateInspectionPDF(order); 
+      toast.success("Report downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate report.");
+    }
+  };
+
+  const downloadInvoice = async (order) => {
+    try {
+      toast.info("Your Invoice is being generated, please wait...");
+      await generateInvoicePdf(order); 
+      toast.success("Invoice downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate invoice.");
+    }
+  };
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -135,12 +157,21 @@ const AllCustomerRequests = () => {
 
                   {/* ✅ Show download button only if COMPLETED */}
                   {isCompleted && (
-                    <button
-                      onClick={() => generateInspectionPDF(order)}
-                      className="mt-2 sm:mt-0 px-4 py-2 bg-button text-white rounded hover:bg-green-500 flex items-center gap-2"
-                    >
-                      <FiDownload /> Download Report
-                    </button>
+                    <div className="flex flex-wrap gap-3 mt-3 sm:mt-0">
+                      <button
+                        onClick={() => downloadReport(order)}
+                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90 cursor-pointer"
+                      >
+                        <FiDownload className="mr-2" /> Download Report
+                      </button>
+                      <button
+                        onClick={() => downloadInvoice(order)}
+                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90 cursor-pointer"
+                      >
+                        <FiDownload className="mr-2" /> Download Invoice
+                      </button>
+                    </div>
+
                   )}
                 </div>
 
