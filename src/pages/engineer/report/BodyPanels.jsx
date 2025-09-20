@@ -27,6 +27,18 @@ const BodyPanels = ({ data, onChange }) => {
     "roof",
   ];
 
+  const panelsWithCladding = [
+    "front_left_fender",
+    "front_left_door",
+    "rear_left_door",
+    "rear_left_quarter_panel",
+    "rear_right_quarter_panel",
+    "rear_right_door",
+    "front_right_door",
+    "front_right_fender",
+  ];
+
+
   const labelNames = {
     bonnet: "1. Bonnet",
     bumper: "2. Bumper",
@@ -49,10 +61,16 @@ const BodyPanels = ({ data, onChange }) => {
       key === "front_left_fender" ||
       key === "front_right_fender" ||
       key.includes("door") ||
-      key.includes("quarter_panel")
+      key.includes("quarter_panel") ||
+      key === "roof" ||              // add these
+      key === "rear_bumper" ||
+      key === "boot" ||
+      key === "bumper" ||
+      key === "bonnet"
     ) {
       acc[`${key}_cladding`] = `${key}_cladding_imageUrls`;
     }
+
     if (key.includes("door") && key.includes("front")) {
       acc[`${key}_orvm`] = `${key}_orvm_imageUrls`;
     }
@@ -98,28 +116,57 @@ const BodyPanels = ({ data, onChange }) => {
   const [isCameraActive, setIsCameraActive] = useState({});
   const [streamStates, setStreamStates] = useState({});
 
-  const dropdownRefs = useRef({});
+  const dropdownRefs = useRef({}); // ✅ track each dropdown
   const videoRefs = useRef({});
 
+  // useEffect(() => {
+  //   const initialPanelValues = {};
+  //   panels.forEach((key) => {
+  //     initialPanelValues[key] = {
+  //       repaint: data?.[`${key}_repaint`] || false,
+  //       paintThickness: data?.[`${key}_paintThickness`] || "",
+  //       issues: data?.[`${key}_issues`] || [],
+  //       cladding: data?.[`${key}_cladding`] || false,
+  //       cladding_issues: data?.[`${key}_cladding_issues`] || [],
+  //     };
+  //   });
+  //   setPanelValues(initialPanelValues);
+
+  //   const initialPhotos = {};
+  //   Object.values(imageKeys).forEach((key) => {
+  //     initialPhotos[key] = data?.[key] || [];
+  //   });
+  //   setPhotos(initialPhotos);
+  // }, [data]);
+
+  const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
-    const initialPanelValues = {};
-    panels.forEach((key) => {
-      initialPanelValues[key] = {
-        repaint: data?.[`${key}_repaint`] || false,
-        paintThickness: data?.[`${key}_paintThickness`] || "",
-        issues: data?.[`${key}_issues`] || [],
-      };
-    });
-    setPanelValues(initialPanelValues);
+    if (!initialized && data) {
+      const initialPanelValues = {};
+      panels.forEach((key) => {
+        initialPanelValues[key] = {
+          repaint: data?.[`${key}_repaint`] || false,
+          paintThickness: data?.[`${key}_paintThickness`] || "",
+          issues: data?.[`${key}_issues`] || [],
+          cladding: data?.[`${key}_cladding`] || false,
+          cladding_issues: data?.[`${key}_cladding_issues`] || [],
+        };
+      });
+      setPanelValues(initialPanelValues);
 
-    const initialPhotos = {};
-    Object.values(imageKeys).forEach((key) => {
-      initialPhotos[key] = data?.[key] || [];
-    });
-    setPhotos(initialPhotos);
-  }, [data]);
+      const initialPhotos = {};
+      Object.values(imageKeys).forEach((key) => {
+        initialPhotos[key] = data?.[key] || [];
+      });
+      setPhotos(initialPhotos);
 
-  
+      setInitialized(true);
+    }
+  }, [data, initialized]);
+
+
+  // ✅ close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -177,6 +224,7 @@ const BodyPanels = ({ data, onChange }) => {
     }
   };
 
+  // Open camera on first click, capture on second click
   const handleCameraClick = async (photoKey) => {
     const arr = photos[photoKey] ? [...photos[photoKey]] : [];
     if (arr.length >= photoCount) {
@@ -186,24 +234,21 @@ const BodyPanels = ({ data, onChange }) => {
     const slotKey = `${photoKey}-${arr.length}`;
 
     if (!isCameraActive[slotKey]) {
+      // 👉 First click: open camera preview
       try {
-        const constraints = {
-          video: { facingMode: { ideal: "environment" } }, 
-        };
-
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
         if (videoRefs.current[slotKey]) {
           videoRefs.current[slotKey].srcObject = stream;
         }
-
         setStreamStates((prev) => ({ ...prev, [slotKey]: stream }));
         setIsCameraActive((prev) => ({ ...prev, [slotKey]: true }));
-      } catch (err) {
-        console.error("Camera access error:", err);
-        toast.error("Camera not available or permission denied");
+      } catch {
+        toast.error("Camera not available");
       }
     } else {
+      // 👉 Second click: capture photo
       const video = videoRefs.current[slotKey];
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth;
@@ -234,6 +279,7 @@ const BodyPanels = ({ data, onChange }) => {
         }
       }, "image/png");
 
+      // 👉 Stop camera after capture
       const stream = streamStates[slotKey];
       if (stream) stream.getTracks().forEach((t) => t.stop());
 
@@ -242,14 +288,6 @@ const BodyPanels = ({ data, onChange }) => {
       setShowDropdown(null);
     }
   };
-
-  useEffect(() => {
-    return () => {
-      Object.values(streamStates).forEach((stream) => {
-        if (stream) stream.getTracks().forEach((t) => t.stop());
-      });
-    };
-  }, [streamStates]);
 
   const toggleDropdown = (slotKey) =>
     setShowDropdown((curr) => (curr === slotKey ? null : slotKey));
@@ -267,6 +305,8 @@ const BodyPanels = ({ data, onChange }) => {
             repaint,
             paintThickness,
             issues = [],
+            cladding,
+            cladding_issues = [],
           } = panelValues[panelKey] || {};
           const nextSlotKey = `${panelKey}-dropdown`;
 
@@ -279,6 +319,18 @@ const BodyPanels = ({ data, onChange }) => {
                 <label className="text-md font-medium">
                   {labelNames[panelKey]}
                 </label>
+
+                {panelKey && (
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={repaint || false}
+                      onChange={e => handleInputChange(panelKey, "repaint", e.target.checked)}
+                      className="w-5 h-5 text-lime-400 border-gray-300 rounded focus:ring-lime-400"
+                    />
+                    <span className="text-white font-medium">Repaint</span>
+                  </label>
+                )}
               </div>
 
               {/* Paint Thickness */}
@@ -334,8 +386,9 @@ const BodyPanels = ({ data, onChange }) => {
                 )}
               </div>
 
+
               {/* Photos */}
-              {issues.length > 0 && (
+              {issues.length > 0 && ( // ✅ show photos only if at least one issue selected
                 <div className="mt-2 flex flex-wrap gap-4">
                   {photosArr.map((photoUrl, i) => (
                     <div key={`${panelKey}-${i}`} className="relative">
@@ -349,12 +402,11 @@ const BodyPanels = ({ data, onChange }) => {
                   ))}
                   <video
                     ref={(el) =>
-                      (videoRefs.current[
-                        `${imageKeys[panelKey]}-${photosArr.length}`
-                      ] = el)
+                    (videoRefs.current[
+                      `${imageKeys[panelKey]}-${photosArr.length}`
+                    ] = el)
                     }
                     autoPlay
-                    playsInline
                     className={
                       isCameraActive[
                         `${imageKeys[panelKey]}-${photosArr.length}`
@@ -380,17 +432,19 @@ const BodyPanels = ({ data, onChange }) => {
 
                       {showDropdown === `${panelKey}-photo` && (
                         <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-md shadow-lg z-10 w-48">
-                          {/* Only Back Camera */}
                           <button
                             onClick={() =>
                               handleCameraClick(imageKeys[panelKey])
                             }
                             className="flex items-center px-4 py-3 w-full text-left hover:bg-gray-700"
                           >
-                            <AiOutlineCamera className="mr-2" /> Take Photo
+                            <AiOutlineCamera className="mr-2" />
+                            {isCameraActive[
+                              `${imageKeys[panelKey]}-${photosArr.length}`
+                            ]
+                              ? "Capture Photo"
+                              : "Take Photo"}
                           </button>
-
-                          {/* Upload */}
                           <label className="flex items-center px-4 py-3 w-full hover:bg-gray-700 cursor-pointer">
                             <AiOutlineUpload className="mr-2" /> Upload Photo
                             <input
@@ -408,6 +462,59 @@ const BodyPanels = ({ data, onChange }) => {
                   )}
                 </div>
               )}
+              {/* Cladding Issues Section */}
+
+              {panelsWithCladding.includes(panelKey) && (
+                <div className="mb-4 mt-4"     
+                ref={(el) => (dropdownRefs.current[`${panelKey}-cladding-dropdown`] = el)}
+      >
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={panelValues[panelKey]?.cladding ?? false}
+                      onChange={e =>
+                        handleInputChange(panelKey, "cladding", e.target.checked)
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-lime-300 dark:peer-focus:ring-lime-800 dark:bg-gray-700 peer-checked:bg-lime-600 transition-all"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-transform"></div>
+                    <span className="ml-3 text-white font-medium">Cladding</span>
+                  </label>
+                  {panelValues[panelKey]?.cladding && (
+                    <>
+                      <label className="text-md mb-2 block">Cladding Issues</label>
+                      <button
+                        onClick={() => toggleDropdown(`${panelKey}-cladding-dropdown`)}
+                        className="p-2 bg-gray-800 border border-green-200 rounded-md w-full text-left flex justify-between items-center"
+                      >
+                        {panelValues[panelKey].cladding_issues.length > 0
+                          ? panelValues[panelKey].cladding_issues.join(", ")
+                          : "Select Cladding Issues"}
+                        <span className="ml-2">&#9662;</span>
+                      </button>
+                      {showDropdown === `${panelKey}-cladding-dropdown` && (
+                        <div className="absolute z-20 bg-gray-800 border border-green-200 rounded-md mt-1 w-full max-h-64 overflow-y-auto p-2">
+                          {issueOptions.map((opt) => (
+                            <label key={opt} className="flex items-center mb-1 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={panelValues[panelKey].cladding_issues.includes(opt)}
+                                onChange={() =>
+                                  handleCheckboxChange(panelKey, "cladding_issues", opt)
+                                }
+                                className="mr-2 w-4 h-4"
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
             </div>
           );
         })}
