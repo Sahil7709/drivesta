@@ -44,10 +44,20 @@ const BasicDetails = ({ data, onChange, showPhoto, setShowPhoto }) => {
     };
   }, [streamStates]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    onChange(name, type === "checkbox" ? checked : value);
-  };
+const handleInputChange = (e) => {
+  const { name, value, type, checked } = e.target;
+  let newValue = type === "checkbox" ? checked : value;
+
+  if (name === "vinNumber" || name === "engineNumber") {
+    // Only numbers and capital letters
+    newValue = newValue.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  } else if (name === "odo" || name === "keys") {
+    // Only numbers
+    newValue = newValue.replace(/[^0-9]/g, "");
+  }
+
+  onChange(name, newValue);
+};
 
   const handleFileUpload = async (e, field) => {
     const file = e.target.files[0];

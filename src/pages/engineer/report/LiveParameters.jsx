@@ -131,7 +131,7 @@ const LiveParameters = ({ data = {}, onChange }) => {
       {/* Distance Since Code Clear */}
       <div className="flex flex-col w-full mb-6">
         <label className="text-md text-white font-medium mb-2 text-left">
-          4. Distance Since Code Clear
+          4. Distance traveled Since Code Clear
         </label>
         <input
           type="text"
@@ -151,7 +151,7 @@ const LiveParameters = ({ data = {}, onChange }) => {
       {/* Distance In Current Lock Block */}
       <div className="flex flex-col w-full">
         <label className="text-md text-white font-medium mb-2 text-left">
-          5. Distance In Current Lock Block
+          5. Distance traveled In Current 10K Block
         </label>
         <input
           type="text"

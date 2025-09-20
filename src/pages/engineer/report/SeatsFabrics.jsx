@@ -26,8 +26,8 @@ const labelNames = {
   seat_rear_head_rest: "Rear Head Rest",
   seat_third_row: "Third Row Seat",
   seat_third_row_head_rest: "Third Row Head Rest",
-  seat_roof: "Seat Roof",
-  seat_sunroof: "Sunroof",
+  seat_roof: "Sunroof Blind",
+  seat_sunroof: "Rooflining",
 };
 
 const photoCount = 5;

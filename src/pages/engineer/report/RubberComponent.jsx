@@ -201,7 +201,7 @@ useEffect(() => {     // add
 
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">Rubber Panels</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">Rubber Components</h2>
 
       <div className="grid grid-cols-1 gap-6 sm:gap-8">
         {rubberPanels.map((panel, idx) => (
