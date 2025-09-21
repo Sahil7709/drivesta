@@ -57,7 +57,7 @@ const FluidLevels = ({ data = {}, onChange }) => {
           <FluidCard
             key={id}
             fluidName={name}
-            withinRange={data[`fluid_${id}_withinRange`] ?? false}
+            withinRange={data[`fluid_${id}_withinRange`] ?? true}
             onWithinRangeChange={(checked) => handleToggle(`fluid_${id}_withinRange`, checked)}
             contamination={data[`fluid_${id}_contamination`] ?? false}
             onContaminationChange={(checked) => handleToggle(`fluid_${id}_contamination`, checked)}
