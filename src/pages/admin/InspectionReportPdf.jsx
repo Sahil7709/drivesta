@@ -621,6 +621,81 @@ async function addCoverPage(doc, r) {
 /** =========================================================================
  * PAGE 2: PROFILE PHOTOS (360)
  * ========================================================================= */
+// async function addProfilePhotosPage(doc, r) {
+//   doc.addPage("a4", "portrait");
+//   drawTopBand(doc);
+
+//   sectionHeader(
+//     doc,
+//     "Profile Photos",
+//     mm(28),
+//     "Your Car’s 360° View • Check each side for a complete visual record"
+//   );
+
+//   const pageWidth = A4.w;
+//   const photoBoxWidth = 50;
+//   const gap = 16;
+//   const gridWidth = photoBoxWidth * 2 + gap;
+//   const startX = (pageWidth - gridWidth) / 2;
+
+//   const cells = [
+//     {
+//       label: "1. Front Left View",
+//       x: startX,
+//       y: mm(50),
+//       url: r.front_left_imageUrl,
+//     },
+//     {
+//       label: "2. Rear Left View",
+//       x: startX + photoBoxWidth + gap,
+//       y: mm(50),
+//       url: r.rear_left_imageUrl,
+//     },
+//     {
+//       label: "3. Rear Right View",
+//       x: startX,
+//       y: mm(120),
+//       url: r.rear_right_imageUrl,
+//     },
+//     {
+//       label: "4. Front Right View",
+//       x: startX + photoBoxWidth + gap,
+//       y: mm(120),
+//       url: r.front_right_imageUrl,
+//     },
+//   ];
+
+//   for (const c of cells) {
+//     labeledPhotoBox(doc, c.label, c.x, c.y, photoBoxWidth, photoBoxWidth);
+//     if (typeof c.url === "string" && c.url.trim()) {
+//       const data = await urlToDataURL(`${ServerUrl.IMAGE_URL}${c.url}`);
+//       if (data) {
+//         const format =
+//           data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() ||
+//           "JPEG";
+//         doc.addImage(
+//           data,
+//           format,
+//           c.x + 1.2,
+//           c.y + 1.2,
+//           photoBoxWidth - 2.4,
+//           photoBoxWidth - 2.4,
+//           undefined,
+//           "FAST"
+//         );
+//       } else {
+//         console.warn(`Image not loaded: ${c.label} (${c.url})`);
+//       }
+//     } else {
+//       console.warn(`Invalid or missing URL for ${c.label}`);
+//     }
+//   }
+
+//   drawFooter(doc);
+// }
+
+// ...existing code...
+
 async function addProfilePhotosPage(doc, r) {
   doc.addPage("a4", "portrait");
   drawTopBand(doc);
@@ -633,61 +708,54 @@ async function addProfilePhotosPage(doc, r) {
   );
 
   const pageWidth = A4.w;
-  const photoBoxWidth = 50;
-  const gap = 16;
-  const gridWidth = photoBoxWidth * 2 + gap;
+  const photoBoxWidth = 44; // Slightly smaller for better fit
+  const gap = 12;
+  const cols = 4;
+  const rows = 2;
+  const gridWidth = cols * photoBoxWidth + (cols - 1) * gap;
+  const gridHeight = rows * photoBoxWidth + (rows - 1) * gap;
   const startX = (pageWidth - gridWidth) / 2;
+  const startY = mm(50);
 
   const cells = [
-    {
-      label: "1. Front Left View",
-      x: startX,
-      y: mm(50),
-      url: r.front_left_imageUrl,
-    },
-    {
-      label: "2. Rear Left View",
-      x: startX + photoBoxWidth + gap,
-      y: mm(50),
-      url: r.rear_left_imageUrl,
-    },
-    {
-      label: "3. Rear Right View",
-      x: startX,
-      y: mm(120),
-      url: r.rear_right_imageUrl,
-    },
-    {
-      label: "4. Front Right View",
-      x: startX + photoBoxWidth + gap,
-      y: mm(120),
-      url: r.front_right_imageUrl,
-    },
+    { label: "1. VIN Number", url: r.vinNumber_imageUrl },
+    { label: "2. Engine Number", url: r.engineNumber_imageUrl },
+    { label: "3. ODO", url: r.odo_imageUrl },
+    { label: "4. Keys", url: r.keys_imageUrl },
+    { label: "5. Front Left View", url: r.front_left_imageUrl },
+    { label: "6. Rear Left View", url: r.rear_left_imageUrl },
+    { label: "7. Rear Right View", url: r.rear_right_imageUrl },
+    { label: "8. Front Right View", url: r.front_right_imageUrl },
   ];
 
-  for (const c of cells) {
-    labeledPhotoBox(doc, c.label, c.x, c.y, photoBoxWidth, photoBoxWidth);
-    if (typeof c.url === "string" && c.url.trim()) {
-      const data = await urlToDataURL(`${ServerUrl.IMAGE_URL}${c.url}`);
+  for (let i = 0; i < cells.length; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = startX + col * (photoBoxWidth + gap);
+    const y = startY + row * (photoBoxWidth + gap);
+
+    labeledPhotoBox(doc, cells[i].label, x, y, photoBoxWidth, photoBoxWidth);
+
+    if (typeof cells[i].url === "string" && cells[i].url.trim()) {
+      const data = await urlToDataURL(`${ServerUrl.IMAGE_URL}${cells[i].url}`);
       if (data) {
         const format =
-          data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() ||
-          "JPEG";
+          data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() || "JPEG";
         doc.addImage(
           data,
           format,
-          c.x + 1.2,
-          c.y + 1.2,
+          x + 1.2,
+          y + 1.2,
           photoBoxWidth - 2.4,
           photoBoxWidth - 2.4,
           undefined,
           "FAST"
         );
       } else {
-        console.warn(`Image not loaded: ${c.label} (${c.url})`);
+        console.warn(`Image not loaded: ${cells[i].label} (${cells[i].url})`);
       }
     } else {
-      console.warn(`Invalid or missing URL for ${c.label}`);
+      console.warn(`Invalid or missing URL for ${cells[i].label}`);
     }
   }
 
