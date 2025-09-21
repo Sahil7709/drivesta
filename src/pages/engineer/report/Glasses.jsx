@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
+import ServerUrl from "../../../core/constants/serverUrl.constant";
 
 const glassPanels = [
   "front_windshield",
@@ -349,7 +350,7 @@ const handleCameraClick = async (panel) => {
                     photoUrl ? (
                       <img
                         key={`${panel}-${i}`}
-                        src={photoUrl}
+                        src={`${ServerUrl.IMAGE_URL}${photoUrl}`}
                         alt={`${labelNames[panel]} photo ${i + 1}`}
                         className="w-24 h-24 object-cover rounded-md cursor-pointer"
                         onClick={() => setShowPhoto(photoUrl)}

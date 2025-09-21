@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FullScreenPhotoViewer from "../report/FullScreenPhotoViewer";
 import FileUploaderService from "../../../services/upload-document.service";
+import ServerUrl from "../../../core/constants/serverUrl.constant";
 import ToggleButton from "../report/ToggleButton";
 
 const plasticPanels = [
@@ -246,7 +247,7 @@ const PlasticPanel = ({ data = {}, onChange }) => {
                         photo ? (
                           <img
                             key={i}
-                            src={photo}
+                            src={`${ServerUrl.IMAGE_URL}${photo}`}
                             alt={`${panel} photo ${i + 1}`}
                             className="w-24 h-24 object-cover rounded-md cursor-pointer"
                             onClick={() => setShowPhoto(photo)}
