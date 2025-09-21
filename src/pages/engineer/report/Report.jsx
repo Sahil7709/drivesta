@@ -123,6 +123,7 @@ export default function Report() {
         const saved = await handleSave();
         if (saved && step < steps.length - 1) {
           setStep((prev) => prev + 1);
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }
       },
     });
