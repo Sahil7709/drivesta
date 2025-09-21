@@ -965,8 +965,8 @@ async function addGlassesPage(doc, r) {
     // Toggle/status if exists
     if (row.toggle !== undefined) {
       setText(doc, THEME.subtext, 8.5);
-      doc.text("Available", PAGE_PAD_X + 40, y + 0.3);
-      checkmark(doc, PAGE_PAD_X + 54, y + 0.6, !!row.toggle);
+      doc.text("Available", PAGE_PAD_X + 25, y + 0.3);
+      checkmark(doc, PAGE_PAD_X + 38, y + 0.6, !!row.toggle);
       setText(doc);
     }
 
@@ -1957,8 +1957,8 @@ async function addTyresPage(doc, r) {
         ? r[`${row.key}_issues`].join(", ")
         : "—",
       r[`${row.key}_size`] ?? "NA",
-      r[`${row.key}_treadDepth`] != null
-        ? String(r[`${row.key}_treadDepth`])
+      r[`${row.key}_threadDepth`] != null
+        ? String(r[`${row.key}_threadDepth`])
         : "NA",
     ];
 

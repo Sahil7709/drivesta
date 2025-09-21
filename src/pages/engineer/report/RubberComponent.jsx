@@ -272,7 +272,7 @@ const RubberComponent = ({ data = {}, onChange }) => {
           <div className="fixed inset-0 bg-black/60" onClick={handleCancel}></div>
           <div className="relative bg-gray-900 rounded-lg p-6 w-96 text-center z-50">
             <h3 className="text-lg font-semibold mb-4">Preview Photo</h3>
-            <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain rounded-md mb-4" />
+            <img src={`${ServerUrl.IMAGE_URL}${previewUrl}`} alt="Preview" className="w-full h-64 object-contain rounded-md mb-4" />
             <div className="flex justify-between">
               <button onClick={handleCancel} className="px-4 py-2 bg-gray-600 rounded-md">Cancel</button>
               <button onClick={handleConfirm} className="px-4 py-2 bg-green-600 rounded-md">Confirm</button>

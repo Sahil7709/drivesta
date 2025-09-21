@@ -11,7 +11,7 @@ const Brakes = ({ data = {}, onChange }) => {
     "Brake Fluid Is Leaking",
     "Pulsating Brakes Or Vibration",
     "Vibration Or Noise Upon Brake Application",
-    "Loss Of Parking Brake Function",
+    "Loss Of Parking Brake Function", 
     "Physical Damage To The Brake Hose",
     "Brake System Warning Light On",
     "Wear Indicator On Dashboard",
@@ -55,6 +55,7 @@ const Brakes = ({ data = {}, onChange }) => {
   });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -86,6 +87,11 @@ const Brakes = ({ data = {}, onChange }) => {
         .join(", ")
     : "Select brake issues";
 
+  // Filter options based on search term
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white relative">
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">
@@ -104,20 +110,33 @@ const Brakes = ({ data = {}, onChange }) => {
 
         {dropdownOpen && (
           <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-white/20 rounded-md shadow-lg max-h-60 overflow-auto">
-            {options.map(({ value, label }) => (
-              <label
-                key={value}
-                className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-700"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedIssues.includes(value)}
-                  onChange={() => handleCheckboxChange(value)}
-                  className="w-4 h-4"
-                />
-                <span className="text-white">{label}</span>
-              </label>
-            ))}
+            <div className="px-4 py-2">
+              <input
+                type="text"
+                placeholder="Search issues..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-2 rounded bg-gray-700 text-white border border-white/20 mb-2"
+              />
+            </div>
+            {filteredOptions.length === 0 ? (
+              <div className="px-4 py-2 text-gray-400">No issues found</div>
+            ) : (
+              filteredOptions.map(({ value, label }) => (
+                <label
+                  key={value}
+                  className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-700"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIssues.includes(value)}
+                    onChange={() => handleCheckboxChange(value)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-white">{label}</span>
+                </label>
+              ))
+            )}
           </div>
         )}
       </div>
