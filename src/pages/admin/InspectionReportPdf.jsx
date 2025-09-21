@@ -923,7 +923,10 @@ async function addGlassesPage(doc, r) {
     { label: "Rear Right Door Glass", key: "rear_right_door_glass" },
     { label: "Front Right Door Glass", key: "front_right_door_glass" },
     { label: "Right ORVM", key: "right_side_orvm" },
-    { label: "Sunroof Glass", key: "sunroof_glass" },
+    { label: "Sunroof Glass", 
+      key: "sunroof_glass",
+      toggle: r.sunroof_glass_toggle,
+    },
   ];
 
   for (const row of rows) {
@@ -958,6 +961,14 @@ async function addGlassesPage(doc, r) {
     doc.text(brandText, colX[1], y);
     doc.text(dateText, colX[2], y);
     doc.text(issuesText, colX[3], y);
+
+    // Toggle/status if exists
+    if (row.toggle !== undefined) {
+      setText(doc, THEME.subtext, 8.5);
+      doc.text("Available", PAGE_PAD_X + 40, y + 0.3);
+      checkmark(doc, PAGE_PAD_X + 54, y + 0.6, !!row.toggle);
+      setText(doc);
+    }
 
     y += rowHeight + 4;
 
@@ -1048,7 +1059,10 @@ async function addRubberPage(doc, r) {
       key: "rubber_rear_wiper",
       toggle: r.rubber_rear_wiper_toggle,
     },
-    { label: "Sunroof Rubber", key: "rubber_sunroof" },
+    { label: "Sunroof Rubber",
+      key: "rubber_sunroof",
+      toggle: r.rubber_sunroof_toggle,
+    },
   ];
 
   for (const row of rows) {

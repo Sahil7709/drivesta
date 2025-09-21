@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  AiOutlinePlus,
-  AiOutlineCamera,
-  AiOutlineUpload,
-} from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FileUploaderService from "../../../services/upload-document.service";
 import imageCompression from "browser-image-compression";
 import { toast } from "react-toastify";
@@ -80,37 +76,40 @@ const Glasses = ({ data = {}, onChange }) => {
   const [manufacturingDate, setManufacturingDate] = useState({});
   const [panelIssues, setPanelIssues] = useState({});
   const [showDropdown, setShowDropdown] = useState(null);
+  const [brandSearch, setBrandSearch] = useState({});
   const [issueSearch, setIssueSearch] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activePanel, setActivePanel] = useState(null);
-  const [sunroofEnabled, setSunroofEnabled] = useState(
-    data?.sunroof_glass_toggle || false
-  );
+  const [sunroofEnabled, setSunroofEnabled] = useState(data?.sunroof_glass_toggle || false);
 
   const dropdownRefs = useRef({});
+  const isBrandSetRef = useRef(false);
+  const isDateSetRef = useRef(false);
 
   useEffect(() => {
     const initPhotos = {};
     const initBrand = {};
-    const initManufacturingDate = {};
+    const initDate = {};
     const initIssues = {};
+
     glassPanels.forEach((panel) => {
       const maxPhotos = photoCountForPanel(panel);
       initPhotos[panel] = Array.isArray(data[`${panel}_imageUrls`])
         ? data[`${panel}_imageUrls`].slice(0, maxPhotos)
         : [];
       initBrand[panel] = data[`${panel}_brand`] || "";
-      initManufacturingDate[panel] = data[`${panel}_manufacturingDate`] || "";
+      initDate[panel] = data[`${panel}_manufacturingDate`] || "";
       initIssues[panel] = Array.isArray(data[`${panel}_issues`])
         ? data[`${panel}_issues`]
         : data[`${panel}_issues`]
         ? [data[`${panel}_issues`]]
         : [];
     });
+
     setPhotos(initPhotos);
     setBrand(initBrand);
-    setManufacturingDate(initManufacturingDate);
+    setManufacturingDate(initDate);
     setPanelIssues(initIssues);
   }, [data]);
 
@@ -128,8 +127,7 @@ const Glasses = ({ data = {}, onChange }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
-  const toggleDropdown = (panel) =>
-    setShowDropdown((curr) => (curr === panel ? null : panel));
+  const toggleDropdown = (panel) => setShowDropdown((curr) => (curr === panel ? null : panel));
 
   const handleInputChange = (setter, panel, field) => (e) => {
     const value = e.target.value;
@@ -150,7 +148,50 @@ const Glasses = ({ data = {}, onChange }) => {
     const value = e.target.value;
     setBrand((prev) => {
       const updated = { ...prev, [panel]: value };
+
+      if (!isBrandSetRef.current) {
+        isBrandSetRef.current = true;
+        const allUpdated = {};
+        glassPanels.forEach((p) => {
+          allUpdated[p] = value;
+          onChange && onChange(`${p}_brand`, value);
+        });
+        return { ...updated, ...allUpdated };
+      }
+
       onChange && onChange(`${panel}_brand`, value);
+      return updated;
+    });
+  };
+
+  const handleManufacturingDateChange = (panel) => (e) => {
+    let value = e.target.value.replace(/[^0-9/]/g, "");
+
+    if (value.length === 2 && !value.includes("/")) value += "/";
+    if (value.length > 5) value = value.slice(0, 5);
+
+    const [mm, yy] = value.split("/");
+    if (mm && yy) {
+      const month = parseInt(mm);
+      if (month < 1 || month > 12) return; // Invalid month
+
+      const inputDate = new Date(`20${yy}`, month - 1);
+      const now = new Date();
+      if (inputDate > now) return; // Don't allow future
+    }
+
+    setManufacturingDate((prev) => {
+      const updated = { ...prev, [panel]: value };
+
+      if (!isDateSetRef.current) {
+        isDateSetRef.current = true;
+        const allUpdated = {};
+        glassPanels.forEach((p) => (allUpdated[p] = value));
+        glassPanels.forEach((p) => onChange && onChange(`${p}_manufacturingDate`, value));
+        return { ...updated, ...allUpdated };
+      }
+
+      onChange && onChange(`${panel}_manufacturingDate`, value);
       return updated;
     });
   };
@@ -167,13 +208,8 @@ const Glasses = ({ data = {}, onChange }) => {
   };
 
   const compressImage = async (file) => {
-    const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1024,
-      useWebWorker: true,
-    };
     try {
-      return await imageCompression(file, options);
+      return await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true });
     } catch {
       return file;
     }
@@ -181,8 +217,7 @@ const Glasses = ({ data = {}, onChange }) => {
 
   const handleFileSelect = async (e, panel) => {
     const file = e.target.files[0];
-    if (!file || !file.type.startsWith("image/"))
-      return toast.error("Select a valid image");
+    if (!file || !file.type.startsWith("image/")) return toast.error("Select a valid image");
     setPreviewFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setActivePanel(panel);
@@ -199,17 +234,12 @@ const Glasses = ({ data = {}, onChange }) => {
     if (!previewFile || !activePanel) return;
     try {
       const compressed = await compressImage(previewFile);
-      const uploaded = await FileUploaderService.uploadFileToServer(
-        compressed,
-        activePanel
-      );
+      const uploaded = await FileUploaderService.uploadFileToServer(compressed, activePanel);
       const imageUrl = uploaded.files?.[0]?.fileUrl;
       if (!imageUrl) throw new Error("Upload failed");
 
       setPhotos((prev) => {
-        const arr = prev[activePanel]
-          ? [...prev[activePanel], imageUrl]
-          : [imageUrl];
+        const arr = prev[activePanel] ? [...prev[activePanel], imageUrl] : [imageUrl];
         onChange && onChange(`${activePanel}_imageUrls`, arr);
         return { ...prev, [activePanel]: arr };
       });
@@ -222,9 +252,7 @@ const Glasses = ({ data = {}, onChange }) => {
 
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-lg w-full max-w-4xl mx-auto text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">
-        Glass Panels
-      </h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">Glass Panels</h2>
 
       <div className="grid grid-cols-1 gap-6 sm:gap-8">
         {glassPanels.map((panel) => {
@@ -234,37 +262,21 @@ const Glasses = ({ data = {}, onChange }) => {
           const filteredIssues = glassIssueOptions.filter((i) =>
             i.toLowerCase().includes((issueSearch[panel] || "").toLowerCase())
           );
-
-          const showIssuesAndPhotos =
-            panel !== "sunroof_glass" || sunroofEnabled;
+          const showDetails = panel !== "sunroof_glass" || sunroofEnabled;
 
           return (
-            <div
-              key={panel}
-              className="flex flex-col w-full relative border-b border-white/20 pb-4 mb-4"
-            >
-              {/* Sunroof Panel */}
+            <div key={panel} className="flex flex-col w-full relative border-b border-white/20 pb-4 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <label className="text-md text-white font-medium">
-                  {labelNames[panel]}
-                </label>
-                {panel === "sunroof_glass" && (
-                  <ToggleButton checked={sunroofEnabled} onChange={toggleSunroof} />
-                )}
+                <label className="text-md text-white font-medium">{labelNames[panel]}</label>
+                {panel === "sunroof_glass" && <ToggleButton checked={sunroofEnabled} onChange={toggleSunroof} />}
               </div>
 
-              {/* Show Sunroof details only if toggle is ON */}
-              {(panel !== "sunroof_glass" || sunroofEnabled) && (
+              {showDetails && (
                 <>
-                  {/* Brand Selection */}
+                  {/* Brand */}
                   {isSpecial && (
-                    <div
-                      className="mb-4 relative"
-                      ref={(el) => (dropdownRefs.current[`${panel}-brand`] = el)}
-                    >
-                      <label className="text-md text-white font-medium mb-2">
-                        Brand
-                      </label>
+                    <div className="mb-4 relative" ref={(el) => (dropdownRefs.current[`${panel}-brand`] = el)}>
+                      <label className="text-md text-white font-medium mb-2">Brand</label>
                       <button
                         onClick={() => toggleDropdown(`${panel}-brand`)}
                         className="p-2 bg-gray-800 border border-green-200 rounded-md w-full text-left flex justify-between items-center text-white"
@@ -276,34 +288,19 @@ const Glasses = ({ data = {}, onChange }) => {
                         <div className="absolute z-20 bg-gray-800 border border-green-200 rounded-md mt-1 w-full max-h-64 overflow-y-auto p-2">
                           <input
                             type="text"
-                            value={issueSearch[`${panel}-brand`] || ""}
-                            onChange={(e) =>
-                              setIssueSearch((prev) => ({
-                                ...prev,
-                                [`${panel}-brand`]: e.target.value,
-                              }))
-                            }
+                            value={brandSearch[panel] || ""}
+                            onChange={(e) => setBrandSearch((prev) => ({ ...prev, [panel]: e.target.value }))}
                             placeholder="Search brand..."
                             className="w-full p-2 mb-2 rounded-md bg-gray-700 text-white focus:outline-none"
                           />
                           {brandOptions
-                            .filter((b) =>
-                              b
-                                .toLowerCase()
-                                .includes(
-                                  (
-                                    issueSearch[`${panel}-brand`] || ""
-                                  ).toLowerCase()
-                                )
-                            )
+                            .filter((b) => b.toLowerCase().includes((brandSearch[panel] || "").toLowerCase()))
                             .map((b) => (
                               <div
                                 key={b}
                                 className="px-2 py-1 cursor-pointer hover:bg-gray-700 rounded-md text-white"
                                 onClick={() => {
-                                  handleBrandChange(panel)({
-                                    target: { value: b },
-                                  });
+                                  handleBrandChange(panel)({ target: { value: b } });
                                   setShowDropdown(null);
                                 }}
                               >
@@ -314,46 +311,29 @@ const Glasses = ({ data = {}, onChange }) => {
                       )}
                     </div>
                   )}
+
+                  {/* Manufacturing Date */}
                   {isSpecial && (
                     <div className="mb-4">
-                      <label className="text-md text-white font-medium mb-2">
-                        Manufacturing MM/YY
-                      </label>
+                      <label className="text-md text-white font-medium mb-2">Manufacturing MM/YY</label>
                       <input
                         type="text"
                         value={manufacturingDate[panel] || ""}
-                        onChange={(e) => {
-                          // Allow only numbers and /
-                          let value = e.target.value.replace(/[^0-9/]/g, "");
-                          // Auto-insert / after MM
-                          if (value.length === 2 && !value.includes("/"))
-                            value += "/";
-                          if (value.length > 5) value = value.slice(0, 5);
-                          setManufacturingDate((prev) => {
-                            const updated = { ...prev, [panel]: value };
-                            onChange &&
-                              onChange(`${panel}_manufacturingDate`, value);
-                            return updated;
-                          });
-                        }}
+                        onChange={handleManufacturingDateChange(panel)}
                         placeholder="MM/YY"
                         className="p-2 bg-transparent text-white border border-green-200 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-lime-400"
                       />
                     </div>
                   )}
-                  {/* Issues Dropdown */}
-                  {showIssuesAndPhotos && (
-                    <div
-                      className="mb-4 relative"
-                      ref={(el) => (dropdownRefs.current[panel] = el)}
-                    >
+
+                  {/* Issues */}
+                  {showDetails && (
+                    <div className="mb-4 relative" ref={(el) => (dropdownRefs.current[panel] = el)}>
                       <button
                         onClick={() => toggleDropdown(panel)}
                         className="p-2 bg-gray-800 border border-green-200 rounded-md w-full text-left flex justify-between items-center text-white"
                       >
-                        {selectedIssues.length > 0
-                          ? selectedIssues.join(", ")
-                          : "Select Issues"}
+                        {selectedIssues.length > 0 ? selectedIssues.join(", ") : "Select Issues"}
                         <span className="ml-2">&#9662;</span>
                       </button>
                       {showDropdown === panel && (
@@ -361,20 +341,12 @@ const Glasses = ({ data = {}, onChange }) => {
                           <input
                             type="text"
                             value={issueSearch[panel] || ""}
-                            onChange={(e) =>
-                              setIssueSearch((prev) => ({
-                                ...prev,
-                                [panel]: e.target.value,
-                              }))
-                            }
+                            onChange={(e) => setIssueSearch((prev) => ({ ...prev, [panel]: e.target.value }))}
                             placeholder="Search issues..."
                             className="w-full p-2 mb-2 rounded-md bg-gray-700 text-white focus:outline-none"
                           />
                           {filteredIssues.map((issue) => (
-                            <label
-                              key={issue}
-                              className="flex items-center mb-1 cursor-pointer text-white"
-                            >
+                            <label key={issue} className="flex items-center mb-1 cursor-pointer text-white">
                               <input
                                 type="checkbox"
                                 checked={selectedIssues.includes(issue)}
@@ -388,8 +360,9 @@ const Glasses = ({ data = {}, onChange }) => {
                       )}
                     </div>
                   )}
+
                   {/* Photos */}
-                  {showIssuesAndPhotos && selectedIssues.length > 0 && (
+                  {showDetails && selectedIssues.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-4">
                       {photosArr.map((photoUrl, i) => (
                         <div key={i} className="relative">
@@ -428,12 +401,7 @@ const Glasses = ({ data = {}, onChange }) => {
                               </label>
                               <label className="flex items-center px-4 py-3 w-full cursor-pointer hover:bg-gray-700">
                                 <AiOutlineUpload className="mr-2" /> Upload Photo
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => handleFileSelect(e, panel)}
-                                />
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileSelect(e, panel)} />
                               </label>
                             </div>
                           )}
@@ -451,30 +419,13 @@ const Glasses = ({ data = {}, onChange }) => {
       {/* Preview Modal */}
       {previewUrl && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div
-            className="fixed inset-0 bg-black/60"
-            onClick={handleCancel}
-          ></div>
-          <div className="relative bg-gray-900 rounded-lg p-6 w-96 text-center z-60">
+          <div className="fixed inset-0 bg-black/60" onClick={handleCancel}></div>
+          <div className="relative bg-gray-900 rounded-lg p-6 w-96 text-center z-50">
             <h3 className="text-lg font-semibold mb-4">Preview Photo</h3>
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="w-full h-64 object-contain rounded-md mb-4"
-            />
+            <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain rounded-md mb-4" />
             <div className="flex justify-between">
-              <button
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-600 rounded-md"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirm}
-                className="px-4 py-2 bg-green-600 rounded-md"
-              >
-                Confirm
-              </button>
+              <button onClick={handleCancel} className="px-4 py-2 bg-gray-600 rounded-md">Cancel</button>
+              <button onClick={handleConfirm} className="px-4 py-2 bg-green-600 rounded-md">Confirm</button>
             </div>
           </div>
         </div>
