@@ -708,12 +708,14 @@ async function addProfilePhotosPage(doc, r) {
   );
 
   const pageWidth = A4.w;
-  const photoBoxWidth = 44; // Slightly smaller for better fit
-  const gap = 12;
-  const cols = 4;
-  const rows = 2;
-  const gridWidth = cols * photoBoxWidth + (cols - 1) * gap;
-  const gridHeight = rows * photoBoxWidth + (rows - 1) * gap;
+  const photoBoxWidth = 45; // adjust size for balance
+  const gapX = 8; // horizontal gap
+  const gapY = 16; // vertical gap
+  const cols = 2;  // only 2 per row
+  const rows = 4;  // 4 rows total
+
+  // total grid width for centering
+  const gridWidth = cols * photoBoxWidth + (cols - 1) * gapX;
   const startX = (pageWidth - gridWidth) / 2;
   const startY = mm(50);
 
@@ -731,9 +733,10 @@ async function addProfilePhotosPage(doc, r) {
   for (let i = 0; i < cells.length; i++) {
     const col = i % cols;
     const row = Math.floor(i / cols);
-    const x = startX + col * (photoBoxWidth + gap);
-    const y = startY + row * (photoBoxWidth + gap);
+    const x = startX + col * (photoBoxWidth + gapX);
+    const y = startY + row * (photoBoxWidth + gapY);
 
+    // draw box and label
     labeledPhotoBox(doc, cells[i].label, x, y, photoBoxWidth, photoBoxWidth);
 
     if (typeof cells[i].url === "string" && cells[i].url.trim()) {
@@ -741,13 +744,14 @@ async function addProfilePhotosPage(doc, r) {
       if (data) {
         const format =
           data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() || "JPEG";
+
         doc.addImage(
           data,
           format,
-          x + 1.2,
-          y + 1.2,
-          photoBoxWidth - 2.4,
-          photoBoxWidth - 2.4,
+          x + 2,
+          y + 12, // push down a bit for label space
+          photoBoxWidth - 4,
+          photoBoxWidth - 14,
           undefined,
           "FAST"
         );
@@ -761,6 +765,7 @@ async function addProfilePhotosPage(doc, r) {
 
   drawFooter(doc);
 }
+
 /** =========================================================================
  * PAGE 3: BODY PANELS (table with thumbnails)
  * ========================================================================= */
