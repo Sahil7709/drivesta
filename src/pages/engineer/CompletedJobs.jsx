@@ -15,11 +15,10 @@ const statusColors = {
 };
 
 const CompletedJobs = () => {
-  
-    const downloadReport = async (job) => {
+  const downloadReport = async (job) => {
     try {
       toast.info("Your Inspection Report is being generated, please wait...");
-      await generateInspectionPDF(job); 
+      await generateInspectionPDF(job);
       toast.success("Report downloaded!");
     } catch (err) {
       toast.error("Failed to generate report.");
@@ -34,8 +33,10 @@ const CompletedJobs = () => {
       { accessorKey: "bookingId", header: "Booking ID" },
       { accessorKey: "customerName", header: "Customer" },
       { accessorKey: "engineer_name", header: "Engineer" },
-      
-      { header: "Vehicle", accessorFn: (row) => `${row.brand} ${row.model} ${row.variant}`},
+      {
+        header: "Vehicle",
+        accessorFn: (row) => `${row.brand} ${row.model} ${row.variant}`,
+      },
       { accessorKey: "date", header: "Inspection" },
       {
         id: "payment",
@@ -63,8 +64,7 @@ const CompletedJobs = () => {
         Cell: ({ row }) => {
           const job = row.original;
           const isInspectionCompleted =
-            job.status ===
-            APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value;
+            job.status === APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value;
 
           return (
             <Tooltip
@@ -90,18 +90,26 @@ const CompletedJobs = () => {
       },
     ],
     getData: async () => {
-      const user = JSON.parse(
-        StorageService.getData(APPLICATION_CONSTANTS.STORAGE.USER_DETAILS)
-      );
-      const res = await new ApiService().apiget(
-        `${ServerUrl.API_GET_ALL_REQUESTS_BY_ENGINEER}/${user.userId}`
-      );
-        // Only show jobs with status WAITING_FOR_APPROVAL or COMPLETED
+      try {
+        const user = JSON.parse(
+          StorageService.getData(APPLICATION_CONSTANTS.STORAGE.USER_DETAILS)
+        );
+
+        const res = await new ApiService().apiget(
+          `${ServerUrl.API_GET_ALL_REQUESTS_BY_ENGINEER}/${user.userId}`
+        );
+
         const jobs = res.data?.data || [];
+
         return jobs.filter(
           (job) =>
-            job.status === "WAITING_FOR_APPROVAL" || job.status === "COMPLETED"
+            job.status === APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value ||
+            job.status === APPLICATION_CONSTANTS.REQUEST_STATUS.CUSTOMER_PAID.value
         );
+      } catch (err) {
+        toast.error("Failed to fetch completed jobs");
+        return [];
+      }
     },
   };
 
