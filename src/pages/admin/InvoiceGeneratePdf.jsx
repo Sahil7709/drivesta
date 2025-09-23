@@ -90,9 +90,9 @@ const generateInvoicePdf = (order) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(...textGray);
-      doc.text("Managing Director, Company Ltd.", 195, startY + 18, { align: "right" });
-      doc.text("Phone: +91 7385978109", 195, startY + 26, { align: "right" });
-      doc.text("Email: example@carnomia.com", 195, startY + 34, { align: "right" });
+      doc.text("Carnomia Technology Pvt. Ltd.", 195, startY + 18, { align: "right" });
+      doc.text("Phone :- +91 7385978109 / 7378554409", 195, startY + 26, { align: "right" });
+      doc.text("E mail :- carnomiatechnologies@gmail.com", 195, startY + 34, { align: "right" });
 
       // Table
       const tableStartY = startY + 50;
