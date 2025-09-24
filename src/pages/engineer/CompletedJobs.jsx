@@ -37,7 +37,16 @@ const CompletedJobs = () => {
         header: "Vehicle",
         accessorFn: (row) => `${row.brand} ${row.model} ${row.variant}`,
       },
-      { accessorKey: "date", header: "Inspection" },
+      {
+        accessorKey: "date",
+        header: "Date",
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          if (!value) return "-";
+          const date = new Date(value);
+          return isNaN(date) ? "-" : date.toLocaleDateString();
+        },
+      },
       {
         id: "payment",
         header: "Payment",
@@ -50,8 +59,7 @@ const CompletedJobs = () => {
         Cell: ({ row }) => (
           <span
             className={`px-2 py-1 rounded text-xs font-semibold ${
-              statusColors[row.original.status] ||
-              "bg-gray-100 text-gray-800"
+              statusColors[row.original.status] || "bg-gray-100 text-gray-800"
             }`}
           >
             {row.original.status}
@@ -103,8 +111,12 @@ const CompletedJobs = () => {
 
         return jobs.filter(
           (job) =>
-            job.status === APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value ||
-            job.status === APPLICATION_CONSTANTS.REQUEST_STATUS.CUSTOMER_PAID.value
+            job.status ===
+              APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value ||
+            job.status ===
+              APPLICATION_CONSTANTS.REQUEST_STATUS.CUSTOMER_PAID.value ||
+            job.status ===
+              APPLICATION_CONSTANTS.REQUEST_STATUS.WAITING_FOR_APPROVAL.value
         );
       } catch (err) {
         toast.error("Failed to fetch completed jobs");

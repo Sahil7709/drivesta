@@ -20,7 +20,7 @@ export default function RequestDetails({ open, onClose, request, onAssign, setMo
     variant,
   } = request;
 
-  const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  const time = date ? new Date(date).toLocaleTimeString([]) : '';
 
   const handleAssign = (engineer, selectedSlot) => {
     if (onAssign) {
@@ -75,7 +75,7 @@ export default function RequestDetails({ open, onClose, request, onAssign, setMo
                   <InfoItem icon={FiPhone} delay={0.2}>Phone: {customerMobile}</InfoItem>
                   <InfoItem icon={FiMapPin} delay={0.3}>Location: {address}</InfoItem>
                   <InfoItem icon={FiUser} delay={0.4}>Booking ID: {bookingId || id}</InfoItem>
-                  <InfoItem icon={FiCalendar} delay={0.5}>Date/Time: {date} {time}</InfoItem>
+                  <InfoItem icon={FiCalendar} delay={0.5}>Date: {date ? new Date(date).toLocaleDateString() : 'Not scheduled'}</InfoItem>
 
                   <h3 className="mt-2 text-button font-bold text-lg">Vehicle Info</h3>
                   <InfoItem icon={FiTruck} delay={0.6}>Brand: {brand}</InfoItem>

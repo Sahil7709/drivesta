@@ -14,6 +14,9 @@ const PaymentManagement = () => {
   const [payments, setPayments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [showPaymentMethodPopup, setShowPaymentMethodPopup] = useState(false);
+  const [paymentMode, setPaymentMode] = useState("");
+  const [pendingPayment, setPendingPayment] = useState(null);
 
   const adminRoles = ["admin", "superadmin"];
   const isAdminRole = adminRoles.includes(user?.role);
@@ -41,7 +44,7 @@ const PaymentManagement = () => {
             amount: item.amount || 0,
             pdiDate: item.date || "N/A",
             status: item.status?.toUpperCase() || "PENDING",
-            paymentStatus: item.paymentStatus || "Unpaid",
+            paymentStatus: item.paymentStatus?.toUpperCase() || "UNPAID",
             paymentMode: item.paymentMode || "N/A",
           }))
           .filter(
@@ -77,13 +80,12 @@ const PaymentManagement = () => {
       p.customerMobile.includes(searchTerm)
   );
 
-  const updatePaymentStatus = async (payment) => {
+  const updatePaymentStatus = async (payment, selectedMode) => {
     if (!isAdminRole) return;
     try {
       const requestId = payment.id;
       const newRequestStatus =
-        payment.status ===
-        APPLICATION_CONSTANTS.REQUEST_STATUS.ADMIN_APPROVED.value
+        payment.status === APPLICATION_CONSTANTS.REQUEST_STATUS.ADMIN_APPROVED.value
           ? APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value
           : payment.status;
 
@@ -92,19 +94,21 @@ const PaymentManagement = () => {
         {
           paymentStatus: APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value,
           status: newRequestStatus,
+          paymentMode: selectedMode || payment.paymentMode || "CASH",
+          paymentDate: new Date().toISOString(), // store payment date dynamically
         }
       );
 
       if (res.data && res.data.data) {
-        toast.success("Payment and request status updated successfully")
+        toast.success("Payment and request status updated successfully");
         setPayments((prev) =>
           prev.map((p) =>
             p.id === requestId
               ? {
                   ...p,
-                  paymentStatus:
-                    APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value,
+                  paymentStatus: APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value,
                   status: newRequestStatus,
+                  paymentMode: selectedMode || p.paymentMode,
                 }
               : p
           )
@@ -115,6 +119,7 @@ const PaymentManagement = () => {
             ...prev,
             paymentStatus: APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value,
             status: newRequestStatus,
+            paymentMode: selectedMode || prev.paymentMode,
           }));
         }
       } else {
@@ -123,14 +128,16 @@ const PaymentManagement = () => {
     } catch (err) {
       console.error("Error updating payment/request status:", err);
       toast.error("Failed to update payment/request status");
+    } finally {
+      setShowPaymentMethodPopup(false);
+      setPaymentMode("");
+      setPendingPayment(null);
     }
   };
 
   return (
     <div className="min-h-screen bg-primary p-4 sm:p-6 md:p-8">
-      <h1 className="text-3xl font-bold text-button mb-6">
-        Payment Management
-      </h1>
+      <h1 className="text-3xl font-bold text-button mb-6">Payment Management</h1>
 
       <div className="mb-6 flex flex-col sm:flex-row items-center gap-4">
         <input
@@ -163,9 +170,7 @@ const PaymentManagement = () => {
                   </div>
                   <div>
                     <p>{p.customerName}</p>
-                    <p className="text-gray-500 text-sm">
-                      {p.customerMobile}
-                    </p>
+                    <p className="text-gray-500 text-sm">{p.customerMobile}</p>
                   </div>
                 </td>
                 <td className="p-3">{p.bookingId}</td>
@@ -173,9 +178,7 @@ const PaymentManagement = () => {
                   <div>{p.brand} {p.model}</div>
                   <div>{p.variant}</div>
                 </td>
-                <td className="p-3">
-                  ₹{p.amount.toLocaleString("en-IN")}
-                </td>
+                <td className="p-3">₹{p.amount.toLocaleString("en-IN")}</td>
                 <td className="p-3">
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
@@ -188,25 +191,25 @@ const PaymentManagement = () => {
                   </span>
                 </td>
                 <td className="p-3 flex space-x-2">
-                  {/* Eye (all roles) */}
                   <button
                     onClick={() => setSelectedPayment(p)}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     <FiEye className="w-5 h-5" />
                   </button>
-                  {/* Download (all roles) */}
                   <button
                     onClick={() => downloadInvoice(p)}
                     className="text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
                     <FiDownload className="w-5 h-5" />
                   </button>
-                  {/* Mark as Paid (only admin/superadmin) */}
                   {isAdminRole && p.paymentStatus !== "PAID" && (
                     <button
-                      onClick={() => updatePaymentStatus(p)}
-                      className="text-green-600 hover:text-green-800 "
+                      onClick={() => {
+                        setPendingPayment(p);
+                        setShowPaymentMethodPopup(true);
+                      }}
+                      className="text-green-600 hover:text-green-800"
                     >
                       <FiCheck className="w-5 h-5" />
                     </button>
@@ -236,7 +239,6 @@ const PaymentManagement = () => {
             </div>
 
             <div className="mt-6 flex gap-3">
-              {/* Download (all roles) */}
               <button
                 onClick={() => downloadInvoice(selectedPayment)}
                 className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center"
@@ -244,22 +246,62 @@ const PaymentManagement = () => {
                 <FiDownload className="w-5 h-5 mr-1" /> Download
               </button>
 
-              {/* Mark as Paid (only admin/superadmin) */}
-              {isAdminRole && selectedPayment.paymentStatus !== "Paid" && (
+              {isAdminRole && selectedPayment.paymentStatus !== "PAID" && (
                 <button
-                  onClick={() => updatePaymentStatus(selectedPayment)}
+                  onClick={() => {
+                    setPendingPayment(selectedPayment);
+                    setShowPaymentMethodPopup(true);
+                  }}
                   className="px-4 py-2 border border-green-600 text-green-600 rounded-md flex items-center"
                 >
                   <FiCheck className="w-5 h-5 mr-1" /> Mark as Paid
                 </button>
               )}
 
-              {/* Close (all roles) */}
               <button
                 onClick={() => setSelectedPayment(null)}
                 className="px-4 py-2 border text-gray-600 rounded-md flex items-center"
               >
                 <FiX className="w-5 h-5 mr-1" /> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPaymentMethodPopup && pendingPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+          <div className="relative bg-white rounded-lg max-w-xs w-full shadow-xl z-10 p-6">
+            <h3 className="text-lg font-bold mb-4">Select Payment Mode</h3>
+            <select
+              className="w-full border px-3 py-2 rounded mb-4"
+              value={paymentMode}
+              onChange={(e) => setPaymentMode(e.target.value)}
+            >
+              <option value="">-- Select --</option>
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online</option>
+              <option value="UPI">UPI</option>
+              <option value="CARD">Card</option>
+            </select>
+            <div className="flex gap-2">
+              <button
+                className="px-4 py-2 bg-green-600 text-white rounded"
+                disabled={!paymentMode}
+                onClick={() => updatePaymentStatus(pendingPayment, paymentMode)}
+              >
+                Mark as Paid
+              </button>
+              <button
+                className="px-4 py-2 border rounded"
+                onClick={() => {
+                  setShowPaymentMethodPopup(false);
+                  setPaymentMode("");
+                  setPendingPayment(null);
+                }}
+              >
+                Cancel
               </button>
             </div>
           </div>

@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format, isAfter } from "date-fns";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FileUploaderService from "../../../services/upload-document.service";
 import imageCompression from "browser-image-compression";
@@ -177,6 +180,27 @@ const Tyres = ({ data = {}, onChange }) => {
 
   const toggleDropdown = (panel) => setShowDropdown((curr) => (curr === panel ? null : panel));
 
+  // Helper to parse MM/YY to Date
+  const parseMMYY = (str) => {
+    if (!str) return null;
+    const [mm, yy] = str.split("/");
+    if (!mm || !yy) return null;
+    return new Date(`20${yy.length === 2 ? yy : "00"}`, Number(mm) - 1, 1);
+  };
+
+  // Custom input for DatePicker to make it read-only
+  const ReadOnlyInput = forwardRef(({ value, onClick, placeholder, className }, ref) => (
+    <input
+      value={value}
+      onClick={onClick}
+      placeholder={placeholder}
+      className={className}
+      readOnly
+      ref={ref}
+      style={{ cursor: "pointer", backgroundColor: "#ffffff0a", color: "#fff" }}
+    />
+  ));
+
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-lg w-full max-w-4xl mx-auto text-white">
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">Tyres</h2>
@@ -246,12 +270,30 @@ const Tyres = ({ data = {}, onChange }) => {
                     onChange={(v) => handleFieldChange(tyreKey, "size", v)}
                   />
                   {/* Manufacturing Date */}
-                  <InputField
-                    label="Manufacturing Date (MM/YY)"
-                    placeholder="MM/YY"
-                    value={tyreData.manufacturingDate}
-                    onChange={(v) => handleFieldChange(tyreKey, "manufacturingDate", v)}
-                  />
+                  <div>
+                    <label className="text-sm text-white font-medium mb-1 block">
+                      Manufacturing Date (MM/YY)
+                    </label>
+                    <DatePicker
+                      selected={parseMMYY(tyreData.manufacturingDate)}
+                      onChange={(date) => {
+                        if (!date) return;
+                        const now = new Date();
+                        // Prevent future dates
+                        if (isAfter(date, now)) return;
+                        const mm = String(date.getMonth() + 1).padStart(2, "0");
+                        const yy = String(date.getFullYear()).slice(-2);
+                        handleFieldChange(tyreKey, "manufacturingDate", `${mm}/${yy}`);
+                      }}
+                      dateFormat="MM/yy"
+                      showMonthYearPicker
+                      maxDate={new Date()}
+                      placeholderText="MM/YY"
+                      customInput={
+                        <ReadOnlyInput className="w-full p-2 border border-white/20 rounded bg-[#ffffff0a] text-white" />
+                      }
+                    />
+                  </div>
                   {/* Thread Depth */}
                   <InputField
                     label="Thread Depth (mm)"

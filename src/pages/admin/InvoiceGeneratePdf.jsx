@@ -58,8 +58,10 @@ const generateInvoicePdf = (order) => {
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text(`Booking ID: ${order.bookingId || "N/A"}`, 195, 65, { align: "right" });
-      doc.text(`Invoice Date: ${order.pdiDate || "N/A"}`, 195, 72, { align: "right" });
-
+      const paymentDate = order.paymentDate
+        ? new Date(order.paymentDate).toLocaleDateString()
+        : "N/A";
+      doc.text(`Invoice Date: ${paymentDate}`, 195, 72, { align: "right" });
       // Invoice To
       const startY = 85;
       doc.setFont("helvetica", "bold");
@@ -73,8 +75,8 @@ const generateInvoicePdf = (order) => {
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(...textGray);
-      doc.text(`Phone: ${order.customerMobile || "N/A"}`, 15, startY + 18);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Phone: +91 ${order.customerMobile || "N/A"}`, 15, startY + 18);
 
       // Invoice From
       doc.setFont("helvetica", "bold");

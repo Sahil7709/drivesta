@@ -194,7 +194,7 @@ const AllCustomerRequests = () => {
                   <InfoCard
                     icon={<FiCalendar size={18} />}
                     title="Inspection"
-                    value={order.date}
+                    value={new Date(order.date).toLocaleDateString()}
                   />
                   <InfoCard
                     icon={<FiDollarSign size={18} />}
@@ -225,12 +225,7 @@ const AllCustomerRequests = () => {
                       APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value
                         ? new Date(order.date).toLocaleDateString()
                         : "N/A"
-                    } | Time: ${
-                      order.paymentStatus ===
-                      APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value
-                        ? order.payment_time
-                        : "N/A"
-                    }`}
+                    } `}
                     color="purple"
                   />
                 </div>

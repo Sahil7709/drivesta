@@ -15,7 +15,16 @@ const CompletedJobs = withMaterialTable(() => null, {
     { accessorKey: "bookingId", header: "Booking ID" },
     { accessorKey: "customerName", header: "Customer" },
     { accessorKey: "engineer_name", header: "Engineer" },
-    { accessorKey: "date", header: "Date" },
+    {
+      accessorKey: "paymentDate",
+      header: "Date",
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        if (!value) return "-";
+        const date = new Date(value);
+        return isNaN(date) ? "-" : date.toLocaleDateString();
+      },
+    },
     { accessorKey: "engineer_assignedSlot", header: "Slot" },
     {
       accessorKey: "actions",

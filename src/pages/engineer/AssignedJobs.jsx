@@ -110,7 +110,7 @@ const AssignedJobs = () => {
                 <p><strong>Boking ID:</strong> {job.bookingId || 'N/A'}</p>
                 <p><strong>Customer:</strong> {job.customerName || 'N/A'}</p>
                 <p><strong>Location:</strong> {job.address || 'N/A'}</p>
-                <p><strong>Date:</strong> {job.date || 'N/A'}</p>
+                <p><strong>Date:</strong> {(job.date && new Date(job.date).toLocaleDateString()) || 'N/A'}</p>
                 <p><strong>Phone:</strong> {job.customerMobile || 'N/A'}</p>
               </div>
               <button
@@ -135,7 +135,7 @@ const AssignedJobs = () => {
               <p><strong>Customer:</strong> {selectedJob.customerName || 'N/A'}</p>
               <p><strong>Phone:</strong> {selectedJob.customerMobile || 'N/A'}</p>
               <p><strong>Location:</strong> {selectedJob.address || 'N/A'}</p>
-              <p><strong>Assigned Date:</strong> {selectedJob.date || 'N/A'}</p>
+              <p><strong>Assigned Date:</strong> {(selectedJob.date && new Date(selectedJob.date).toLocaleDateString()) || 'N/A'}</p>
             </div>
           )}
         </DialogContent>

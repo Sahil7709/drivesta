@@ -139,7 +139,9 @@ const CompletedRequests = () => {
                 {
                   label: "Inspection",
                   icon: <FiCalendar />,
-                  value: order.date || "N/A",
+                  value: order.date
+                    ? new Date(order.date).toLocaleDateString()
+                    : "N/A",
                 },
                 {
                   label: "Amount",
@@ -149,7 +151,7 @@ const CompletedRequests = () => {
                 {
                   label: "Payment Mode",
                   icon: <FiCreditCard />,
-                  value: order.payment_mode || "N/A",
+                  value: order.paymentMode || "N/A",
                 },
               ];
 
@@ -229,10 +231,13 @@ const CompletedRequests = () => {
                           Status: <strong>{order.paymentStatus}</strong>
                         </span>
                         <span>
-                          Date: <strong>{order.payment_date || "N/A"}</strong>
-                        </span>
-                        <span>
-                          Time: <strong>{order.payment_time || "N/A"}</strong>
+                          Paid On:{" "}
+                          <strong>
+                            {order.paymentStatus ===
+                            APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value
+                              ? new Date(order.paymentDate).toLocaleDateString()
+                              : "N/A"}
+                          </strong>
                         </span>
                       </div>
                     </div>

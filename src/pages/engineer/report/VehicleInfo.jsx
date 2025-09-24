@@ -8,7 +8,7 @@ export default function VehicleInfo({ data }) {
     { label: "Engineer Name", value: data?.engineer_name || "-" },
     { label: "Location", value: data?.address || "-" },
     { label: "Inspection Date", value: inspectionDate },
-    { label: "Inspection Time", value: inspectionTime },
+    // { label: "Inspection Time", value: inspectionTime },
     { label: "Car Status", value: data?.carStatus || "-" },
     { label: "Brand", value: data?.brand || "-" },
     { label: "Model", value: data?.model || "-" },

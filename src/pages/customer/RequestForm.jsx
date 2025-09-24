@@ -6,7 +6,7 @@ import { FaDownload, FaChevronDown } from "react-icons/fa";
 import jeepImage from "../../assets/honda_elevate.png";
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
-import generateInspectionPDF from "../admin/InspectionReportPdf";
+import SampleReportPDF from "./SampleReportPDF";
 import sampleReport from "../../components/constants/publicData/SampleReportData";
 import { useAuth } from "../../core/contexts/AuthContext";
 
@@ -229,7 +229,7 @@ const Request = () => {
 
           <motion.button
             whileHover={{ scale: 1.05 }}
-            onClick={() => generateInspectionPDF(sampleReport)}
+            onClick={() => SampleReportPDF(sampleReport)}
             className="text-blue-600 text-sm sm:text-base md:text-lg mt-6 sm:mt-8 md:mt-10 font-body flex items-center gap-2 hover:underline bg-transparent border-none cursor-pointer"
           >
             Download Sample Report <FaDownload />

@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai";
 import FileUploaderService from "../../../services/upload-document.service";
 import imageCompression from "browser-image-compression";
 import { toast } from "react-toastify";
 import ServerUrl from "../../../core/constants/serverUrl.constant";
 import ToggleButton from "./ToggleButton";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { isAfter } from "date-fns";
 
 const glassPanels = [
   "front_windshield",
@@ -69,6 +72,24 @@ const brandOptions = [
 const glassIssueOptions = ["Fitting Mismatch", "Scratch", "Crack"];
 
 const photoCountForPanel = (panel) => (specialGlassPanels.has(panel) ? 5 : 1);
+
+// Helper to parse MM/YY to Date
+const parseMMYYToDate = (mmYY) => {
+  const [month, year] = mmYY.split("/").map((val) => parseInt(val, 10));
+  return new Date(year < 100 ? 2000 + year : year, month - 1);
+};
+
+const ReadOnlyInput = forwardRef(({ value, onClick, placeholder, className }, ref) => (
+  <input
+    value={value}
+    onClick={onClick}
+    placeholder={placeholder}
+    className={className}
+    readOnly
+    ref={ref}
+    style={{ cursor: "pointer", backgroundColor: "#ffffff0a", color: "#fff" }}
+  />
+));
 
 const Glasses = ({ data = {}, onChange }) => {
   const [photos, setPhotos] = useState({});
@@ -164,33 +185,21 @@ const Glasses = ({ data = {}, onChange }) => {
     });
   };
 
-  const handleManufacturingDateChange = (panel) => (e) => {
-    let value = e.target.value.replace(/[^0-9/]/g, "");
-
-    if (value.length === 2 && !value.includes("/")) value += "/";
-    if (value.length > 5) value = value.slice(0, 5);
-
-    const [mm, yy] = value.split("/");
-    if (mm && yy) {
-      const month = parseInt(mm);
-      if (month < 1 || month > 12) return; // Invalid month
-
-      const inputDate = new Date(`20${yy}`, month - 1);
-      const now = new Date();
-      if (inputDate > now) return; // Don't allow future
-    }
+  const handleManufacturingDateChange = (panel) => (date) => {
+    if (!date) return;
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yy = String(date.getFullYear()).slice(-2);
+    const value = `${mm}/${yy}`;
 
     setManufacturingDate((prev) => {
-      const updated = { ...prev, [panel]: value };
-
       if (!isDateSetRef.current) {
         isDateSetRef.current = true;
         const allUpdated = {};
         glassPanels.forEach((p) => (allUpdated[p] = value));
         glassPanels.forEach((p) => onChange && onChange(`${p}_manufacturingDate`, value));
-        return { ...updated, ...allUpdated };
+        return { ...prev, ...allUpdated };
       }
-
+      const updated = { ...prev, [panel]: value };
       onChange && onChange(`${panel}_manufacturingDate`, value);
       return updated;
     });
@@ -316,12 +325,21 @@ const Glasses = ({ data = {}, onChange }) => {
                   {isSpecial && (
                     <div className="mb-4">
                       <label className="text-md text-white font-medium mb-2">Manufacturing MM/YY</label>
-                      <input
-                        type="text"
-                        value={manufacturingDate[panel] || ""}
+                      <DatePicker
+                        selected={
+                          manufacturingDate[panel]
+                            ? new Date(`20${manufacturingDate[panel].slice(-2)}`, manufacturingDate[panel].slice(0, 2) - 1)
+                            : null
+                        }
                         onChange={handleManufacturingDateChange(panel)}
-                        placeholder="MM/YY"
+                        dateFormat="MM/yy"
+                        placeholderText="MM/YY"
                         className="p-2 bg-transparent text-white border border-green-200 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-lime-400"
+                        showMonthYearPicker
+                        maxDate={new Date()}
+                        customInput={
+                          <ReadOnlyInput className="p-2 bg-transparent text-white border border-green-200 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-lime-400" />
+                        }
                       />
                     </div>
                   )}

@@ -84,7 +84,7 @@ const handleViewReport = (report) => {
                 <th className="p-3 text-left text-sm font-body text-button">Customer Name</th>
                 <th className="p-3 text-left text-sm font-body text-button">Engineer Name</th>
                 <th className="p-3 text-left text-sm font-body text-button">Brand Model</th>
-                <th className="p-3 text-left text-sm font-body text-button">Date / Time</th>
+                <th className="p-3 text-left text-sm font-body text-button">Date</th>
                 <th className="p-3 text-left text-sm font-body text-button">Status</th>
                 <th className="p-3 text-left text-sm font-body text-button">Actions</th>
               </tr>
@@ -108,8 +108,8 @@ const handleViewReport = (report) => {
                   <td className="p-3 text-sm text-gray-700">{`${r.brand} ${r.model}`}</td>
                   <td className="p-3 text-sm text-gray-700">
                     <div className="flex flex-col">
-                      <span>{r.date}</span>
-                      <span className="text-gray-500 text-xs">{r.time || ''}</span>
+                      <span>{(r.date && new Date(r.date).toLocaleDateString()) || 'N/A'}</span>
+                      {/* <span className="text-gray-500 text-xs">{r.time || ''}</span> */}
                     </div>
                   </td>
                   <td className="p-3">

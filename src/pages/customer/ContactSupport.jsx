@@ -107,8 +107,8 @@ const ContactSupport = () => {
           <div className="bg-primary shadow-xl rounded-2xl p-5 sm:p-6 border border-gray-200 space-y-6">
             {[
               { icon: <FiPhone className="text-xl sm:text-2xl" />, color: '#16a34a', label: 'Phone/WhatsApp:', value: (<><a href="tel:+917385978109" className="text-blue-600 hover:underline block text-sm">+91 73859 78109</a><a href="tel:+917378554409" className="text-blue-600 hover:underline block text-sm">+91 73785 54409</a></>) },
-              { icon: <FiMail className="text-xl sm:text-2xl" />, color: '#dc2626', label: 'Email:', value: <a href="mailto:support@drivesta.com" className="text-blue-600 hover:underline text-sm">support@drivesta.com</a> },
-              { icon: <FiGlobe className="text-xl sm:text-2xl" />, color: '#7c3aed', label: 'Website:', value: <a href="https://www.drivesta.com" className="text-blue-600 hover:underline text-sm">www.drivesta.com</a> },
+              { icon: <FiMail className="text-xl sm:text-2xl" />, color: '#dc2626', label: 'Email:', value: <a href="mailto:support@carnomia.com" className="text-blue-600 hover:underline text-sm">carnomiatechnologies@gmail.com</a> },
+              { icon: <FiGlobe className="text-xl sm:text-2xl" />, color: '#7c3aed', label: 'Website:', value: <a href="https://carnomia.com/" className="text-blue-600 hover:underline text-sm">https://carnomia.com/</a> },
               { icon: <BsClockHistory className="text-xl sm:text-2xl" />, color: '#facc15', label: 'Customer Support Hours:', value: <span className="text-sm">Mon–Sun: 9:30 AM – 6:30 PM</span> },
             ].map((item, idx) => (
               <div className="flex items-start gap-3 sm:gap-4" key={idx}>

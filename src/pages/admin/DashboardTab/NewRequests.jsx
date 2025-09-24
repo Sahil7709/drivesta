@@ -120,7 +120,9 @@ const NewRequests = ({ setViewMode }) => {
                   </p>
                   <p className="flex items-center">
                     <FiCalendar className="mr-2 text-gray-500" />
-                    {r.createdAt ? r.createdAt : "Not scheduled"}
+                    {r.createdAt
+                      ? new Date(r.createdAt).toLocaleDateString()
+                      : "Not provided"}
                   </p>
                 </div>
 

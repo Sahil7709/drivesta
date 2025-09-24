@@ -21,9 +21,12 @@ import {
   BsX,
   BsCurrencyRupee,
 } from "react-icons/bs";
+import { FiDownload } from "react-icons/fi";
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
 import { APPLICATION_CONSTANTS } from "../../core/constants/app.constant";
+import generateInspectionPDF from "../admin/InspectionReportPdf";
+import generateInvoicePdf from "../admin/InvoiceGeneratePdf";
 
 const Recent = () => {
   const navigate = useNavigate();
@@ -181,6 +184,36 @@ const Recent = () => {
       )}
     </AnimatePresence>
   );
+
+  const handleCloseModal = () => {
+    if (isSaving) return; // prevent closing while saving
+    setShowEditModal(false);
+  };
+
+  const downloadReport = async (order) => {
+    try {
+      toast.info("Your Inspection Report is being generated, please wait...");
+      await generateInspectionPDF(order);
+      toast.success("Report downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate report.");
+    }
+  };
+
+  const downloadInvoice = async (order) => {
+    try {
+      toast.info("Your Invoice is being generated, please wait...");
+      await generateInvoicePdf(order);
+      toast.success("Invoice downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate invoice.");
+    }
+  };
+
+  const isCompleted =
+    state &&
+    state.status === APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value &&
+    state.paymentStatus === APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value;
 
   return (
     <div className="min-h-screen bg-primary px-4 sm:px-6 md:px-8 py-6 font-sans">
@@ -378,7 +411,6 @@ const Recent = () => {
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {/* {state['paymentStatus']} */}
                       {
                         APPLICATION_CONSTANTS.PAYMENT_STATUS[
                           state["paymentStatus"]
@@ -390,18 +422,25 @@ const Recent = () => {
                   </div>
                 </div>
 
-                {state["paymentStatus"] !=
-                APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value ? (
+                {state["paymentStatus"] !== APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value ? (
                   <span>Payment not done yet</span>
                 ) : (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    // onClick={handleDownloadReport}
-                    className="w-full bg-white text-green-800 font-heading py-2 sm:py-3 rounded-lg shadow-md hover:bg-gray-100 text-sm sm:text-base"
-                  >
-                    Download Car Report
-                  </motion.button>
+                  isCompleted && (
+                    <div className="flex flex-wrap gap-3 mt-3 sm:mt-0">
+                      <button
+                        onClick={() => downloadReport(state)}
+                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90 cursor-pointer"
+                      >
+                        <FiDownload className="mr-2" /> Download Report
+                      </button>
+                      <button
+                        onClick={() => downloadInvoice(state)}
+                        className="flex items-center px-4 py-2 text-sm bg-button text-white rounded-lg shadow-sm transition-all hover:opacity-90 cursor-pointer"
+                      >
+                        <FiDownload className="mr-2" /> Download Invoice
+                      </button>
+                    </div>
+                  )
                 )}
               </div>
 
