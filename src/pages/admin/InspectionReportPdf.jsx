@@ -520,7 +520,7 @@ async function addCoverPage(doc, r) {
   doc.circle(circleX, circleY, 13, "S");
 
   setText(doc, THEME.text, 18);
-  doc.text(String(r.vehicleScore ?? "9.2"), circleX - 5, circleY + 3);
+  doc.text(String(r.overall_score ?? "8"), circleX - 2, circleY + 2);
 
   setText(doc, THEME.good, 10);
   doc.text("GOOD", circleX - 25, circleY + 20);
@@ -528,7 +528,7 @@ async function addCoverPage(doc, r) {
   setText(doc, THEME.subtext, 7);
   doc.text(
     r.scoreComment ??
-      "This score signifies that the car is free of defects arising out of manufacturing, mishandling at dealer premise / during travel & shipment. Asset and Driver Safety is not compromised.",
+      "Your vehicle has been thoroughly checked from top to bottom. This score reflects its overall condition, including safety, performance, and quality. It confirms that your car is in excellent health and ready for the road.",
     mm(section3X + 5),
     mm(CARD_Y + 55),
     { maxWidth: mm(CARD_W - 20), align: "left" }
@@ -621,80 +621,6 @@ async function addCoverPage(doc, r) {
 /** =========================================================================
  * PAGE 2: PROFILE PHOTOS (360)
  * ========================================================================= */
-// async function addProfilePhotosPage(doc, r) {
-//   doc.addPage("a4", "portrait");
-//   drawTopBand(doc);
-
-//   sectionHeader(
-//     doc,
-//     "Profile Photos",
-//     mm(28),
-//     "Your Car’s 360° View • Check each side for a complete visual record"
-//   );
-
-//   const pageWidth = A4.w;
-//   const photoBoxWidth = 50;
-//   const gap = 16;
-//   const gridWidth = photoBoxWidth * 2 + gap;
-//   const startX = (pageWidth - gridWidth) / 2;
-
-//   const cells = [
-//     {
-//       label: "1. Front Left View",
-//       x: startX,
-//       y: mm(50),
-//       url: r.front_left_imageUrl,
-//     },
-//     {
-//       label: "2. Rear Left View",
-//       x: startX + photoBoxWidth + gap,
-//       y: mm(50),
-//       url: r.rear_left_imageUrl,
-//     },
-//     {
-//       label: "3. Rear Right View",
-//       x: startX,
-//       y: mm(120),
-//       url: r.rear_right_imageUrl,
-//     },
-//     {
-//       label: "4. Front Right View",
-//       x: startX + photoBoxWidth + gap,
-//       y: mm(120),
-//       url: r.front_right_imageUrl,
-//     },
-//   ];
-
-//   for (const c of cells) {
-//     labeledPhotoBox(doc, c.label, c.x, c.y, photoBoxWidth, photoBoxWidth);
-//     if (typeof c.url === "string" && c.url.trim()) {
-//       const data = await urlToDataURL(`${ServerUrl.IMAGE_URL}${c.url}`);
-//       if (data) {
-//         const format =
-//           data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() ||
-//           "JPEG";
-//         doc.addImage(
-//           data,
-//           format,
-//           c.x + 1.2,
-//           c.y + 1.2,
-//           photoBoxWidth - 2.4,
-//           photoBoxWidth - 2.4,
-//           undefined,
-//           "FAST"
-//         );
-//       } else {
-//         console.warn(`Image not loaded: ${c.label} (${c.url})`);
-//       }
-//     } else {
-//       console.warn(`Invalid or missing URL for ${c.label}`);
-//     }
-//   }
-
-//   drawFooter(doc);
-// }
-
-// ...existing code...
 
 async function addProfilePhotosPage(doc, r) {
   doc.addPage("a4", "portrait");
@@ -874,7 +800,7 @@ async function addBodyPanelsPage(doc, r) {
     const issue =
       Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
         ? r[`${row.key}_issues`].join(", ")
-        : "—";
+        : "All OK";
 
     const labelText = doc.splitTextToSize(row.label, colX[1] - colX[0] - 2);
     const paintText = doc.splitTextToSize(
@@ -1008,7 +934,7 @@ async function addGlassesPage(doc, r) {
     const issues =
       Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
         ? r[`${row.key}_issues`].join(", ")
-        : "—";
+        : "All OK";
     const urls = Array.isArray(r[`${row.key}_imageUrls`])
       ? r[`${row.key}_imageUrls`]
       : [];
@@ -1142,7 +1068,7 @@ async function addRubberPage(doc, r) {
     const issues =
       Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
         ? r[`${row.key}_issues`].join(", ")
-        : "—";
+        : "All OK";
 
     const urls = Array.isArray(r[`${row.key}_imageUrls`])
       ? r[`${row.key}_imageUrls`]
@@ -1208,7 +1134,7 @@ async function addRubberPage(doc, r) {
     // Pagination check
     if (y > mm(250)) {
       drawFooter(doc);
-      y = startNewPage("Rubber (contd.)"); // render header with top spacing
+      y = startNewPage("Rubber  "); // render header with top spacing
     }
   }
 
@@ -1288,7 +1214,19 @@ async function addSeatsAndFabricsSection(doc, r) {
     doc.text(row.label, col.part, y);
 
     setText(doc, THEME.subtext, 8.5);
-    const issuesText = r[`${row.key}_issues`] ?? "—";
+    const issuesValue = r[`${row.key}_issues`];
+
+const issuesText = Array.isArray(issuesValue)
+  ? issuesValue.length > 0
+    ? issuesValue.join(", ")
+    : "All OK"
+  : issuesValue && issuesValue.trim() !== ""
+    ? issuesValue
+    : "All OK";
+
+doc.text(issuesText, col.status, y);
+
+
     doc.text(issuesText, col.status, y);
 
     if (row.toggle !== undefined) {
@@ -1342,7 +1280,7 @@ async function addSeatsAndFabricsSection(doc, r) {
       drawFooter(doc);
       doc.addPage("a4", "portrait");
       await drawTopBand(doc);
-      sectionHeader(doc, "Seats & Fabrics (contd.)", mm(28));
+      sectionHeader(doc, "Seats & Fabrics  ", mm(28));
       setText(doc, THEME.header, 9.2);
       doc.text("Part", col.part, mm(36));
       doc.text("Issues", col.status, mm(36));
@@ -1409,8 +1347,14 @@ async function addSeatbeltsSection(doc, r) {
     doc.text(row.label, col.part, y);
 
     setText(doc, THEME.subtext, 8.5);
-    const issuesText = r[`${row.key}_issues`] ?? "—";
-    doc.text(issuesText, col.status, y);
+    const issuesValue = r[`${row.key}_issues`];
+
+const issuesText = Array.isArray(issuesValue)
+  ? (issuesValue.length > 0 ? issuesValue.join(", ") : "All OK")
+  : (issuesValue && issuesValue !== "" ? issuesValue : "All OK");
+
+doc.text(issuesText, col.status, y);
+
 
     // Toggle/status if exists
     if (row.toggle !== undefined) {
@@ -1458,7 +1402,7 @@ async function addSeatbeltsSection(doc, r) {
       drawFooter(doc);
       doc.addPage("a4", "portrait");
       drawTopBand(doc);
-      sectionHeader(doc, "Seatbelts (contd.)", mm(28));
+      sectionHeader(doc, "Seatbelts  ", mm(28));
       setText(doc, THEME.header, 9.2);
       doc.text("Part", col.part, mm(36));
       doc.text("Issues / Status", col.status, mm(36));
@@ -1560,7 +1504,8 @@ async function addPlasticsPage(doc, r) {
   for (const item of parts) {
     // Extract issues array and convert to string, or "—" if empty
     const issuesArr = Array.isArray(r[item.issueKey]) ? r[item.issueKey] : [];
-    const issuesStr = issuesArr.length > 0 ? issuesArr.join(", ") : "—";
+    const issuesStr = issuesArr.length > 0 ? issuesArr.join(", ") : "All OK";
+
     const urls = Array.isArray(r[item.imageKey]) ? r[item.imageKey] : [];
 
     setText(doc, THEME.text, 9.5);
@@ -1604,11 +1549,13 @@ async function addPlasticsPage(doc, r) {
           );
         } catch (err) {
           console.warn("Image load failed:", err);
-          doc.roundedRect(x, y, imageSize, imageSize, 2, 2);
+          // doc.roundedRect(x, y, imageSize, imageSize, 2, 2);
         }
-      } else {
-        doc.roundedRect(x, y, imageSize, imageSize, 2, 2);
-      }
+    } else {
+      setText(doc, THEME.subtext, 8.4);
+      doc.text("No photos available", PAGE_PAD_X + 6, y + 12);
+      setText(doc);
+    }
       x += imageSize + spacing;
     }
 
@@ -1617,7 +1564,7 @@ async function addPlasticsPage(doc, r) {
     // Pagination check
     if (y > mm(250)) {
       drawFooter(doc);
-      y = await startNewPage("Plastic Panel (contd.)");
+      y = await startNewPage("Plastic Panel  ");
     }
   }
 
@@ -1716,7 +1663,7 @@ async function addFeaturesPage(doc, r) {
       drawFooter(doc);
       doc.addPage("a4", "portrait");
       await drawTopBand(doc);
-      sectionHeader(doc, "Features (contd.)", mm(24));
+      sectionHeader(doc, "Features  ", mm(24));
       setText(doc, THEME.subtext, 9);
       doc.text("Feature", PAGE_PAD_X, mm(34));
       doc.text("Available", PAGE_PAD_X + 95, mm(34));
@@ -2028,7 +1975,7 @@ async function addTyresPage(doc, r) {
       r[`${row.key}_variant`] ?? "NA",
       Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
         ? r[`${row.key}_issues`].join(", ")
-        : "—",
+        : "All OK",
       r[`${row.key}_size`] ?? "NA",
       r[`${row.key}_threadDepth`] != null
         ? String(r[`${row.key}_threadDepth`])
@@ -2058,7 +2005,7 @@ async function addTyresPage(doc, r) {
       drawFooter(doc);
       doc.addPage("a4", "portrait");
       await drawTopBand(doc);
-      ({ colX, startY: y } = renderHeaders(PAGE_TOP_SPACING, "Tyres (contd.)"));
+      ({ colX, startY: y } = renderHeaders(PAGE_TOP_SPACING, "Tyres  "));
     }
 
     setText(doc, THEME.text, 9);
