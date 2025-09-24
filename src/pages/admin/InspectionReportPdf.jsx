@@ -812,7 +812,7 @@ async function addBodyPanelsPage(doc, r) {
       Array.isArray(r[`${row.claddingKey}_issues`]) &&
       r[`${row.claddingKey}_issues`].length > 0
         ? r[`${row.claddingKey}_issues`].join(", ")
-        : "—";
+        : "All OK";
 
     const issue =
       Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
@@ -1702,36 +1702,63 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
   await drawTopBand(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Calculate horizontal centering
+  const baseCols = [20, 64, 97, 124, 142]; // mm positions of columns relative to left margin
+  const tableLeftMargin = 20;
+  const tableRight = 172; // e.g. 142 + ~30 for last col width
+  const tableWidth = mm(tableRight - tableLeftMargin);
+  const tableXOffset = (pageWidth - tableWidth) / 2;
+  sectionHeader(doc, "Live Readings & Fluids", mm(28));
+
   const leftX = PAGE_PAD_X;
-  const boxWidth = A4.w - PAGE_PAD_X * 2;
+  const boxWidth = A4.w - PAGE_PAD_X * 2; // full width for stacked cards
   let y = mm(34);
 
   // ----------------------------
   // ---- Card 1: Live Parameters
   // ----------------------------
   const liveParamsHeight = mm(50);
-  doc.setFillColor(245, 245, 245);
-  doc.rect(leftX, y, boxWidth, liveParamsHeight, "FD");
+  doc.setFillColor(245, 245, 245); // light gray background
+  doc.rect(leftX, y, boxWidth, liveParamsHeight, "FD"); // filled + stroke
   setText(doc, THEME.text, 10.5);
-  doc.text("Live Parameters", leftX + 4, y + 6);
+  doc.text("Live Parameters", leftX + 4, y + 6); // title inside box
   setText(doc, THEME.subtext, 9);
 
-  let tempY = y + 16;
+  let tempY = y + 16; // start below title
+
   const live = [
-    { name: "Engine Load", toggle: r.live_engine_load_toggle, value: r.live_engine_load },
-    { name: "Idle RPM", toggle: r.live_idle_rpm_toggle, value: r.live_idle_rpm },
+    {
+      name: "Engine Load",
+      toggle: r.live_engine_load_toggle,
+      value: r.live_engine_load,
+    },
+    {
+      name: "Idle RPM",
+      toggle: r.live_idle_rpm_toggle,
+      value: r.live_idle_rpm,
+    },
     { name: "Battery Voltage", value: r.live_battery_voltage },
-    { name: "Distance Traveled Since Code Clear", value: r.live_distance_since_code_clear },
-    { name: "Distance Traveled Since 10K Block", value: r.live_distance_in_current_lock_block },
+    {
+      name: "Distance Traveled Since Code Clear",
+      value: r.live_distance_since_code_clear,
+    },
+    {
+      name: "Distance Traveled Since 10K Block",
+      value: r.live_distance_in_current_lock_block,
+    },
   ];
 
   for (const { name, toggle = true, value } of live) {
-    if (!toggle) continue;
-    doc.text(name, leftX + 6, tempY);
-    doc.text(String(value ?? "All OK"), leftX + boxWidth - 6, tempY, { align: "right" });
-    tempY += 8;
+    if (toggle !== undefined && !toggle) continue;
+    doc.text(name, leftX + 6, tempY); // label
+    doc.text(String(value ?? "All OK"), leftX + boxWidth - 6, tempY, {
+      align: "right",
+    }); // value right-aligned
+    tempY += 8; // spacing
   }
-  y += liveParamsHeight + 10;
+
+  y += liveParamsHeight + 10; // move y below card 1
 
   // ----------------------------
   // ---- Card 2: Diagnostics / Issues
@@ -1744,52 +1771,77 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
   setText(doc, THEME.subtext, 9);
 
   let rightY = y + 16;
+
   const issues = [
     ["Engine", r.engine_issues],
     ["Transmission", r.transmission_issues],
     ["Brakes", r.brakes_issues],
-    ["Diagnostic Codes", r.diagnostic_codes],
+    ["Diagnostics Codes", (r.diagnostic_codes || []).join(", ")],
   ];
 
   for (const [part, issue] of issues) {
     doc.text(part, leftX + 6, rightY);
-
-    let displayValue = "All OK";
-    if (Array.isArray(issue) && issue.length > 0) displayValue = issue.join(", ");
-    else if (typeof issue === "string" && issue.trim() !== "") displayValue = issue;
-
-    doc.text(displayValue, leftX + boxWidth - 6, rightY, { align: "right" });
+    doc.text(String(issue ?? "All OK"), leftX + boxWidth - 6, rightY, {
+      align: "right",
+    });
     rightY += 8;
   }
-  y += diagHeight + 10;
+
+  y += diagHeight + 10; 
 
   // ----------------------------
   // ---- Card 3: Fluid Levels
   // ----------------------------
+
+  // 1. Before generating PDF content, load and add the Unicode font (DejaVuSans) once:
+
+  // base64 font data can be generated using tools or pre-encoded font file
   const base64DejaVuSans = "<YOUR_BASE64_ENCODED_FONT_DATA_HERE>";
+
   doc.addFileToVFS("DejaVuSans.ttf", base64DejaVuSans);
   doc.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
-  doc.setFont("DejaVuSans");
+
+  // 2. Now generate fluid levels section with correct font set to display ticks:
 
   const fluidHeight = mm(50);
   doc.setFillColor(245, 245, 245);
   doc.rect(leftX, y, boxWidth, fluidHeight, "FD");
 
+  // Set font that supports Unicode symbols before drawing text
+  doc.setFont("DejaVuSans");
+
   setText(doc, THEME.text, 10.5);
   doc.text("Fluid Levels", leftX + 4, y + 6);
+
   setText(doc, THEME.subtext, 9);
-  y += 16;
+  y += 16; // start below title
 
   const fluids = [
-    { name: "Coolant", withinRange: r.fluid_coolant_withinRange, contamination: r.fluid_coolant_contamination },
-    { name: "Engine Oil", withinRange: r.fluid_engineOil_withinRange, contamination: r.fluid_engineOil_contamination },
-    { name: "Brake Oil", withinRange: r.fluid_brakeOil_withinRange, contamination: r.fluid_brakeOil_contamination },
-    { name: "Washer Fluid", withinRange: r.fluid_washerFluid_withinRange, contamination: r.fluid_washerFluid_contamination },
+    {
+      name: "Coolant",
+      withinRange: r.fluid_coolant_withinRange,
+      contamination: r.fluid_coolant_contamination,
+    },
+    {
+      name: "Engine Oil",
+      withinRange: r.fluid_engineOil_withinRange,
+      contamination: r.fluid_engineOil_contamination,
+    },
+    {
+      name: "Brake Oil",
+      withinRange: r.fluid_brakeOil_withinRange,
+      contamination: r.fluid_brakeOil_contamination,
+    },
+    {
+      name: "Washer Fluid",
+      withinRange: r.fluid_washerFluid_withinRange,
+      contamination: r.fluid_washerFluid_contamination,
+    },
   ];
 
-  const col1 = leftX + 6;
-  const col2 = leftX + boxWidth / 3;
-  const col3 = leftX + (boxWidth / 3) * 2;
+  const col1 = leftX + 6; // Parts
+  const col2 = leftX + boxWidth / 3; // Within Range
+  const col3 = leftX + (boxWidth / 3) * 2; // Contamination
 
   doc.text("Parts", col1, y);
   doc.text("Within Range", col2, y, { align: "center" });
@@ -1797,17 +1849,30 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
   divider(doc, leftX, y + 4, leftX + boxWidth);
   y += 8;
 
+  // for (const { name, withinRange, contamination } of fluids) {
+  //   doc.text(name, col1, y);
+  //   doc.text(withinRange ? "Y" : "N", col2, y, { align: "center" });
+  //   doc.text(contamination ? "Y" : "N", col3, y, { align: "center" });
+  //   divider(doc, leftX, y + 3.5, leftX + boxWidth, THEME.faintLine);
+  //   y += 8;
+  // }
+
   for (const { name, withinRange, contamination } of fluids) {
     doc.text(name, col1, y);
+
+    // Use your checkmark helper for withinRange
     checkmark(doc, col2, y + 0.6, !!withinRange);
+
+    // And for contamination
     checkmark(doc, col3, y + 0.6, !!contamination);
+
     divider(doc, leftX, y + 3.5, leftX + boxWidth, THEME.faintLine);
     y += 8;
   }
 
+  // ----------------------------
   drawFooter(doc);
 }
-
 /** =========================================================================
  * PAGE 10: TYRES
  * ========================================================================= */
