@@ -40,7 +40,7 @@ const generateInvoicePdf = (order) => {
       doc.setFont("times", "italic");
       doc.setFontSize(16);
       doc.setTextColor(...newGreen);
-      doc.text("We Inspect Before We Invest", 8, 35);
+      doc.text("We Inspect Before You Invest", 8, 35);
 
       // INVOICE title
       doc.setFont("times", "bold");
@@ -58,7 +58,7 @@ const generateInvoicePdf = (order) => {
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text(`Booking ID: ${order.bookingId || "N/A"}`, 195, 65, { align: "right" });
-      doc.text(`PDI Date: ${order.pdiDate || "N/A"}`, 195, 72, { align: "right" });
+      doc.text(`Invoice Date: ${order.date || "N/A"}`, 195, 72, { align: "right" });
 
       // Invoice To
       const startY = 85;
@@ -75,22 +75,20 @@ const generateInvoicePdf = (order) => {
       doc.setFontSize(10);
       doc.setTextColor(...textGray);
       doc.text(`Phone: ${order.customerMobile || "N/A"}`, 15, startY + 18);
-      doc.text(`Address: ${order.address || "N/A"}`, 15, startY + 26);
 
       // Invoice From
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(...invoiceGreen);
       doc.text("Invoice From:", 195, startY, { align: "right" });
-
+ 
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
-      doc.text("Carnomia", 195, startY + 10, { align: "right" });
+      doc.text("Carnomia Technology", 195, startY + 10, { align: "right" });
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(...textGray);
-      doc.text("Carnomia Technology Pvt. Ltd.", 195, startY + 18, { align: "right" });
       doc.text("Phone :- +91 7385978109 / 7378554409", 195, startY + 26, { align: "right" });
       doc.text("E mail :- carnomiatechnologies@gmail.com", 195, startY + 34, { align: "right" });
 
