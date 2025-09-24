@@ -47,10 +47,9 @@ const JobsManagement = () => {
     };
 
     setSlots([
-      { label: "09:00 AM - 11:00 AM", value: "09:00 AM - 11:00 AM" },
-      { label: "11:00 AM - 01:00 PM", value: "11:00 AM - 01:00 PM" },
-      { label: "01:00 PM - 03:00 PM", value: "01:00 PM - 03:00 PM" },
-      { label: "03:00 PM - 05:00 PM", value: "03:00 PM - 05:00 PM" },
+        { label: "10:30 AM - 11:30 AM", value: "10:30 AM - 11:30 AM" },
+        { label: "01:30 PM - 02:30 PM", value: "01:30 PM - 02:30 PM" },
+        { label: "04:30 PM - 05:30 PM", value: "04:30 PM - 05:30 PM" },
     ]);
 
     fetchEngineers();

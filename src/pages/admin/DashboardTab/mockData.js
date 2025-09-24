@@ -34,7 +34,7 @@ export const mockRequests = [
     time: "01:00 PM",
     status: "assigned",
     assignedEngineer: "Engineer A",
-    slot: "1:00 PM - 4:00 PM"
+    slot: "10:30 AM - 11:30 AM",
   },
   {
     id: 3,
@@ -50,7 +50,7 @@ export const mockRequests = [
     time: "10:00 AM",
     status: "completed",
     assignedEngineer: "Engineer B",
-    slot: "9:00 AM - 12:00 PM"
+    slot: "01:30 PM - 02:30 PM",
   },
   {
     id: 4,
@@ -130,9 +130,9 @@ export const mockRequests = [
 ];
 
 export const timeSlots = [
-  "9:00 AM - 12:00 PM",
-  "1:00 PM - 4:00 PM",
-  "4:00 PM - 7:00 PM"
+  "10:30 AM - 11:30 AM",
+  "01:30 PM - 02:30 PM",
+  "04:30 PM - 05:30 PM",
 ];
 
 
