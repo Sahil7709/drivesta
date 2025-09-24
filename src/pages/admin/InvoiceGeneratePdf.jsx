@@ -58,7 +58,7 @@ const generateInvoicePdf = (order) => {
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text(`Booking ID: ${order.bookingId || "N/A"}`, 195, 65, { align: "right" });
-      doc.text(`Invoice Date: ${order.date || "N/A"}`, 195, 72, { align: "right" });
+      doc.text(`Invoice Date: ${order.pdiDate || "N/A"}`, 195, 72, { align: "right" });
 
       // Invoice To
       const startY = 85;
