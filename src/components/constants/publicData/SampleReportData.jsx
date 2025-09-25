@@ -9,10 +9,11 @@ const rearbumper="/rearbumper.jpeg";
 const rearseat="/rearseat.jpeg";
 const dashboard="/dashboard.jpeg";
 const tyres="/tyres.jpeg";
-const frontright="/frontright.jpeg";
-const frontleft="/frontleft.jpeg";
-const rearright="/rearright.jpeg";
-const rearleft="/rearleft.jpeg";
+const frontright="/front.jpeg";
+const frontleft="/frontcar.jpeg";
+const rearright="/backside.jpeg";
+const rearleft="/rear.jpeg";
+const odo="/odo.jpg";
 
 
 const sampleReport = {
@@ -46,7 +47,7 @@ const sampleReport = {
   rear_right_imageUrl: rearright,
   front_right_imageUrl: frontright,
   keys_imageUrl: keys,
-  odo_imageUrl:[],
+  odo_imageUrl:odo,
   engineNumber_imageUrl: engine,
   vinNumber_imageUrl: engine,
 
