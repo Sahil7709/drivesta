@@ -1,6 +1,7 @@
 // src/pages/admin/InspectionReportPdf.jsx
 import { jsPDF } from "jspdf";
-import ApiService from '../../core/services/api.service';
+import ApiService from "../../core/services/api.service";
+import imgData from "../../assets/speedometer.png";
 
 /** =========================================================================
  * THEME + GEOMETRY
@@ -33,7 +34,6 @@ const GRID = {
  * IMAGE HELPERS (robust URL → DataURL with fallback)
  * ========================================================================= */
 
-
 async function urlToDataURL(url, preferPngFallback = false, timeoutMs = 10000) {
   if (!url || typeof url !== "string" || url.trim() === "") {
     console.warn(`Invalid or missing URL: ${url}`);
@@ -54,13 +54,17 @@ async function urlToDataURL(url, preferPngFallback = false, timeoutMs = 10000) {
         fr.readAsDataURL(blob);
       });
     } else {
-      console.warn(`Fetch failed for ${url}: HTTP ${res.status} ${res.statusText}`);
+      console.warn(
+        `Fetch failed for ${url}: HTTP ${res.status} ${res.statusText}`
+      );
       return null;
     }
   } catch (err) {
     console.warn(`Fetch/network error for ${url}: ${err.message}`);
     if (err.message.includes("NetworkError") || err.message.includes("CORS")) {
-      console.warn(`CORS issue detected for ${url}. Check server CORS headers.`);
+      console.warn(
+        `CORS issue detected for ${url}. Check server CORS headers.`
+      );
       return null;
     }
   }
@@ -102,16 +106,15 @@ async function urlToDataURL(url, preferPngFallback = false, timeoutMs = 10000) {
   //   return null;
   // }
 
-
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  const imageInput = document.getElementById('imageInput');
-  const preview = document.getElementById('preview');
-  const canvas = document.getElementById('imageCanvas');
+  const imageInput = document.getElementById("imageInput");
+  const preview = document.getElementById("preview");
+  const canvas = document.getElementById("imageCanvas");
   const ctx = canvas.getContext("2d");
 
-  imageInput.addEventListener('change', function (event) {
+  imageInput.addEventListener("change", function (event) {
     preview.innerHTML = ""; // Clear previous images
-    Array.from(event.target.files).forEach(file => {
+    Array.from(event.target.files).forEach((file) => {
       if (!allowedTypes.includes(file.type)) {
         alert(`${file.name} is not a supported image type.`);
         return;
@@ -137,10 +140,7 @@ async function urlToDataURL(url, preferPngFallback = false, timeoutMs = 10000) {
       reader.readAsDataURL(file);
     });
   });
-
 }
-
-
 
 /** =========================================================================
  * DRAWING HELPERS
@@ -206,13 +206,26 @@ function labeledPhotoBox(doc, label, x, y, w = 50, h = 50) {
   roundedRect(doc, x, y, w, h, 4, undefined, THEME.boxStroke);
 }
 
-async function drawThumbRow(doc, urls = [], x, y, w = 14, h = 14, cols = 3, gap = 4) {
+async function drawThumbRow(
+  doc,
+  urls = [],
+  x,
+  y,
+  w = 14,
+  h = 14,
+  cols = 3,
+  gap = 4
+) {
   let i = 0;
   // Filter out invalid URLs
-  const validUrls = (urls || []).filter((url) => typeof url === "string" && url.trim() !== "");
+  const validUrls = (urls || []).filter(
+    (url) => typeof url === "string" && url.trim() !== ""
+  );
   for (let url of validUrls) {
     try {
-      const finalUrl = url.startsWith("https") ? url : `https://api.carnomia.com${url}`;
+      const finalUrl = url.startsWith("https")
+        ? url
+        : `https://api.carnomia.com${url}`;
 
       // const finalUrl = url.startsWith("http") ? url : `http://localhost:3000${url}`;
       const dataURL = await urlToDataURL(finalUrl);
@@ -221,7 +234,9 @@ async function drawThumbRow(doc, urls = [], x, y, w = 14, h = 14, cols = 3, gap 
         const row = Math.floor(i / cols);
         const posX = x + col * (w + gap);
         const posY = y - row * (h + gap);
-        const format = dataURL.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() || "JPEG";
+        const format =
+          dataURL.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() ||
+          "JPEG";
         doc.addImage(dataURL, format, posX, posY, w, h, undefined, "FAST");
         i++;
       } else {
@@ -263,14 +278,23 @@ async function loadImageAsBase64(url) {
 
 async function drawTopBand(doc) {
   // Header background band
-  roundedRect(doc, mm(12), mm(12), mm(186), mm(10), 3, THEME.brandDark, THEME.brandDark);
+  roundedRect(
+    doc,
+    mm(12),
+    mm(12),
+    mm(186),
+    mm(10),
+    3,
+    THEME.brandDark,
+    THEME.brandDark
+  );
 
   // Load logo from public folder (put your logo in /public/carnomia.png)
   const logoBase64 = await loadImageAsBase64("/carnomia.png");
 
   // Add logo inside the band
-  const logoWidth = 20;  // adjust
-  const logoHeight = 8;  // adjust
+  const logoWidth = 20; // adjust
+  const logoHeight = 8; // adjust
   const logoX = mm(14);
   const logoY = mm(13);
 
@@ -483,11 +507,29 @@ async function addCoverPage(doc, r) {
   const cardWidth = mm(HERO.w);
   const heroX = (pageWidth - cardWidth) / 2;
 
-  roundedRect(doc, heroX, mm(TOP_OFFSET + 16), cardWidth, mm(HERO.h), 6, "#fff", THEME.softLine);
+  roundedRect(
+    doc,
+    heroX,
+    mm(TOP_OFFSET + 16),
+    cardWidth,
+    mm(HERO.h),
+    6,
+    "#fff",
+    THEME.softLine
+  );
 
   if (r.imageUrl) {
     try {
-      doc.addImage(r.imageUrl, "JPEG", heroX, mm(TOP_OFFSET + 16), cardWidth, mm(HERO.h), undefined, "FAST");
+      doc.addImage(
+        r.imageUrl,
+        "JPEG",
+        heroX,
+        mm(TOP_OFFSET + 16),
+        cardWidth,
+        mm(HERO.h),
+        undefined,
+        "FAST"
+      );
     } catch (err) {
       console.warn("Hero image failed:", err);
     }
@@ -508,23 +550,44 @@ async function addCoverPage(doc, r) {
   const shadowOffset = mm(0.8);
   const shadowColor = "#aaa";
 
-  const metricsTotalWidth = metrics.length * BOX_W + (metrics.length - 1) * SPACING;
+  const metricsTotalWidth =
+    metrics.length * BOX_W + (metrics.length - 1) * SPACING;
   const metricsXStart = (pageWidth - mm(metricsTotalWidth)) / 2;
 
   metrics.forEach((m, i) => {
     const x = metricsXStart + i * (BOX_W + SPACING);
 
     // Draw shadow rectangle offset to bottom-right
-    roundedRect(doc, x + shadowOffset, mm(METRIC_Y) + shadowOffset, mm(BOX_W), mm(BOX_H), 3, shadowColor, shadowColor);
+    roundedRect(
+      doc,
+      x + shadowOffset,
+      mm(METRIC_Y) + shadowOffset,
+      mm(BOX_W),
+      mm(BOX_H),
+      3,
+      shadowColor,
+      shadowColor
+    );
 
     // Draw main white box on top
-    roundedRect(doc, x, mm(METRIC_Y), mm(BOX_W), mm(BOX_H), 3, "#fff", THEME.softLine);
+    roundedRect(
+      doc,
+      x,
+      mm(METRIC_Y),
+      mm(BOX_W),
+      mm(BOX_H),
+      3,
+      "#fff",
+      THEME.softLine
+    );
 
     doc.setTextColor(THEME.subtext);
     doc.text(m.label, x + mm(BOX_W / 2), mm(METRIC_Y + 6), { align: "center" });
 
     doc.setTextColor(THEME.text);
-    doc.text(m.value, x + mm(BOX_W / 2), mm(METRIC_Y + 13), { align: "center" });
+    doc.text(m.value, x + mm(BOX_W / 2), mm(METRIC_Y + 13), {
+      align: "center",
+    });
   });
 
   // Combined Info Card (Customer, Vehicle, Overall Score)
@@ -538,16 +601,35 @@ async function addCoverPage(doc, r) {
 
   // Shadow behind
   const SHADOW_OFFSET_MM = 1;
-  const canAlpha = typeof doc.GState === "function" && typeof doc.setGState === "function";
+  const canAlpha =
+    typeof doc.GState === "function" && typeof doc.setGState === "function";
 
   if (canAlpha) doc.setGState(new doc.GState({ opacity: 0.9 }));
 
-  roundedRect(doc, mm(cardXStart + SHADOW_OFFSET_MM), mm(CARD_Y + SHADOW_OFFSET_MM), mm(TOTAL_CARD_W), mm(CARD_H), 4, "#aaa", "#aaa");
+  roundedRect(
+    doc,
+    mm(cardXStart + SHADOW_OFFSET_MM),
+    mm(CARD_Y + SHADOW_OFFSET_MM),
+    mm(TOTAL_CARD_W),
+    mm(CARD_H),
+    4,
+    "#aaa",
+    "#aaa"
+  );
 
   if (canAlpha) doc.setGState(new doc.GState({ opacity: 1 }));
 
   // Main card on top
-  roundedRect(doc, mm(cardXStart), mm(CARD_Y), mm(TOTAL_CARD_W), mm(CARD_H), 4, "#fff", THEME.softLine);
+  roundedRect(
+    doc,
+    mm(cardXStart),
+    mm(CARD_Y),
+    mm(TOTAL_CARD_W),
+    mm(CARD_H),
+    4,
+    "#fff",
+    THEME.softLine
+  );
 
   // Section Calculations
   const section1X = cardXStart + padding;
@@ -569,10 +651,10 @@ async function addCoverPage(doc, r) {
   // Customer Info Section
   // Updated labelValue function to make labels bold and values normal
   function labelValue(doc, label, value, x, y) {
-    doc.setFont('helvetica', 'bold'); // Bold for label
-    doc.text(label + ':', x, y);
-    const labelWidth = doc.getTextWidth(label + ': ');
-    doc.setFont('helvetica', 'normal'); // Normal for value
+    doc.setFont("helvetica", "bold"); // Bold for label
+    doc.text(label + ":", x, y);
+    const labelWidth = doc.getTextWidth(label + ": ");
+    doc.setFont("helvetica", "normal"); // Normal for value
     doc.text(String(value), x + labelWidth, y);
   }
 
@@ -590,26 +672,25 @@ async function addCoverPage(doc, r) {
     ["Engineer Name", r.engineer_name],
     [
       "PDI Date & Time",
-      `${r.date ? new Date(r.date).toLocaleDateString() : "—"} ${r.engineer_assignedSlot ?? ""}`
+      `${r.date ? new Date(r.date).toLocaleDateString() : "—"} ${
+        r.engineer_assignedSlot ?? ""
+      }`,
     ],
     ["Address", r.address],
   ];
 
-
   fields.forEach(([label, value]) => {
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.text(label + ":", mm(section1X + 5), mm(custY));
     custY += lineHeight;
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.text(String(value), mm(section1X + 5), mm(custY));
     custY += gapAfterValue;
   });
 
-
   // Vehicle Info Section
   drawSectionHeader("Vehicle Info", section2X, CARD_Y, CARD_W);
-  doc.setFont('helvetica', 'bold');         // Bold font for label
-
+  doc.setFont("helvetica", "bold"); // Bold font for label
 
   const startX = section2X + 5;
   const vehicleFields = [
@@ -630,90 +711,124 @@ async function addCoverPage(doc, r) {
   let rowY = CARD_Y + 20;
 
   vehicleFields.forEach(([label, value]) => {
-    doc.setFont('helvetica', 'bold');         // Bold font for label
+    doc.setFont("helvetica", "bold"); // Bold font for label
     doc.text(label + ":", mm(startX), mm(rowY));
-    doc.setFont('helvetica', 'normal');       // Normal font for value
+    doc.setFont("helvetica", "normal"); // Normal font for value
     doc.text(String(value), mm(valueXOffset), mm(rowY));
     rowY += 6;
   });
 
-
-
   // Overall Score Section
   drawSectionHeader("Overall Vehicle Score", section3X, CARD_Y, CARD_W);
-
+  
+  // Circle center
   const circleX = mm(section3X + CARD_W / 2);
   const circleY = mm(CARD_Y + 30);
-
-  doc.setDrawColor(THEME.good);
-  doc.circle(circleX, circleY, 13, "S");
-
-  setText(doc, THEME.text, 18);
-  doc.text(String(r.vehicleScore ?? "9.2"), circleX - 5, circleY + 3);
-
-  setText(doc, THEME.good, 10);
-  doc.text("GOOD", circleX - 25, circleY + 20);
-
-  setText(doc, THEME.subtext, 7);
-  doc.text(
-    r.scoreComment ??
-    "This score signifies that the car is free of defects arising out of manufacturing, mishandling at dealer premise / during travel & shipment. Asset and Driver Safety is not compromised.",
-    mm(section3X + 5),
-    mm(CARD_Y + 55),
-    { maxWidth: mm(CARD_W - 20), align: "left" }
+  const radius = 18;
+  
+  // Draw circle outline
+  doc.setDrawColor(THEME.subtext);
+  // doc.setLineWidth(0.5);
+  // doc.circle(circleX, circleY, radius, "S"); // Stroke only
+  
+  // Add image inside circle
+  const imgSize = radius * 2; // make image fit inside circle
+  doc.addImage(
+    imgData,       // your image data
+    'PNG',        // image type
+    circleX - radius, // top-left X
+    circleY - radius, // top-left Y
+    imgSize,       // width
+    imgSize        // height
   );
-
-  // Running Bar and footer
-  const BAR_Y = CARD_Y + CARD_H + 18;
-  const BAR_W = 160,
-    BAR_H = 8;
-  const barXStart = (pageWidth - mm(BAR_W)) / 2;
-
-  sectionHeader(doc, "How Much Has My Car Been Driven Before The PDI Date?", BAR_Y);
-
-  // Background bar
-  roundedRect(doc, mm(barXStart), mm(BAR_Y + 10), mm(BAR_W), mm(BAR_H), 3, "#e5e5e5", "#e5e5e5");
-
-  // Foreground bar width by kmsDriven
-  const kms = isNaN(parseInt(r.kmsDriven)) ? 55 : parseInt(r.kmsDriven);
-  const fgWidth = Math.min((kms / 130) * BAR_W, BAR_W);
-  roundedRect(doc, mm(barXStart), mm(BAR_Y + 10), mm(fgWidth), mm(BAR_H), 3, "#4CAF50", "#4CAF50");
-
-  // Labels
-  setText(doc, "#065f46", 9);
-  doc.text("My Car's Running", mm(barXStart + 2), mm(BAR_Y + 8));
-
-  doc.setFont(undefined, "bold");
-  doc.text(String(r.kmsDriven ?? "55 Kms"), mm(barXStart + BAR_W), mm(BAR_Y + 8), { align: "right" });
-  doc.setFont(undefined, "normal");
-
-  // Tampering chip
-  chip(doc, String(r.tamperingStatus ?? "No Tampering"), mm(barXStart + BAR_W - 40), mm(BAR_Y + 26));
-
-  // Avg Running Before Delivery
-  setText(doc, THEME.text, 9.5);
-  doc.text("Avg. Running Before Delivery", mm(barXStart), mm(BAR_Y + 38));
-
-  doc.setFont(undefined, "bold");
-  doc.text(String(r.avgRunning ?? "39 Kms"), mm(barXStart), mm(BAR_Y + 44));
-
-  // Details text under bar
-  setText(doc, THEME.subtext, 8);
-  doc.text(
-    `Details - At the time of PDI, your car's ODO reading was ${String(r.kmsDriven ?? "55 Kms")}, which is slightly above the city average of ${String(
-      r.avgRunning ?? "39 Kms"
-    )}.`,
-    mm(barXStart),
-    mm(BAR_Y + 54),
-    { maxWidth: mm(BAR_W) }
-  );
-
-  // Footer
-  drawFooter(doc);
-}
-
-
-
+  
+  // Add score text on top
+  setText(doc, THEME.subtext, 18);
+  doc.text(String(r.overall_score ?? "8"), circleX, circleY + 10, { align: "center" });
+  
+    setText(doc, "#065f46", 10);
+    doc.text("GOOD", circleX - 25, circleY + 20);
+  
+    setText(doc, THEME.subtext, 7);
+    doc.text(
+      r.scoreComment ??
+        "Your Vehicle has been thoroughly checked from top to bottom. This score reflects its overall condition, including safety, performance, and quality. It confirms that your car is in excellent health and ready for the road.",
+      mm(section3X + 5),
+      mm(CARD_Y + 55),
+      { maxWidth: mm(CARD_W - 20), align: "left" }
+    );
+  
+    // Running Bar and footer
+    const BAR_Y = CARD_Y + CARD_H + 18;
+    const BAR_W = 160,
+      BAR_H = 8;
+    const barXStart = (pageWidth - mm(BAR_W)) / 2;
+  
+    sectionHeader(
+      doc,
+      "How Much Has My Car Been Driven Before The PDI Date?",
+      BAR_Y
+    );
+  
+    // Background bar
+    roundedRect(
+      doc,
+      mm(barXStart),
+      mm(BAR_Y + 10),
+      mm(BAR_W),
+      mm(BAR_H),
+      3,
+      "#e5e5e5",
+      "#e5e5e5"
+    );
+  
+    // Foreground bar width by kmsDriven
+    const kms = isNaN(parseInt(r.odo)) ? 55 : parseInt(r.odo);
+    const fgWidth = Math.min((kms / 130) * BAR_W, BAR_W);
+    roundedRect(
+      doc,
+      mm(barXStart),
+      mm(BAR_Y + 10),
+      mm(fgWidth),
+      mm(BAR_H),
+      3,
+      "#4CAF50",
+      "#4CAF50"
+    );
+  
+    // Labels
+    setText(doc, "#065f46", 9);
+    doc.text("My Car's Running", mm(barXStart + 2), mm(BAR_Y + 8));
+  
+    doc.setFont(undefined, "bold");
+    doc.text(String(r.odo ?? "55 Kms"), mm(barXStart + BAR_W), mm(BAR_Y + 8), {
+      align: "right",
+    });
+    doc.setFont(undefined, "normal");
+  
+    // Tampering chip
+    chip(
+      doc,
+      String(r.tamperingStatus ?? "No Tampering"),
+      mm(barXStart + BAR_W - 40),
+      mm(BAR_Y + 26)
+    );
+  
+    // Avg Running Before Delivery
+    setText(doc, THEME.text, 9.5);
+    doc.text("Actual running before delivery", mm(barXStart), mm(BAR_Y + 38));
+  
+    doc.setFont(undefined, "bold");
+    doc.text(
+      String(r.live_distance_in_current_lock_block ?? "40 Kms"),
+      mm(barXStart),
+      mm(BAR_Y + 44)
+    );
+  
+    // Footer
+    drawFooter(doc);
+  }
+  
 
 /** =========================================================================
  * PAGE 2: PROFILE PHOTOS (360)
@@ -746,7 +861,6 @@ async function addCoverPage(doc, r) {
 //     { label: "8. VIN Number", x: startX + photoBoxWidth + gap, y: mm(120), url: r.vinNumber_imageUrl },
 
 //   ];
-
 
 //   for (const c of cells) {
 //     labeledPhotoBox(doc, c.label, c.x, c.y, photoBoxWidth, photoBoxWidth);
@@ -811,7 +925,9 @@ async function addProfilePhotosPage(doc, r) {
       // without prefixing with ServerUrl.IMAGE_URL
       const data = await urlToDataURL(cells[i].url);
       if (data) {
-        const format = data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() || "JPEG";
+        const format =
+          data.match(/^data:image\/(\w+);base64,/)?.[1]?.toUpperCase() ||
+          "JPEG";
         doc.addImage(
           data,
           format,
@@ -833,17 +949,20 @@ async function addProfilePhotosPage(doc, r) {
   drawFooter(doc);
 }
 
-
-
 /** =========================================================================
  * PAGE 3: BODY PANELS (table with thumbnails)
  * ========================================================================= */
 
 async function addBodyPanelsPage(doc, r) {
-
   function renderHeaders(y, title = "Body Panels") {
     sectionHeader(doc, title, y); // Section title
-    const headers = ["Parts", "Paint Thickness (mm)", "Issue", "Cladding", "Repaint"];
+    const headers = [
+      "Parts",
+      "Paint Thickness (mm)",
+      "Issue",
+      "Cladding",
+      "Repaint",
+    ];
     const colX = [mm(20), mm(64), mm(97), mm(124), mm(142)];
     const headerY = y + mm(14); // space below title
 
@@ -865,37 +984,90 @@ async function addBodyPanelsPage(doc, r) {
   const rows = [
     { label: "Bonnet", key: "bonnet", repaintKey: "bonnet_repaint" },
     { label: "Bumper", key: "bumper", repaintKey: "rear_bumper_repaint" },
-    { label: "Front Left Fender", key: "front_left_fender", claddingKey: "front_left_fender_cladding", repaintKey: "front_left_fender_repaint" },
-    { label: "Front Left Door", key: "front_left_door", claddingKey: "front_left_door_cladding", repaintKey: "front_left_door_repaint" },
-    { label: "Rear Left Door", key: "rear_left_door", claddingKey: "rear_left_door_cladding", repaintKey: "rear_left_door_repaint" },
-    { label: "Rear Left Quarter Panel", key: "rear_left_quarter_panel", claddingKey: "rear_left_quarter_panel_cladding", repaintKey: "rear_left_quarter_panel_repaint" },
+    {
+      label: "Front Left Fender",
+      key: "front_left_fender",
+      claddingKey: "front_left_fender_cladding",
+      repaintKey: "front_left_fender_repaint",
+    },
+    {
+      label: "Front Left Door",
+      key: "front_left_door",
+      claddingKey: "front_left_door_cladding",
+      repaintKey: "front_left_door_repaint",
+    },
+    {
+      label: "Rear Left Door",
+      key: "rear_left_door",
+      claddingKey: "rear_left_door_cladding",
+      repaintKey: "rear_left_door_repaint",
+    },
+    {
+      label: "Rear Left Quarter Panel",
+      key: "rear_left_quarter_panel",
+      claddingKey: "rear_left_quarter_panel_cladding",
+      repaintKey: "rear_left_quarter_panel_repaint",
+    },
     { label: "Boot", key: "boot" },
     { label: "Rear Bumper", key: "rear_bumper" },
-    { label: "Rear Right Quarter Panel", key: "rear_right_quarter_panel", claddingKey: "rear_right_quarter_panel_cladding", repaintKey: "rear_right_quarter_panel_repaint" },
-    { label: "Rear Right Door", key: "rear_right_door", claddingKey: "rear_right_door_cladding", repaintKey: "rear_right_door_repaint" },
-    { label: "Front Right Door", key: "front_right_door", claddingKey: "front_right_door_cladding", repaintKey: "front_right_door_repaint" },
-    { label: "Front Right Fender", key: "front_right_fender", claddingKey: "front_right_fender_cladding", repaintKey: "front_right_fender_repaint" },
+    {
+      label: "Rear Right Quarter Panel",
+      key: "rear_right_quarter_panel",
+      claddingKey: "rear_right_quarter_panel_cladding",
+      repaintKey: "rear_right_quarter_panel_repaint",
+    },
+    {
+      label: "Rear Right Door",
+      key: "rear_right_door",
+      claddingKey: "rear_right_door_cladding",
+      repaintKey: "rear_right_door_repaint",
+    },
+    {
+      label: "Front Right Door",
+      key: "front_right_door",
+      claddingKey: "front_right_door_cladding",
+      repaintKey: "front_right_door_repaint",
+    },
+    {
+      label: "Front Right Fender",
+      key: "front_right_fender",
+      claddingKey: "front_right_fender_cladding",
+      repaintKey: "front_right_fender_repaint",
+    },
     { label: "Roof", key: "roof", repaintKey: "roof_repaint" },
     { label: "Front Windshield", key: "front_windshield" },
   ];
 
   for (const row of rows) {
-    const urls = Array.isArray(r[`${row.key}_imageUrls`]) ? r[`${row.key}_imageUrls`] : [];
-    const cladding = row.claddingKey && Array.isArray(r[`${row.claddingKey}_issues`]) && r[`${row.claddingKey}_issues`].length > 0
-      ? r[`${row.claddingKey}_issues`].join(", ")
+    const urls = Array.isArray(r[`${row.key}_imageUrls`])
+      ? r[`${row.key}_imageUrls`]
+      : [];
+    const cladding =
+      row.claddingKey &&
+      Array.isArray(r[`${row.claddingKey}_issues`]) &&
+      r[`${row.claddingKey}_issues`].length > 0
+        ? r[`${row.claddingKey}_issues`].join(", ")
+        : "—";
 
-      : "—";
-
-    const issue = Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
-      ? r[`${row.key}_issues`].join(", ")
-      : "—";
+    const issue =
+      Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
+        ? r[`${row.key}_issues`].join(", ")
+        : "—";
 
     const labelText = doc.splitTextToSize(row.label, colX[1] - colX[0] - 2);
-    const paintText = doc.splitTextToSize(String(r[`${row.key}_paintThickness`] ?? "NA"), colX[2] - colX[1] - 2);
+    const paintText = doc.splitTextToSize(
+      String(r[`${row.key}_paintThickness`] ?? "NA"),
+      colX[2] - colX[1] - 2
+    );
     const issueText = doc.splitTextToSize(issue, colX[3] - colX[2] - 2);
     const claddingText = doc.splitTextToSize(cladding, colX[4] - colX[3] - 2);
 
-    const maxLines = Math.max(labelText.length, paintText.length, issueText.length, claddingText.length);
+    const maxLines = Math.max(
+      labelText.length,
+      paintText.length,
+      issueText.length,
+      claddingText.length
+    );
     const lineHeight = 5;
     const rowHeight = maxLines * lineHeight;
 
@@ -954,7 +1126,6 @@ async function addBodyPanelsPage(doc, r) {
   drawFooter(doc);
 }
 
-
 /** =========================================================================
  * PAGE 4: GLASSES
  * ========================================================================= */
@@ -1000,10 +1171,13 @@ async function addGlassesPage(doc, r) {
   for (const row of rows) {
     const brand = r[`${row.key}_brand`] ?? "—";
     const mfgDate = r[`${row.key}_manufacturingDate`] ?? "—";
-    const issues = Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
-      ? r[`${row.key}_issues`].join(", ")
-      : "—";
-    const urls = Array.isArray(r[`${row.key}_imageUrls`]) ? r[`${row.key}_imageUrls`] : [];
+    const issues =
+      Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
+        ? r[`${row.key}_issues`].join(", ")
+        : "—";
+    const urls = Array.isArray(r[`${row.key}_imageUrls`])
+      ? r[`${row.key}_imageUrls`]
+      : [];
 
     // Wrap text for columns
     const labelText = doc.splitTextToSize(row.label, colX[1] - colX[0] - 2);
@@ -1011,7 +1185,12 @@ async function addGlassesPage(doc, r) {
     const dateText = doc.splitTextToSize(mfgDate, colX[3] - colX[2] - 2);
     const issuesText = doc.splitTextToSize(issues, colX[3] - colX[2] - 2);
 
-    const maxLines = Math.max(labelText.length, brandText.length, dateText.length, issuesText.length);
+    const maxLines = Math.max(
+      labelText.length,
+      brandText.length,
+      dateText.length,
+      issuesText.length
+    );
     const lineHeight = 5;
     const rowHeight = maxLines * lineHeight;
 
@@ -1097,16 +1276,23 @@ async function addRubberPage(doc, r) {
     { label: "Rear Right Door Rubber", key: "rubber_rear_right_door" },
     { label: "Front Right Door Rubber", key: "rubber_front_right_door" },
     { label: "Front Wiper Rubber", key: "rubber_front_wiper" },
-    { label: "Rear Wiper Rubber", key: "rubber_rear_wiper", toggle: r.rubber_rear_wiper_toggle },
+    {
+      label: "Rear Wiper Rubber",
+      key: "rubber_rear_wiper",
+      toggle: r.rubber_rear_wiper_toggle,
+    },
     { label: "Sunroof Rubber", key: "rubber_sunroof" },
   ];
 
   for (const row of rows) {
-    const issues = Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
-      ? r[`${row.key}_issues`].join(", ")
-      : "—";
+    const issues =
+      Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
+        ? r[`${row.key}_issues`].join(", ")
+        : "—";
 
-    const urls = Array.isArray(r[`${row.key}_imageUrls`]) ? r[`${row.key}_imageUrls`] : [];
+    const urls = Array.isArray(r[`${row.key}_imageUrls`])
+      ? r[`${row.key}_imageUrls`]
+      : [];
 
     // Wrap text for Issues/Status column
     const labelText = doc.splitTextToSize(row.label, 65);
@@ -1169,7 +1355,6 @@ async function addRubberPage(doc, r) {
 /** =========================================================================
  * PAGE 6: SEATS & Fabrics
  * ========================================================================= */
-
 
 // async function addSeatsBeltsPage(doc, r) {
 //   // Common columns for both sections
@@ -1341,7 +1526,6 @@ async function addRubberPage(doc, r) {
 //   drawFooter(doc);
 // }
 
-
 async function addSeatsAndFabricsSection(doc, r) {
   const col = {
     part: PAGE_PAD_X,
@@ -1366,15 +1550,44 @@ async function addSeatsAndFabricsSection(doc, r) {
 
   const rows = [
     { label: "Driver Seat", key: "seat_driver", arr: r.seat_driver_imageUrls },
-    { label: "Driver Head Rest", key: "seat_driver_head_rest", arr: r.seat_driver_head_rest_imageUrls },
-    { label: "Co-driver Seat", key: "seat_codriver", arr: r.seat_codriver_imageUrls },
-    { label: "Co-driver Head Rest", key: "seat_codriver_head_rest", arr: r.seat_codriver_head_rest_imageUrls },
+    {
+      label: "Driver Head Rest",
+      key: "seat_driver_head_rest",
+      arr: r.seat_driver_head_rest_imageUrls,
+    },
+    {
+      label: "Co-driver Seat",
+      key: "seat_codriver",
+      arr: r.seat_codriver_imageUrls,
+    },
+    {
+      label: "Co-driver Head Rest",
+      key: "seat_codriver_head_rest",
+      arr: r.seat_codriver_head_rest_imageUrls,
+    },
     { label: "Rear Seat", key: "seat_rear", arr: r.seat_rear_imageUrls },
-    { label: "Rear Head Rest", key: "seat_rear_head_rest", arr: r.seat_rear_head_rest_imageUrls },
-    { label: "Third Row", key: "seat_third_row", arr: r.seat_third_row_imageUrls, toggle: r.seat_third_row_toggle },
-    { label: "Third Row Head Rest", key: "seat_third_row_head_rest", arr: r.seat_third_row_head_rest_imageUrls },
+    {
+      label: "Rear Head Rest",
+      key: "seat_rear_head_rest",
+      arr: r.seat_rear_head_rest_imageUrls,
+    },
+    {
+      label: "Third Row",
+      key: "seat_third_row",
+      arr: r.seat_third_row_imageUrls,
+      toggle: r.seat_third_row_toggle,
+    },
+    {
+      label: "Third Row Head Rest",
+      key: "seat_third_row_head_rest",
+      arr: r.seat_third_row_head_rest_imageUrls,
+    },
     { label: "Roof Lining", key: "seat_roof", arr: r.seat_roof_imageUrls },
-    { label: "Sunroof Cover", key: "seat_sunroof", arr: r.seat_sunroof_imageUrls },
+    {
+      label: "Sunroof Cover",
+      key: "seat_sunroof",
+      arr: r.seat_sunroof_imageUrls,
+    },
   ];
 
   for (const row of rows) {
@@ -1401,9 +1614,18 @@ async function addSeatsAndFabricsSection(doc, r) {
           try {
             const imgData = await urlToDataURL(row.arr[i]);
             if (imgData) {
-              doc.addImage(imgData, "JPEG", imgX + 2, imgY + 2, thumbSize - 4, thumbSize - 4, undefined, "FAST");
+              doc.addImage(
+                imgData,
+                "JPEG",
+                imgX + 2,
+                imgY + 2,
+                thumbSize - 4,
+                thumbSize - 4,
+                undefined,
+                "FAST"
+              );
             }
-          } catch { }
+          } catch {}
         }
         imgX += thumbSize + thumbGap;
       }
@@ -1433,7 +1655,6 @@ async function addSeatsAndFabricsSection(doc, r) {
   drawFooter(doc);
 }
 
-
 async function addSeatbeltsSection(doc, r) {
   const col = {
     part: PAGE_PAD_X,
@@ -1455,11 +1676,32 @@ async function addSeatbeltsSection(doc, r) {
   const thumbGap = 6;
 
   const belts = [
-    { label: "Driver Seatbelt", key: "seatbelt_driver", arr: r.seatbelt_driver_imageUrls },
-    { label: "Co-driver Seatbelt", key: "seatbelt_codriver", arr: r.seatbelt_codriver_imageUrls },
-    { label: "Rear Left Passenger Seatbelt", key: "seatbelt_rear_left_passenger", arr: r.seatbelt_rear_left_passenger_imageUrls },
-    { label: "Rear Right Passenger Seatbelt", key: "seatbelt_rear_right_passenger", arr: r.seatbelt_rear_right_passenger_imageUrls },
-    { label: "Third Row Seatbelts", key: "seatbelt_third_row", arr: r.seatbelt_third_row_imageUrls, toggle: r.seatbelt_third_row_toggle },
+    {
+      label: "Driver Seatbelt",
+      key: "seatbelt_driver",
+      arr: r.seatbelt_driver_imageUrls,
+    },
+    {
+      label: "Co-driver Seatbelt",
+      key: "seatbelt_codriver",
+      arr: r.seatbelt_codriver_imageUrls,
+    },
+    {
+      label: "Rear Left Passenger Seatbelt",
+      key: "seatbelt_rear_left_passenger",
+      arr: r.seatbelt_rear_left_passenger_imageUrls,
+    },
+    {
+      label: "Rear Right Passenger Seatbelt",
+      key: "seatbelt_rear_right_passenger",
+      arr: r.seatbelt_rear_right_passenger_imageUrls,
+    },
+    {
+      label: "Third Row Seatbelts",
+      key: "seatbelt_third_row",
+      arr: r.seatbelt_third_row_imageUrls,
+      toggle: r.seatbelt_third_row_toggle,
+    },
   ];
 
   for (const row of belts) {
@@ -1486,9 +1728,18 @@ async function addSeatbeltsSection(doc, r) {
           try {
             const imgData = await urlToDataURL(row.arr[i]);
             if (imgData) {
-              doc.addImage(imgData, "JPEG", imgX + 2, imgY + 2, thumbSize - 4, thumbSize - 4, undefined, "FAST");
+              doc.addImage(
+                imgData,
+                "JPEG",
+                imgX + 2,
+                imgY + 2,
+                thumbSize - 4,
+                thumbSize - 4,
+                undefined,
+                "FAST"
+              );
             }
-          } catch { }
+          } catch {}
         }
         imgX += thumbSize + thumbGap;
       }
@@ -1516,8 +1767,6 @@ async function addSeatbeltsSection(doc, r) {
   drawFooter(doc);
 }
 
-
-
 /** =========================================================================
  * PAGE 7: PLASTICS
  * ========================================================================= */
@@ -1527,7 +1776,7 @@ async function addPlasticsPage(doc, r) {
 
   async function startNewPage(title = "Plastic Panel") {
     doc.addPage("a4", "portrait");
-    await drawTopBand(doc);  // Await here to ensure logo is drawn before continuing
+    await drawTopBand(doc); // Await here to ensure logo is drawn before continuing
     setText(doc, THEME.text, 11, "bold");
     doc.text(title, PAGE_PAD_X, PAGE_TOP_SPACING);
     return PAGE_TOP_SPACING + 8;
@@ -1547,17 +1796,62 @@ async function addPlasticsPage(doc, r) {
 
   // Define all parts mapping to issues array keys and image URL keys
   const parts = [
-    { part: "Driver Door", issueKey: "plastic_driver_door_issues", imageKey: "plastic_driver_door_imageUrls" },
-    { part: "Co-driver Door", issueKey: "plastic_codriver_door_issues", imageKey: "plastic_codriver_door_imageUrls" },
-    { part: "Rear Left Passenger Door", issueKey: "plastic_rear_left_passenger_door_issues", imageKey: "plastic_rear_left_passenger_door_imageUrls" },
-    { part: "Rear Right Passenger Door", issueKey: "plastic_rear_right_passenger_door_issues", imageKey: "plastic_rear_right_passenger_door_imageUrls" },
-    { part: "Third Row", issueKey: "plastic_third_row_issues", imageKey: "plastic_third_row_imageUrls", toggleKey: "plastic_third_row_toggle" },
-    { part: "Dashboard", issueKey: "plastic_dashboard_issues", imageKey: "plastic_dashboard_imageUrls" },
-    { part: "Gear Console", issueKey: "plastic_gear_console_issues", imageKey: "plastic_gear_console_imageUrls" },
-    { part: "Steering", issueKey: "plastic_steering_issues", imageKey: "plastic_steering_imageUrls" },
-    { part: "AC Vents", issueKey: "plastic_ac_vents_issues", imageKey: "plastic_ac_vents_imageUrls" },
-    { part: "Rear AC Vents", issueKey: "plastic_rear_ac_vents_issues", imageKey: "plastic_rear_ac_vents_imageUrls" },
-    { part: "IRVM", issueKey: "plastic_irvm_issues", imageKey: "plastic_irvm_imageUrls" },
+    {
+      part: "Driver Door",
+      issueKey: "plastic_driver_door_issues",
+      imageKey: "plastic_driver_door_imageUrls",
+    },
+    {
+      part: "Co-driver Door",
+      issueKey: "plastic_codriver_door_issues",
+      imageKey: "plastic_codriver_door_imageUrls",
+    },
+    {
+      part: "Rear Left Passenger Door",
+      issueKey: "plastic_rear_left_passenger_door_issues",
+      imageKey: "plastic_rear_left_passenger_door_imageUrls",
+    },
+    {
+      part: "Rear Right Passenger Door",
+      issueKey: "plastic_rear_right_passenger_door_issues",
+      imageKey: "plastic_rear_right_passenger_door_imageUrls",
+    },
+    {
+      part: "Third Row",
+      issueKey: "plastic_third_row_issues",
+      imageKey: "plastic_third_row_imageUrls",
+      toggleKey: "plastic_third_row_toggle",
+    },
+    {
+      part: "Dashboard",
+      issueKey: "plastic_dashboard_issues",
+      imageKey: "plastic_dashboard_imageUrls",
+    },
+    {
+      part: "Gear Console",
+      issueKey: "plastic_gear_console_issues",
+      imageKey: "plastic_gear_console_imageUrls",
+    },
+    {
+      part: "Steering",
+      issueKey: "plastic_steering_issues",
+      imageKey: "plastic_steering_imageUrls",
+    },
+    {
+      part: "AC Vents",
+      issueKey: "plastic_ac_vents_issues",
+      imageKey: "plastic_ac_vents_imageUrls",
+    },
+    {
+      part: "Rear AC Vents",
+      issueKey: "plastic_rear_ac_vents_issues",
+      imageKey: "plastic_rear_ac_vents_imageUrls",
+    },
+    {
+      part: "IRVM",
+      issueKey: "plastic_irvm_issues",
+      imageKey: "plastic_irvm_imageUrls",
+    },
   ];
 
   for (const item of parts) {
@@ -1620,28 +1914,75 @@ async function addPlasticsPage(doc, r) {
   drawFooter(doc);
 }
 
-
 /** =========================================================================
  * PAGE 8: FEATURES
  * ========================================================================= */
 async function addFeaturesPage(doc, r) {
   doc.addPage("a4", "portrait");
   await drawTopBand(doc);
-  sectionHeader(doc, "Parts", mm(28),);
+  sectionHeader(doc, "Parts", mm(28));
 
   const items = [
-    ["Parking Sensors (Front)", r.feature_parking_sensors_front_available, r.feature_parking_sensors_front_issueObserved],
-    ["Parking Sensors (Rear)", r.feature_parking_sensors_rear_available, r.feature_parking_sensors_rear_issueObserved],
-    ["Front View Camera", r.feature_front_view_camera_available, r.feature_front_view_camera_issueObserved],
-    ["Rear View Camera", r.feature_rear_view_camera_available, r.feature_rear_view_camera_issueObserved],
-    ["360° Camera", r.feature_camera_360_available, r.feature_camera_360_issueObserved],
-    ["Touch Screen", r.feature_touch_screen_available, r.feature_touch_screen_issueObserved],
-    ["Speakers", r.feature_speakers_available, r.feature_speakers_issueObserved],
-    ["Electric ORVM", r.feature_electric_orvm_available, r.feature_electric_orvm_issueObserved],
-    ["Auto Dimming IRVM", r.feature_auto_dimming_irvm_available, r.feature_auto_dimming_irvm_issueObserved],
-    ["Ventilated Seat (Driver)", r.feature_ventilated_seat_driver_available, r.feature_ventilated_seat_driver_issueObserved],
-    ["Ventilated Seat (Co-driver)", r.feature_ventilated_seat_codriver_available, r.feature_ventilated_seat_codriver_issueObserved],
-    ["Ventilated Seat (Rear)", r.feature_ventilated_seat_rear_available, r.feature_ventilated_seat_rear_issueObserved],
+    [
+      "Parking Sensors (Front)",
+      r.feature_parking_sensors_front_available,
+      r.feature_parking_sensors_front_issueObserved,
+    ],
+    [
+      "Parking Sensors (Rear)",
+      r.feature_parking_sensors_rear_available,
+      r.feature_parking_sensors_rear_issueObserved,
+    ],
+    [
+      "Front View Camera",
+      r.feature_front_view_camera_available,
+      r.feature_front_view_camera_issueObserved,
+    ],
+    [
+      "Rear View Camera",
+      r.feature_rear_view_camera_available,
+      r.feature_rear_view_camera_issueObserved,
+    ],
+    [
+      "360° Camera",
+      r.feature_camera_360_available,
+      r.feature_camera_360_issueObserved,
+    ],
+    [
+      "Touch Screen",
+      r.feature_touch_screen_available,
+      r.feature_touch_screen_issueObserved,
+    ],
+    [
+      "Speakers",
+      r.feature_speakers_available,
+      r.feature_speakers_issueObserved,
+    ],
+    [
+      "Electric ORVM",
+      r.feature_electric_orvm_available,
+      r.feature_electric_orvm_issueObserved,
+    ],
+    [
+      "Auto Dimming IRVM",
+      r.feature_auto_dimming_irvm_available,
+      r.feature_auto_dimming_irvm_issueObserved,
+    ],
+    [
+      "Ventilated Seat (Driver)",
+      r.feature_ventilated_seat_driver_available,
+      r.feature_ventilated_seat_driver_issueObserved,
+    ],
+    [
+      "Ventilated Seat (Co-driver)",
+      r.feature_ventilated_seat_codriver_available,
+      r.feature_ventilated_seat_codriver_issueObserved,
+    ],
+    [
+      "Ventilated Seat (Rear)",
+      r.feature_ventilated_seat_rear_available,
+      r.feature_ventilated_seat_rear_issueObserved,
+    ],
   ];
 
   // Header row
@@ -1713,17 +2054,33 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
   let tempY = y + 16; // start below title
 
   const live = [
-    { name: "Engine Load", toggle: r.live_engine_load_toggle, value: r.live_engine_load },
-    { name: "Idle RPM", toggle: r.live_idle_rpm_toggle, value: r.live_idle_rpm },
+    {
+      name: "Engine Load",
+      toggle: r.live_engine_load_toggle,
+      value: r.live_engine_load,
+    },
+    {
+      name: "Idle RPM",
+      toggle: r.live_idle_rpm_toggle,
+      value: r.live_idle_rpm,
+    },
     { name: "Battery Voltage", value: r.live_battery_voltage },
-    { name: "Distance Traveled Since Code Clear", value: r.live_distance_since_code_clear },
-    { name: "Distance Traveled Since 10K Block", value: r.live_distance_in_current_lock_block },
+    {
+      name: "Distance Traveled Since Code Clear",
+      value: r.live_distance_since_code_clear,
+    },
+    {
+      name: "Distance Traveled Since 10K Block",
+      value: r.live_distance_in_current_lock_block,
+    },
   ];
 
   for (const { name, toggle = true, value } of live) {
     if (toggle !== undefined && !toggle) continue;
     doc.text(name, leftX + 6, tempY); // label
-    doc.text(String(value ?? "—"), leftX + boxWidth - 6, tempY, { align: "right" }); // value right-aligned
+    doc.text(String(value ?? "—"), leftX + boxWidth - 6, tempY, {
+      align: "right",
+    }); // value right-aligned
     tempY += 8; // spacing
   }
 
@@ -1750,7 +2107,9 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
 
   for (const [part, issue] of issues) {
     doc.text(part, leftX + 6, rightY);
-    doc.text(String(issue ?? "—"), leftX + boxWidth - 6, rightY, { align: "right" });
+    doc.text(String(issue ?? "—"), leftX + boxWidth - 6, rightY, {
+      align: "right",
+    });
     rightY += 8;
   }
 
@@ -1784,15 +2143,31 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
   y += 16; // start below title
 
   const fluids = [
-    { name: "Coolant", withinRange: r.fluid_coolant_withinRange, contamination: r.fluid_coolant_contamination },
-    { name: "Engine Oil", withinRange: r.fluid_engineOil_withinRange, contamination: r.fluid_engineOil_contamination },
-    { name: "Brake Oil", withinRange: r.fluid_brakeOil_withinRange, contamination: r.fluid_brakeOil_contamination },
-    { name: "Washer Fluid", withinRange: r.fluid_washerFluid_withinRange, contamination: r.fluid_washerFluid_contamination },
+    {
+      name: "Coolant",
+      withinRange: r.fluid_coolant_withinRange,
+      contamination: r.fluid_coolant_contamination,
+    },
+    {
+      name: "Engine Oil",
+      withinRange: r.fluid_engineOil_withinRange,
+      contamination: r.fluid_engineOil_contamination,
+    },
+    {
+      name: "Brake Oil",
+      withinRange: r.fluid_brakeOil_withinRange,
+      contamination: r.fluid_brakeOil_contamination,
+    },
+    {
+      name: "Washer Fluid",
+      withinRange: r.fluid_washerFluid_withinRange,
+      contamination: r.fluid_washerFluid_contamination,
+    },
   ];
 
-  const col1 = leftX + 6;                    // Parts
-  const col2 = leftX + boxWidth / 3;         // Within Range
-  const col3 = leftX + (boxWidth / 3) * 2;   // Contamination
+  const col1 = leftX + 6; // Parts
+  const col2 = leftX + boxWidth / 3; // Within Range
+  const col3 = leftX + (boxWidth / 3) * 2; // Contamination
 
   doc.text("Parts", col1, y);
   doc.text("Within Range", col2, y, { align: "center" });
@@ -1807,7 +2182,6 @@ async function addLiveFluidsDiagnosticsPage(doc, r) {
   //   divider(doc, leftX, y + 3.5, leftX + boxWidth, THEME.faintLine);
   //   y += 8;
   // }
-
 
   for (const { name, withinRange, contamination } of fluids) {
     doc.text(name, col1, y);
@@ -1895,11 +2269,32 @@ async function addTyresPaymentPage(doc, r) {
   let { colX, startY: y } = renderHeaders(PAGE_TOP_SPACING);
 
   const tyreRows = [
-    { key: "tyre_front_left", label: "Front Left", arr: r.tyre_front_left_imageUrls },
-    { key: "tyre_rear_left", label: "Rear Left", arr: r.tyre_rear_left_imageUrls },
-    { key: "tyre_rear_right", label: "Rear Right", arr: r.tyre_rear_right_imageUrls },
-    { key: "tyre_front_right", label: "Front Right", arr: r.tyre_front_right_imageUrls },
-    { key: "tyre_spare", label: "Spare Tyre", arr: r.tyre_spare_imageUrls, toggle: r.tyre_spare_toggle },
+    {
+      key: "tyre_front_left",
+      label: "Front Left",
+      arr: r.tyre_front_left_imageUrls,
+    },
+    {
+      key: "tyre_rear_left",
+      label: "Rear Left",
+      arr: r.tyre_rear_left_imageUrls,
+    },
+    {
+      key: "tyre_rear_right",
+      label: "Rear Right",
+      arr: r.tyre_rear_right_imageUrls,
+    },
+    {
+      key: "tyre_front_right",
+      label: "Front Right",
+      arr: r.tyre_front_right_imageUrls,
+    },
+    {
+      key: "tyre_spare",
+      label: "Spare Tyre",
+      arr: r.tyre_spare_imageUrls,
+      toggle: r.tyre_spare_toggle,
+    },
   ];
 
   const lineHeight = 5;
@@ -1907,12 +2302,20 @@ async function addTyresPaymentPage(doc, r) {
   for (const row of tyreRows) {
     const rawDate = r[`${row.key}_manufacturingDate`];
     let formattedDate = "NA";
-    if (rawDate) {
+    if (
+      rawDate &&
+      typeof rawDate === "string" &&
+      /^\d{2}\/\d{2}$/.test(rawDate)
+    ) {
+      // Already MM/YY format
+      formattedDate = rawDate;
+    } else if (rawDate) {
+      // Try to parse as Date and convert to MM/YY
       const dateObj = new Date(rawDate);
       if (!isNaN(dateObj.getTime())) {
-        formattedDate = dateObj.toLocaleDateString();
-      } else {
-        formattedDate = rawDate;
+        const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const yy = String(dateObj.getFullYear()).slice(-2);
+        formattedDate = `${mm}/${yy}`;
       }
     }
 
@@ -1925,7 +2328,9 @@ async function addTyresPaymentPage(doc, r) {
         ? r[`${row.key}_issues`].join(", ")
         : "—",
       r[`${row.key}_size`] ?? "NA",
-      r[`${row.key}_treadDepth`] != null ? String(r[`${row.key}_treadDepth`]) : "NA",
+      r[`${row.key}_treadDepth`] != null
+        ? String(r[`${row.key}_treadDepth`])
+        : "NA",
     ];
 
     const wrappedTexts = texts.map((txt, idx) => {
@@ -1987,9 +2392,18 @@ async function addTyresPaymentPage(doc, r) {
         try {
           const imgData = await urlToDataURL(row.arr[i]);
           if (imgData) {
-            doc.addImage(imgData, "JPEG", imgX + 2, imgY + 2, thumbSize - 4, thumbSize - 4, undefined, "FAST");
+            doc.addImage(
+              imgData,
+              "JPEG",
+              imgX + 2,
+              imgY + 2,
+              thumbSize - 4,
+              thumbSize - 4,
+              undefined,
+              "FAST"
+            );
           }
-        } catch { }
+        } catch {}
         imgX += thumbSize + thumbGap;
       }
       y += thumbSize + 6;
@@ -2006,8 +2420,6 @@ async function addTyresPaymentPage(doc, r) {
 
   drawFooter(doc);
 }
-
-
 
 /** =========================================================================
  * PAGE 11: Other Observations
@@ -2037,10 +2449,14 @@ async function addOtherObservationsPage(doc) {
 
   // Dummy observations data
   const observations = [
-    { category: " other_observations", notes: "1. DTC code found U0146 Network Communication Error. \n      2. Scratches found on Rear Left Wheel." },
+    {
+      category: " other_observations",
+      notes:
+        "1. DTC code found U0146 Network Communication Error. \n      2. Scratches found on Rear Left Wheel.",
+    },
   ];
 
-  const col1 = leftX + 6;            // Category
+  const col1 = leftX + 6; // Category
   const col2 = leftX + boxWidth / 3; // Notes (start from 1/3rd)
 
   doc.setFont("helvetica", "bold");
@@ -2056,7 +2472,7 @@ async function addOtherObservationsPage(doc) {
   for (const obs of observations) {
     doc.text(obs.category, col1, y);
     // Wrap notes text if long
-    const splitNotes = doc.splitTextToSize(obs.notes, boxWidth * 2 / 3 - 12);
+    const splitNotes = doc.splitTextToSize(obs.notes, (boxWidth * 2) / 3 - 12);
     doc.text(splitNotes, col2, y);
     y += splitNotes.length * 7 + 4; // 7 units per line + spacing
   }
@@ -2092,4 +2508,4 @@ export default async function generateInspectionPDF(report) {
 
   // Save
   doc.save(`PDI_Report_${String(report.bookingId ?? "report")}.pdf`);
-};
+}

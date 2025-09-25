@@ -1,4 +1,4 @@
-import toyota_fortunar from "../../../assets/toyota-fortuner_930x620.jpg";
+import mercedescar from "../../../assets/mercedes-car.jpg";
 
 const GLC="/GLC.jpeg"; // use as string, not imported
 
@@ -18,7 +18,7 @@ const rearleft="/rearleft.jpeg";
 const sampleReport = {
   bookingId: "PUN210500011",
   customerName: "Rajanish Santani",
-  engineer_name: "Akshay Koli",
+  engineer_name: "Rohit Mandhare",
   date: "2025-09-22",
   engineer_assignedSlot: "09:00 AM - 10:00 AM",
   address: "Pune",
@@ -31,7 +31,7 @@ const sampleReport = {
   fuelType: "Diesel",
   engineNumber: "K10BN4804320",
   keys: "2",
-  vehicleScore: 9.2,
+  vehicleScore: 8,
   scoreComment: "The vehicle is in excellent condition with no defects.",
   odo: 4484,
   live_distance_in_current_lock_block: 4484,
@@ -40,13 +40,13 @@ const sampleReport = {
   Airbags: 9,
   NCAP: "5 Star",
   Mileage: "18 kmpl",
-  imageUrl: toyota_fortunar,
+  imageUrl: mercedescar,
   front_left_imageUrl: frontleft,
   rear_left_imageUrl:rearleft,
   rear_right_imageUrl: rearright,
   front_right_imageUrl: frontright,
   keys_imageUrl: keys,
-  odo_imageUrl: toyota_fortunar,
+  odo_imageUrl:[],
   engineNumber_imageUrl: engine,
   vinNumber_imageUrl: engine,
 
@@ -93,7 +93,7 @@ const sampleReport = {
   rear_bumper_paintThickness: 146,
   rear_bumper_issues: ["Paint Chipping","Stone Chipping"],
   rear_bumper_repaint: false,
-  rear_bumper_imageUrls: [toyota_fortunar],
+  rear_bumper_imageUrls: [],
 
   rear_right_quarter_panel_paintThickness: 132,
   rear_right_quarter_panel_issues: ["All Ok"],

@@ -32,6 +32,7 @@ const BRAND_OPTIONS = [
   "Goodyear",
   "Pirelli",
   "Continental",
+  "Other",
 ];
 const SUB_BRAND_OPTIONS = [
   "Pilot Sport",
@@ -39,6 +40,8 @@ const SUB_BRAND_OPTIONS = [
   "Eagle F1",
   "P Zero",
   "ContiSportContact",
+  "EfficientGrip",
+  "Other",
 ];
 const VARIANT_OPTIONS = [
   "Sport",
@@ -48,6 +51,8 @@ const VARIANT_OPTIONS = [
   "Touring",
   "Eco",
   "Mud-Terrain",
+  "EfficientGrip",
+  "Other",
 ];
 
 const Tyres = ({ data = {}, onChange }) => {
