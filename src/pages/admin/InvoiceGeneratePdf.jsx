@@ -100,10 +100,10 @@ const generateInvoicePdf = (order) => {
 
       autoTable(doc, {
         startY: tableStartY,
-        head: [["Vehicle", "Amount", "Payment Status"]],
+        head: [["Vehicle", "Payment Mode", "Payment Status"]],
         body: [[
           `${order.brand || "-"} ${order.model || "-"} ${order.variant || "-"}`,
-          `₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+          order.paymentMode || "CASH",
           order.paymentStatus || "N/A"
         ]],
         theme: "grid",
