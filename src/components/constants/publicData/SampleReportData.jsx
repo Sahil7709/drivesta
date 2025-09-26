@@ -26,7 +26,7 @@ const sampleReport = {
   brand: "Mercedes-Benz",
   model: "GLC",
   carStatus: "New",
-  vinNumber: "W1NKM0FB2SL010304",
+  vinNumber: "XXXXXXXXXX0304",
   variant: "220d 4MATIC",
   transmissionType: "Automatic",
   fuelType: "Diesel",

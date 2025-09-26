@@ -491,6 +491,7 @@ async function addCoverPage(doc, r) {
     ["Model", r.model],
     ["Car Status", r.carStatus],
     ["VIN No.", r.vinNumber],
+    ["MFG Date", r.manufacturing_date],
     ["Variant", r.variant],
     ["Transmission", r.transmissionType],
     ["Fuel", r.fuelType],
