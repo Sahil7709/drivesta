@@ -34,7 +34,7 @@ const photoCount = 5;
 
 const getIssueOptions = (panel) =>
   panel === "rubber_rear_wiper"
-    ? ["Fitment Not Proper", "Scratch", "Torn", "Aging And Cracks"]
+    ? ["In Proper Fitment","Fitment Not Proper", "Scratch", "Torn", "Aging And Cracks"]
     : ["Crack", "Chip", "Scratch"];
 
 const RubberComponent = ({ data = {}, onChange }) => {

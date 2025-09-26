@@ -31,7 +31,7 @@ const BasicDetails = ({ data, onChange }) => {
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activeField, setActiveField] = useState(null);
-  const [manufacturingDate, setManufacturingDate] = useState(data?.manufacturing_date || ""); // ✅ initialize from data
+  const [manufacturingDate, setManufacturingDate] = useState(data?.manufacturingDate || "");
 
   useEffect(() => {
     const updatedPhotos = fields.reduce(
@@ -121,7 +121,7 @@ const BasicDetails = ({ data, onChange }) => {
     const yy = String(date.getFullYear()).slice(-2);
     const value = `${mm}/${yy}`;
     setManufacturingDate(value);
-    onChange && onChange("manufacturing_date", value);
+    onChange && onChange("manufacturingDate", value);
   };
 
   return (
