@@ -3,6 +3,8 @@ import { AiOutlinePlus, AiOutlineCamera, AiOutlineUpload } from "react-icons/ai"
 import FileUploaderService from "../../../services/upload-document.service";
 import imageCompression from "browser-image-compression";
 import ServerUrl from "../../../core/constants/serverUrl.constant";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const BasicDetails = ({ data, onChange }) => {
   const fields = ["vinNumber", "engineNumber", "odo", "keys"];
@@ -12,6 +14,7 @@ const BasicDetails = ({ data, onChange }) => {
     engineNumber: "Engine Number",
     odo: "ODO",
     keys: "Keys",
+    manufacturing_date: "Manufacturing Date",
   };
 
   const [photos, setPhotos] = useState(
@@ -28,6 +31,7 @@ const BasicDetails = ({ data, onChange }) => {
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activeField, setActiveField] = useState(null);
+  const [manufacturingDate, setManufacturingDate] = useState(""); // Add this state
 
   useEffect(() => {
     const updatedPhotos = fields.reduce(
@@ -107,6 +111,15 @@ const BasicDetails = ({ data, onChange }) => {
     onChange(name, newValue);
   };
 
+  const handleManufacturingDateChange = (date) => {
+    if (!date) return;
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yy = String(date.getFullYear()).slice(-2);
+    const value = `${mm}/${yy}`;
+    setManufacturingDate(value);
+    onChange && onChange("manufacturingDate", value); // Adjust key as needed
+  };
+
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white">
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Basic Details</h2>
@@ -166,6 +179,24 @@ const BasicDetails = ({ data, onChange }) => {
             </div>
           </div>
         ))}
+
+        {/* Manufacturing Date Field */}
+        <div className="mb-4">
+          <label className="text-md text-white font-medium mb-2">Manufacturing MM/YY</label>
+          <DatePicker
+            selected={
+              manufacturingDate
+                ? new Date(`20${manufacturingDate.slice(-2)}`, manufacturingDate.slice(0, 2) - 1)
+                : null
+            }
+            onChange={handleManufacturingDateChange}
+            dateFormat="MM/yy"
+            placeholderText="MM/YY"
+            className="p-2 bg-transparent text-white border border-green-200 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-lime-400"
+            showMonthYearPicker
+            maxDate={new Date()}
+          />
+        </div>
       </div>
 
       {/* Preview Modal */}
