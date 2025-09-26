@@ -117,7 +117,7 @@ const BasicDetails = ({ data, onChange }) => {
     const yy = String(date.getFullYear()).slice(-2);
     const value = `${mm}/${yy}`;
     setManufacturingDate(value);
-    onChange && onChange("manufacturingDate", value); // Adjust key as needed
+    onChange && onChange("manufacturing_date", value); // Adjust key as needed
   };
 
   return (
