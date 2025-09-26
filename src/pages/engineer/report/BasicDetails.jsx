@@ -14,7 +14,7 @@ const BasicDetails = ({ data, onChange }) => {
     engineNumber: "Engine Number",
     odo: "ODO",
     keys: "Keys",
-    manufacturing_date: "Manufacturing Date",
+    manufacturingDate: "Manufacturing Date",
   };
 
   const [photos, setPhotos] = useState(
@@ -40,8 +40,8 @@ const BasicDetails = ({ data, onChange }) => {
     );
     setPhotos(updatedPhotos);
 
-    if (data?.manufacturing_date) {
-      setManufacturingDate(data.manufacturing_date); // ✅ keep in sync when data changes
+    if (data?.manufacturingDate) {
+      setManufacturingDate(data.manufacturingDate); // ✅ keep in sync when data changes
     }
   }, [data]);
 
