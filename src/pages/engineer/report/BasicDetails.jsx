@@ -31,7 +31,7 @@ const BasicDetails = ({ data, onChange }) => {
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activeField, setActiveField] = useState(null);
-  const [manufacturingDate, setManufacturingDate] = useState(data?.manufacturingDate || "");
+  const [manufacturingDate, setManufacturingDate] = useState(null);
 
   useEffect(() => {
     const updatedPhotos = fields.reduce(
@@ -41,7 +41,7 @@ const BasicDetails = ({ data, onChange }) => {
     setPhotos(updatedPhotos);
 
     if (data?.manufacturingDate) {
-      setManufacturingDate(data.manufacturingDate); // ✅ keep in sync when data changes
+      setManufacturingDate(data.manufacturingDate);
     }
   }, [data]);
 
@@ -237,7 +237,7 @@ const BasicDetails = ({ data, onChange }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div> 
       )}
     </div>
   );

@@ -68,6 +68,8 @@ export default function Report() {
         const response = await new ApiService().apiget(
           `${ServerUrl.API_GET_REQUEST_BY_ID}/${id}`
         );
+        console.log("Inspection data from frontend:", response?.data?.data);
+        
         if (response?.data?.data) {
           setFormData(response.data.data);
         } else {
