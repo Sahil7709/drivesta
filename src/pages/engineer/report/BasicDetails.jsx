@@ -31,7 +31,7 @@ const BasicDetails = ({ data, onChange }) => {
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activeField, setActiveField] = useState(null);
-  const [manufacturingDate, setManufacturingDate] = useState(""); // Add this state
+  const [manufacturingDate, setManufacturingDate] = useState(data?.manufacturing_date || ""); // ✅ initialize from data
 
   useEffect(() => {
     const updatedPhotos = fields.reduce(
@@ -39,6 +39,10 @@ const BasicDetails = ({ data, onChange }) => {
       {}
     );
     setPhotos(updatedPhotos);
+
+    if (data?.manufacturing_date) {
+      setManufacturingDate(data.manufacturing_date); // ✅ keep in sync when data changes
+    }
   }, [data]);
 
   const toggleDropdown = (field) =>
@@ -117,7 +121,7 @@ const BasicDetails = ({ data, onChange }) => {
     const yy = String(date.getFullYear()).slice(-2);
     const value = `${mm}/${yy}`;
     setManufacturingDate(value);
-    onChange && onChange("manufacturing_date", value); // Adjust key as needed
+    onChange && onChange("manufacturing_date", value);
   };
 
   return (
@@ -126,7 +130,9 @@ const BasicDetails = ({ data, onChange }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
         {fields.map((field) => (
           <div key={field} className="flex flex-col">
-            <label className="text-md text-white font-medium mb-2">{fieldLabels[field]}</label>
+            <label className="text-md text-white font-medium mb-2">
+              {fieldLabels[field]}
+            </label>
             <input
               type="text"
               name={field}
@@ -142,7 +148,9 @@ const BasicDetails = ({ data, onChange }) => {
                   src={`${ServerUrl.IMAGE_URL}${photos[field]}`}
                   alt={`${fieldLabels[field]} Photo`}
                   className="w-20 h-20 object-cover rounded-md cursor-pointer"
-                  onClick={() => setPreviewUrl(`${ServerUrl.IMAGE_URL}${photos[field]}`)}
+                  onClick={() =>
+                    setPreviewUrl(`${ServerUrl.IMAGE_URL}${photos[field]}`)
+                  }
                 />
               ) : (
                 <button
@@ -182,11 +190,16 @@ const BasicDetails = ({ data, onChange }) => {
 
         {/* Manufacturing Date Field */}
         <div className="mb-4">
-          <label className="text-md text-white font-medium mb-2">Manufacturing MM/YY</label>
+          <label className="text-md text-white font-medium mb-2">
+            Manufacturing MM/YY
+          </label>
           <DatePicker
             selected={
               manufacturingDate
-                ? new Date(`20${manufacturingDate.slice(-2)}`, manufacturingDate.slice(0, 2) - 1)
+                ? new Date(
+                    `20${manufacturingDate.slice(-2)}`, // year (e.g. "25" -> 2025)
+                    Number(manufacturingDate.slice(0, 2)) - 1 // month index (e.g. "08" -> 7)
+                  )
                 : null
             }
             onChange={handleManufacturingDateChange}
