@@ -7,6 +7,7 @@ class RoutePath {
     
     // // After login
     // public static readonly AUTHENTICATED:string =  "dashboard";
+    // public
     
 }
 

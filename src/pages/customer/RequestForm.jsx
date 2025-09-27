@@ -70,7 +70,7 @@ const Request = () => {
         );
         const data = response?.data?.data || [];
 
-        // Unique brands and models
+        // Unique brands
         const uniqueBrands = Object.values(
           data.reduce((acc, curr) => {
             if (!acc[curr.brand]) acc[curr.brand] = curr;
@@ -93,7 +93,7 @@ const Request = () => {
     setSelectedBrand(brand);
     setSelectedModel("");
     setSelectedVariant("");
-    setSelectedImage(jeepImage);
+    setSelectedImage(jeepImage); // reset image
     setTransmission("");
     setFuel("");
 
@@ -101,8 +101,7 @@ const Request = () => {
       vehicles
         .filter((v) => v.brand === brand)
         .reduce((acc, curr) => {
-          if (!acc[curr.model])
-            acc[curr.model] = { name: curr.model, image: curr.imageUrl };
+          if (!acc[curr.model]) acc[curr.model] = { name: curr.model };
           return acc;
         }, {})
     );
@@ -117,10 +116,11 @@ const Request = () => {
     setSelectedVariant("");
     setTransmission("");
     setFuel("");
+    setSelectedImage(jeepImage); // reset image until variant is selected
 
     const uniqueVariantsForModel = Object.values(
       vehicles
-        .filter((v) => v.model === model)
+        .filter((v) => v.brand === selectedBrand && v.model === model)
         .reduce((acc, curr) => {
           if (!acc[curr.variant]) acc[curr.variant] = { name: curr.variant };
           return acc;
@@ -128,18 +128,23 @@ const Request = () => {
     );
 
     setVariants(uniqueVariantsForModel);
-
-    const img = vehicles.find((x) => x.model === model)?.imageUrl || jeepImage;
-    setSelectedImage(img);
   };
 
   const handleVariantChange = (e) => {
     const variant = e.target.value;
     setSelectedVariant(variant);
 
-    const variantObj = vehicles.find((x) => x.variant === variant);
-    setTransmission(variantObj?.transmissionType || "");
-    setFuel(variantObj?.fuelType || "");
+    // Match vehicle by brand + model + variant
+    const vehicleObj = vehicles.find(
+      (v) =>
+        v.brand === selectedBrand &&
+        v.model === selectedModel &&
+        v.variant === variant
+    );
+
+    setTransmission(vehicleObj?.transmissionType || "");
+    setFuel(vehicleObj?.fuelType || "");
+    setSelectedImage(vehicleObj?.imageUrl || jeepImage);
   };
 
   // Submit handler
