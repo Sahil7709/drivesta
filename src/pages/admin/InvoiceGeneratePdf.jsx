@@ -60,7 +60,7 @@ const generateInvoicePdf = (order) => {
       doc.text(`Booking ID: ${order.bookingId || "N/A"}`, 195, 65, { align: "right" });
       const paymentDate = order.paymentDate
         ? new Date(order.paymentDate).toLocaleDateString()
-        : "26-09-2025";
+        : "29-09-2025";
       doc.text(`Invoice Date: ${paymentDate}`, 195, 72, { align: "right" });
       // Invoice To
       const startY = 85;
