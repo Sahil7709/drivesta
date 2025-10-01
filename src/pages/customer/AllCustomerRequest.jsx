@@ -223,7 +223,7 @@ const AllCustomerRequests = () => {
                     } | Date: ${
                       order.paymentStatus ===
                       APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value
-                        ? new Date(order.date).toLocaleDateString()
+                        ? new Date(order.paymentDate).toLocaleDateString()
                         : "N/A"
                     } `}
                     color="purple"

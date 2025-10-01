@@ -331,8 +331,8 @@ async function addCoverPage(doc, r) {
     { label: "Airbags", value: String(r.vehicleInfo?.Airbags ?? "6") },
     { label: "NCAP", value: String(r.vehicleInfo?.NCAP ?? "0") },
     {
-      label: "Mileage (kmpl)",
-      value: String(r.vehicleInfo?.Mileage ?? "17.0"),
+      label: "Mileage",
+      value: String(r.vehicleInfo?.Mileage ?? "18"),
     },
   ];
 
@@ -385,7 +385,7 @@ async function addCoverPage(doc, r) {
 
   // Combined Info Card (Customer, Vehicle, Overall Score)
   const CARD_W = 60,
-    CARD_H = 90,
+    CARD_H = 100,
     GAP = 2;
   const TOTAL_CARD_W = 3 * CARD_W + 2 * GAP;
   const cardXStart = (pageWidth - mm(TOTAL_CARD_W)) / 2;
@@ -481,36 +481,45 @@ async function addCoverPage(doc, r) {
     custY += gapAfterValue;
   });
 
-  // Vehicle Info Section
-  drawSectionHeader("Vehicle Info", section2X, CARD_Y, CARD_W);
-  doc.setFont("helvetica", "bold"); // Bold font for label
+// Vehicle Info Section
+drawSectionHeader("Vehicle Info", section2X, CARD_Y, CARD_W);
 
-  const startX = section2X + 5;
-  const vehicleFields = [
-    ["Brand", r.brand],
-    ["Model", r.model],
-    ["Car Status", r.carStatus],
-    ["VIN No.", r.vinNumber],
-    ["MFG Date", r.manufacturingDate],
-    ["Variant", r.variant],
-    ["Transmission", r.transmissionType],
-    ["Fuel", r.fuelType],
-    ["Engine", r.engineNumber],
-    ["Keys", String(r.keys ?? "2")],
-  ];
+const startX = section2X + 5;
+const vehicleFields = [
+  ["Brand", r.brand],
+  ["Model", r.model],
+  ["Car Status", r.carStatus],
+  ["VIN No.", r.vinNumber],
+  ["MFG Date", r.manufacturingDate],
+  ["Variant", r.variant],
+  ["Transmission", r.transmissionType],
+  ["Fuel", r.fuelType],
+  ["Engine", r.engineNumber],
+  ["Keys", String(r.keys ?? "2")],
+];
 
-  const labelWidth = 25; // Reserve space for label width
-  const valueXOffset = startX + labelWidth;
+const labelWidth = 25; // Reserve space for label width
+const valueXOffset = startX + labelWidth;
 
-  let rowY = CARD_Y + 20;
+let rowY = CARD_Y + 20;
 
-  vehicleFields.forEach(([label, value]) => {
-    doc.setFont("helvetica", "bold"); // Bold font for label
-    doc.text(label + ":", mm(startX), mm(rowY));
-    doc.setFont("helvetica", "normal"); // Normal font for value
-    doc.text(String(value), mm(valueXOffset), mm(rowY));
-    rowY += 6;
+vehicleFields.forEach(([label, value]) => {
+  doc.setFont("helvetica", "bold"); // Label font
+  doc.text(label + ":", mm(startX), mm(rowY));
+
+  doc.setFont("helvetica", "normal"); // Value font
+
+  // Wrap text if too long
+  const wrappedText = doc.splitTextToSize(String(value ?? ""), mm(CARD_W - labelWidth - 10));
+
+  // Print wrapped text line by line starting at valueXOffset
+  wrappedText.forEach((line, i) => {
+    doc.text(line, mm(valueXOffset), mm(rowY + i * 6));
   });
+
+  // Move rowY down based on how many lines we printed
+  rowY += wrappedText.length * 6;
+});
 
   // Overall Score Section
 drawSectionHeader("Overall Vehicle Score", section3X, CARD_Y, CARD_W);
@@ -595,7 +604,7 @@ doc.text(String(r.overall_score ?? "8"), circleX, circleY + 10, { align: "center
   doc.text("My Car's Running", mm(barXStart + 2), mm(BAR_Y + 8));
 
   doc.setFont(undefined, "bold");
-  doc.text(String(r.odo ?? "55 Kms"), mm(barXStart + BAR_W), mm(BAR_Y + 8), {
+  doc.text(String(r.odo ?? "60 Kms"), mm(barXStart + BAR_W), mm(BAR_Y + 8), {
     align: "right",
   });
   doc.setFont(undefined, "normal");
@@ -610,13 +619,13 @@ doc.text(String(r.overall_score ?? "8"), circleX, circleY + 10, { align: "center
 
   // Avg Running Before Delivery
   setText(doc, THEME.text, 9.5);
-  doc.text("Actual running before delivery", mm(barXStart), mm(BAR_Y + 38));
+  doc.text("Actual running before delivery", mm(barXStart), mm(BAR_Y + 30));
 
   doc.setFont(undefined, "bold");
   doc.text(
     String(r.live_distance_in_current_lock_block ?? "40 Kms"),
     mm(barXStart),
-    mm(BAR_Y + 44)
+    mm(BAR_Y + 36)
   );
 
   // Footer

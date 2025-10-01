@@ -1,4 +1,3 @@
-// src/utils/generateInvoicePdf.js
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -7,9 +6,9 @@ const generateInvoicePdf = (order) => {
     const doc = new jsPDF();
 
     const invoiceGreen = [60, 184, 120]; // #3cb878
-    const darkBlue = [27, 43, 75];       // #1b2b4b
+    const darkBlue = [27, 43, 75]; // #1b2b4b
     const textGray = [100, 100, 100];
-    const newGreen = [125, 217, 87];     // #7dd957
+    const newGreen = [125, 217, 87]; // #7dd957
 
     // Header background
     doc.setFillColor(...darkBlue);
@@ -54,14 +53,18 @@ const generateInvoicePdf = (order) => {
       doc.line(15, 55, 195, 55);
 
       // Invoice details
-      doc.setFont("helvetica", "normal");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
-      doc.text(`Booking ID: ${order.bookingId || "N/A"}`, 195, 65, { align: "right" });
+      doc.text(`Booking ID: ${order.bookingId || "N/A"}`, 195, 65, {
+        align: "right",
+      });
       const paymentDate = order.paymentDate
-        ? new Date(order.paymentDate).toLocaleDateString()
-        : "29-09-2025";
+        ? new Date(order.paymentDate).toLocaleDateString("en-IN")
+        : new Date().toLocaleDateString("en-IN");
+
       doc.text(`Invoice Date: ${paymentDate}`, 195, 72, { align: "right" });
+
       // Invoice To
       const startY = 85;
       doc.setFont("helvetica", "bold");
@@ -83,7 +86,7 @@ const generateInvoicePdf = (order) => {
       doc.setFontSize(14);
       doc.setTextColor(...invoiceGreen);
       doc.text("Invoice From:", 195, startY, { align: "right" });
- 
+
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       doc.text("Carnomia Technology", 195, startY + 10, { align: "right" });
@@ -91,8 +94,12 @@ const generateInvoicePdf = (order) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(...textGray);
-      doc.text("Phone :- +91 7385978109 / 7378554409", 195, startY + 26, { align: "right" });
-      doc.text("E mail :- carnomiatechnologies@gmail.com", 195, startY + 34, { align: "right" });
+      doc.text("Phone :- +91 7385978109 / 7378554409", 195, startY + 26, {
+        align: "right",
+      });
+      doc.text("E mail :- carnomiatechnologies@gmail.com", 195, startY + 34, {
+        align: "right",
+      });
 
       // Table
       const tableStartY = startY + 50;
@@ -100,48 +107,76 @@ const generateInvoicePdf = (order) => {
 
       autoTable(doc, {
         startY: tableStartY,
-        head: [["Vehicle", "Payment Mode", "Payment Status"]],
-        body: [[
-          `${order.brand || "-"} ${order.model || "-"} ${order.variant || "-"}`,
-          order.paymentMode || "CASH",
-          order.paymentStatus || "N/A"
-        ]],
+        head: [["Vehicle Details", "Payment Mode", "Payment Status"]],
+        body: [
+          [
+            `${order.brand || "-"} ${order.model || "-"} ${
+              order.variant || "-"
+            }`,
+            order.paymentMode || "CASH",
+            order.paymentStatus || "N/A",
+          ],
+        ],
         theme: "grid",
-        tableWidth: 180,
+        tableWidth: "auto",
         headStyles: {
-          fillColor: invoiceGreen,
-          textColor: [255, 255, 255],
+          fillColor: invoiceGreen, // Header background
+          textColor: [255, 255, 255], // Header text
           fontStyle: "bold",
-          fontSize: 11
+          halign: "center", // Center align header text
+          fontSize: 12,
         },
-        bodyStyles: { textColor: [0, 0, 0], fontSize: 10 },
+        bodyStyles: {
+          textColor: [0, 0, 0],
+          fontSize: 11,
+          valign: "middle",
+        },
         columnStyles: {
-          0: { cellWidth: 90 },
-          1: { cellWidth: 45, halign: "center" },
-          2: { cellWidth: 45, halign: "center" }
+          0: { cellWidth: 90 }, // Vehicle Details
+          1: { cellWidth: 50, halign: "center" }, // Payment Mode
+          2: { cellWidth: 50, halign: "center" }, // Payment Status
         },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-        margin: { left: 15, right: 15 }
+        alternateRowStyles: {
+          fillColor: [245, 245, 245], // Light gray for alternate rows
+        },
+        margin: { left: 15, right: 15 },
+        styles: {
+          cellPadding: 4, // Padding inside cells
+          lineColor: [200, 200, 200], // Grid line color
+          lineWidth: 0.5,
+        },
       });
 
       // Total
       const finalY = doc.lastAutoTable.finalY + 10;
-      const totalText = `Total: ₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+
+      // Use 'Rs.' instead of ₹ to avoid font issues
+      const totalText = `Total: Rs. ${amount.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+      })}`;
+
+      // Draw background rectangle
       doc.setFillColor(...invoiceGreen);
       doc.rect(150, finalY, 45, 10, "F");
+
+      // Set font and color
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.setTextColor(255, 255, 255);
+
+      // Add text inside rectangle
       doc.text(totalText, 153, finalY + 7);
 
       // Footer
       doc.setFont("helvetica", "italic");
       doc.setFontSize(9);
       doc.setTextColor(...textGray);
-      doc.text("Thank you for choosing Carnomia!", 105, 280, { align: "center" });
+      doc.text("Thank you for choosing Carnomia!", 105, 280, {
+        align: "center",
+      });
 
       // ✅ Save
-      const fileName = `invoice_${order.bookingId || "N/A"}.pdf`;
+      const fileName = `Invoice_${order.bookingId || "N/A"}.pdf`;
       doc.save(fileName);
 
       resolve(fileName);
