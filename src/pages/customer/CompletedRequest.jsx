@@ -53,6 +53,7 @@ const CompletedRequests = () => {
             customerName,
             customerMobile,
             engineerName: engineerDisplay,
+            paymentDate: order.paymentDate || null,
           };
         });
 

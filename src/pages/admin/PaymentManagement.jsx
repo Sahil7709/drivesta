@@ -317,15 +317,17 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { FiEye, FiDownload, FiCheck, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
+
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
 import { APPLICATION_CONSTANTS } from "../../core/constants/app.constant";
 import { useAuth } from "../../core/contexts/AuthContext";
 import generateInvoicePdf from "./InvoiceGeneratePdf";
 
-// ==================== Table Row Component ====================
+/* ==================== Table Row ==================== */
 const PaymentRow = ({ payment, isAdminRole, onView, onDownload, onMarkPaid }) => (
   <tr className="border-b hover:bg-gray-50">
+    {/* Customer */}
     <td className="p-3 flex items-center gap-3">
       <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center">
         {payment.customerName.charAt(0)}
@@ -335,26 +337,38 @@ const PaymentRow = ({ payment, isAdminRole, onView, onDownload, onMarkPaid }) =>
         <p className="text-gray-500 text-sm">{payment.customerMobile}</p>
       </div>
     </td>
+
+    {/* Booking ID */}
     <td className="p-3">{payment.bookingId}</td>
+
+    {/* Vehicle */}
     <td className="p-3">
       <div>{payment.brand} {payment.model}</div>
-      <div>{payment.variant}</div>
+      <div className="text-sm text-gray-500">{payment.variant}</div>
     </td>
+
+    {/* Amount */}
     <td className="p-3">₹{payment.amount.toLocaleString("en-IN")}</td>
+
+    {/* Payment Status */}
     <td className="p-3">
       <span
         className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-          payment.paymentStatus === "PAID" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+          payment.paymentStatus === "PAID"
+            ? "bg-green-100 text-green-800"
+            : "bg-yellow-100 text-yellow-800"
         }`}
       >
         {payment.paymentStatus}
       </span>
     </td>
+
+    {/* Actions */}
     <td className="p-3 flex space-x-2">
       <button onClick={() => onView(payment)} className="text-blue-600 hover:text-blue-800">
         <FiEye className="w-5 h-5" />
       </button>
-      <button onClick={() => onDownload(payment)} className="text-gray-600 hover:text-gray-800 cursor-pointer">
+      <button onClick={() => onDownload(payment)} className="text-gray-600 hover:text-gray-800">
         <FiDownload className="w-5 h-5" />
       </button>
       {isAdminRole && payment.paymentStatus !== "PAID" && (
@@ -366,15 +380,17 @@ const PaymentRow = ({ payment, isAdminRole, onView, onDownload, onMarkPaid }) =>
   </tr>
 );
 
-// ==================== Detail Popup Component ====================
+/* ==================== Payment Detail Popup ==================== */
 const PaymentDetailPopup = ({ payment, onClose, onDownload, onMarkPaid, isAdminRole }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+
     <div className="relative bg-white rounded-lg max-w-lg w-full shadow-xl z-10 p-6">
       <h2 className="text-lg font-bold mb-4">
         {payment.customerName} - {payment.bookingId}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <p><strong>Mobile:</strong> {payment.customerMobile}</p>
         <p><strong>Address:</strong> {payment.address}</p>
         <p><strong>Vehicle:</strong> {payment.brand} {payment.model} {payment.variant}</p>
@@ -383,21 +399,34 @@ const PaymentDetailPopup = ({ payment, onClose, onDownload, onMarkPaid, isAdminR
         <p><strong>Payment Status:</strong> {payment.paymentStatus}</p>
         <p><strong>Request Status:</strong> {payment.status}</p>
         <p><strong>Payment Mode:</strong> {payment.paymentMode}</p>
-        <p><strong>Payment Date:</strong> {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString("en-IN") : "N/A"}</p>
+        <p>
+          <strong>Payment Date:</strong>{" "}
+          {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString("en-IN") : "N/A"}
+        </p>
       </div>
 
+      {/* Buttons */}
       <div className="mt-6 flex gap-3">
-        <button onClick={() => onDownload(payment)} className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center">
+        <button
+          onClick={() => onDownload(payment)}
+          className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center"
+        >
           <FiDownload className="w-5 h-5 mr-1" /> Download
         </button>
 
         {isAdminRole && payment.paymentStatus !== "PAID" && (
-          <button onClick={() => onMarkPaid(payment)} className="px-4 py-2 border border-green-600 text-green-600 rounded-md flex items-center">
+          <button
+            onClick={() => onMarkPaid(payment)}
+            className="px-4 py-2 border border-green-600 text-green-600 rounded-md flex items-center"
+          >
             <FiCheck className="w-5 h-5 mr-1" /> Mark as Paid
           </button>
         )}
 
-        <button onClick={onClose} className="px-4 py-2 border text-gray-600 rounded-md flex items-center">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 border text-gray-600 rounded-md flex items-center"
+        >
           <FiX className="w-5 h-5 mr-1" /> Close
         </button>
       </div>
@@ -405,10 +434,11 @@ const PaymentDetailPopup = ({ payment, onClose, onDownload, onMarkPaid, isAdminR
   </div>
 );
 
-// ==================== Payment Popup Component ====================
+/* ==================== Payment Popup ==================== */
 const PaymentPopup = ({ payment, amount, mode, setAmount, setMode, onConfirm, onCancel }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+
     <div className="relative bg-white rounded-lg max-w-xs w-full shadow-xl z-10 p-6">
       <h3 className="text-lg font-bold mb-4">Enter Payment Details</h3>
 
@@ -448,7 +478,7 @@ const PaymentPopup = ({ payment, amount, mode, setAmount, setMode, onConfirm, on
   </div>
 );
 
-// ==================== Main Component ====================
+/* ==================== Main Component ==================== */
 const PaymentManagement = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -461,13 +491,17 @@ const PaymentManagement = () => {
   const [paymentMode, setPaymentMode] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
 
-  // fetch payments
+  /* Fetch payments */
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const url = id ? `${ServerUrl.API_GET_REQUEST_BY_ID}/${id}` : ServerUrl.API_GET_ALLPDIREQUEST;
+        const url = id
+          ? `${ServerUrl.API_GET_REQUEST_BY_ID}/${id}`
+          : ServerUrl.API_GET_ALLPDIREQUEST;
+
         const res = await new ApiService().apiget(url);
         const data = id ? [res.data.data] : res.data.data || [];
+
         const mapped = data
           .map((item) => ({
             id: item._id,
@@ -485,7 +519,7 @@ const PaymentManagement = () => {
             paymentMode: item.paymentMode || "N/A",
             paymentDate: item.paymentDate || null,
           }))
-          .filter((p) => p.status === "ADMIN_APPROVED" || p.status === "COMPLETED");
+          .filter((p) => ["ADMIN_APPROVED", "COMPLETED"].includes(p.status));
 
         setPayments(mapped);
       } catch (err) {
@@ -494,13 +528,14 @@ const PaymentManagement = () => {
         setPayments([]);
       }
     };
+
     fetchPayments();
   }, [id]);
 
-  // download invoice
+  /* Download Invoice */
   const downloadInvoice = async (payment) => {
     try {
-      toast.info("Your Invoice is being generated, please wait...");
+      toast.info("Your Invoice is being generated...");
       await generateInvoicePdf(payment);
       toast.success("Invoice downloaded!");
     } catch {
@@ -508,53 +543,68 @@ const PaymentManagement = () => {
     }
   };
 
-  // open payment popup
+  /* Open popup */
   const openPaymentPopup = (payment) => {
     setPendingPayment(payment);
     setPaymentAmount(payment.amount || "");
     setPaymentMode(payment.paymentMode || "");
   };
 
-  // reset popup
   const resetPopup = () => {
     setPendingPayment(null);
     setPaymentAmount("");
     setPaymentMode("");
   };
 
-  // update payment
+  /* Update payment */
   const updatePaymentStatus = async (payment, mode, amount) => {
     if (!isAdminRole) return;
+
     try {
       const requestId = payment.id;
-      const newRequestStatus = payment.status === APPLICATION_CONSTANTS.REQUEST_STATUS.ADMIN_APPROVED.value
-        ? APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value
-        : payment.status;
+      const newStatus =
+        payment.status === APPLICATION_CONSTANTS.REQUEST_STATUS.ADMIN_APPROVED.value
+          ? APPLICATION_CONSTANTS.REQUEST_STATUS.COMPLETED.value
+          : payment.status;
 
       const paymentDate = new Date().toISOString();
       const finalAmount = Number(amount) || payment.amount || 0;
 
-      const res = await new ApiService().apiput(`${ServerUrl.API_UPDATE_PAYMENT_STATUS}/${requestId}`, {
-        paymentStatus: APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value,
-        status: newRequestStatus,
-        paymentMode: mode || payment.paymentMode || "CASH",
-        amount: finalAmount,
-        paymentDate,
-      });
+      const res = await new ApiService().apiput(
+        `${ServerUrl.API_UPDATE_PAYMENT_STATUS}/${requestId}`,
+        {
+          paymentStatus: APPLICATION_CONSTANTS.PAYMENT_STATUS.PAID.value,
+          status: newStatus,
+          paymentMode: mode || "CASH",
+          amount: finalAmount,
+          paymentDate,
+        }
+      );
 
       if (res.data?.data) {
         toast.success("Payment updated successfully");
+
         setPayments((prev) =>
           prev.map((p) =>
             p.id === requestId
-              ? { ...p, paymentStatus: "PAID", status: newRequestStatus, paymentMode: mode, amount: finalAmount, paymentDate }
+              ? { ...p, paymentStatus: "PAID", status: newStatus, paymentMode: mode, amount: finalAmount, paymentDate }
               : p
           )
         );
+
         if (selectedPayment?.id === requestId) {
-          setSelectedPayment({ ...selectedPayment, paymentStatus: "PAID", status: newRequestStatus, paymentMode: mode, amount: finalAmount, paymentDate });
+          setSelectedPayment({
+            ...selectedPayment,
+            paymentStatus: "PAID",
+            status: newStatus,
+            paymentMode: mode,
+            amount: finalAmount,
+            paymentDate,
+          });
         }
-      } else toast.error("Failed to update payment");
+      } else {
+        toast.error("Failed to update payment");
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to update payment");
@@ -563,7 +613,7 @@ const PaymentManagement = () => {
     }
   };
 
-  // filtered payments
+  /* Filtered payments */
   const filteredPayments = payments.filter(
     (p) =>
       p.bookingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -575,7 +625,7 @@ const PaymentManagement = () => {
     <div className="min-h-screen bg-primary p-4 sm:p-6 md:p-8">
       <h1 className="text-3xl font-bold text-button mb-6">Payment Management</h1>
 
-      {/* search */}
+      {/* Search */}
       <div className="mb-6 flex flex-col sm:flex-row items-center gap-4">
         <input
           type="text"
@@ -586,7 +636,7 @@ const PaymentManagement = () => {
         />
       </div>
 
-      {/* table */}
+      {/* Table */}
       <div className="bg-white rounded-lg shadow-lg overflow-x-auto">
         <table className="w-full text-left text-sm sm:text-base">
           <thead className="bg-green-50 text-button">
@@ -600,10 +650,10 @@ const PaymentManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredPayments.map((p) => (
+            {filteredPayments.map((payment) => (
               <PaymentRow
-                key={p.id}
-                payment={p}
+                key={payment.id}
+                payment={payment}
                 isAdminRole={isAdminRole}
                 onView={setSelectedPayment}
                 onDownload={downloadInvoice}
@@ -614,7 +664,7 @@ const PaymentManagement = () => {
         </table>
       </div>
 
-      {/* popups */}
+      {/* Popups */}
       {selectedPayment && (
         <PaymentDetailPopup
           payment={selectedPayment}
@@ -641,3 +691,4 @@ const PaymentManagement = () => {
 };
 
 export default PaymentManagement;
+
