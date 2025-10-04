@@ -638,7 +638,7 @@ doc.text(String(r.overall_score ?? "8"), circleX, circleY + 10, { align: "center
 
 async function addProfilePhotosPage(doc, r) {
   doc.addPage("a4", "portrait");
-  drawTopBand(doc);
+  await drawTopBand(doc);
 
   sectionHeader(
     doc,
@@ -1038,28 +1038,28 @@ async function addGlassesPage(doc, r) {
  * ========================================================================= */
 async function addRubberPage(doc, r) {
   const PAGE_TOP_SPACING = mm(28); // space from top for header
+  const PAGE_BOTTOM_LIMIT = mm(250); // bottom limit for pagination
 
-  // Utility to render section header + column headers
-  function renderHeader(y, title = "Rubber") {
-    sectionHeader(doc, title, y);
-    const headerY = y + mm(14); // spacing below title
+  // Function to render section header + column headers
+  function renderHeader(title = "Rubber") {
+    sectionHeader(doc, title, PAGE_TOP_SPACING); // section title
+    const headerY = PAGE_TOP_SPACING + mm(14); // spacing below title
+
     setText(doc, THEME.subtext, 9);
     doc.text("Part", PAGE_PAD_X, headerY);
     doc.text("Issues / Status", PAGE_PAD_X + 70, headerY);
     setText(doc);
-    divider(doc, PAGE_PAD_X, headerY + 2, A4.w - PAGE_PAD_X);
+
+    divider(doc, PAGE_PAD_X, headerY + 2, A4.w - PAGE_PAD_X, THEME.faintLine);
     return headerY + 6; // start Y for records
   }
 
-  // Start new page
-  function startNewPage(title = "Rubber") {
-    doc.addPage("a4", "portrait");
-    drawTopBand(doc);
-    return renderHeader(PAGE_TOP_SPACING, title);
-  }
+  // Start first page
+  doc.addPage("a4", "portrait");
+  await drawTopBand(doc); // ensures logo is drawn
+  let y = renderHeader();
 
-  let y = startNewPage();
-
+  // Rubber parts data
   const rows = [
     { label: "Bonnet Rubber", key: "rubber_bonnet" },
     { label: "Front Left Door Rubber", key: "rubber_front_left_door" },
@@ -1068,28 +1068,19 @@ async function addRubberPage(doc, r) {
     { label: "Rear Right Door Rubber", key: "rubber_rear_right_door" },
     { label: "Front Right Door Rubber", key: "rubber_front_right_door" },
     { label: "Front Wiper Rubber", key: "rubber_front_wiper" },
-    {
-      label: "Rear Wiper Rubber",
-      key: "rubber_rear_wiper",
-      toggle: r.rubber_rear_wiper_toggle,
-    },
-    { label: "Sunroof Rubber",
-      key: "rubber_sunroof",
-      toggle: r.rubber_sunroof_toggle,
-    },
+    { label: "Rear Wiper Rubber", key: "rubber_rear_wiper", toggle: r.rubber_rear_wiper_toggle },
+    { label: "Sunroof Rubber", key: "rubber_sunroof", toggle: r.rubber_sunroof_toggle },
   ];
 
   for (const row of rows) {
-    const issues =
-      Array.isArray(r[`${row.key}_issues`]) && r[`${row.key}_issues`].length > 0
-        ? r[`${row.key}_issues`].join(", ")
-        : "All OK";
+    // Prepare issues text
+    const issuesArr = Array.isArray(r[`${row.key}_issues`]) ? r[`${row.key}_issues`] : [];
+    const issues = issuesArr.length > 0 ? issuesArr.join(", ") : "All OK";
 
-    const urls = Array.isArray(r[`${row.key}_imageUrls`])
-      ? r[`${row.key}_imageUrls`]
-      : [];
+    // Images
+    const urls = Array.isArray(r[`${row.key}_imageUrls`]) ? r[`${row.key}_imageUrls`] : [];
 
-    // Wrap text for Issues/Status column
+    // Wrap text for columns
     const labelText = doc.splitTextToSize(row.label, 65);
     const issuesText = doc.splitTextToSize(issues, 100);
 
@@ -1110,51 +1101,48 @@ async function addRubberPage(doc, r) {
       setText(doc);
     }
 
-    y += rowHeight + 4;
+    y += rowHeight + 2; // slightly reduced row gap
 
-    // Photos row (new row below each record)
+    // Photos row
     if (urls.length > 0) {
       const maxImages = Math.min(5, urls.length);
       const imageSize = 20;
       const spacing = 10;
       let x = PAGE_PAD_X;
+
       for (let i = 0; i < maxImages; i++) {
         try {
           if (urls[i]) {
-            doc.addImage(
-              `${ServerUrl.IMAGE_URL}${urls[i]}`,
-              "JPEG",
-              x,
-              y,
-              imageSize,
-              imageSize
-            );
+            doc.addImage(`${ServerUrl.IMAGE_URL}${urls[i]}`, "JPEG", x, y, imageSize, imageSize);
             x += imageSize + spacing;
           }
         } catch (err) {
           console.warn("Image load failed:", err);
         }
       }
-      y += imageSize + 6;
+      y += imageSize + 4; // slightly reduced gap after images
     } else {
       setText(doc, THEME.subtext, 8);
-      doc.text("No photos available", PAGE_PAD_X, y + 3);
-      y += 12;
+      doc.text("No photos available", PAGE_PAD_X, y + 2);
+      y += 10;
     }
 
     // Divider under record
     divider(doc, PAGE_PAD_X, y, A4.w - PAGE_PAD_X, THEME.faintLine);
-    y += 6;
+    y += 4;
 
     // Pagination check
-    if (y > mm(250)) {
+    if (y > PAGE_BOTTOM_LIMIT) {
       drawFooter(doc);
-      y = startNewPage("Rubber  "); // render header with top spacing
+      doc.addPage("a4", "portrait");
+      await drawTopBand(doc);
+      y = renderHeader(); // reset y after new page
     }
   }
 
   drawFooter(doc);
 }
+
 
 /** =========================================================================
  * PAGE 6: SEATS & Fabrics
@@ -1178,8 +1166,8 @@ async function addSeatsAndFabricsSection(doc, r) {
   setText(doc);
 
   let y = mm(42);
-  const rowHeight = 24;
-  const thumbSize = 24;
+  const rowHeight = 20;
+  const thumbSize = 20;
   const thumbGap = 6;
 
   const rows = [
@@ -1315,7 +1303,7 @@ async function addSeatbeltsSection(doc, r) {
   };
 
   doc.addPage("a4", "portrait");
-  drawTopBand(doc);
+  await drawTopBand(doc);
   sectionHeader(doc, "Seatbelts", mm(28));
 
   setText(doc, THEME.header, 9.2);
@@ -1324,8 +1312,8 @@ async function addSeatbeltsSection(doc, r) {
   setText(doc);
 
   let y = mm(42);
-  const rowHeight = 24;
-  const thumbSize = 24;
+  const rowHeight = 20;
+  const thumbSize = 20;
   const thumbGap = 6;
 
   const belts = [
@@ -1580,6 +1568,89 @@ async function addPlasticsPage(doc, r) {
     if (y > mm(250)) {
       drawFooter(doc);
       y = await startNewPage("Plastic Panel  ");
+    }
+  }
+
+  drawFooter(doc);
+}
+
+/** =========================================================================
+ * PAGE 8: FLUSHES & GAPS
+ * ========================================================================= */
+
+async function addFlushesGapsPage(doc, r) {
+  const PAGE_TOP_SPACING = mm(28);
+
+  async function startNewPage(title = "Flushes & Gaps") {
+    doc.addPage("a4", "portrait");
+    await drawTopBand(doc);
+    setText(doc, THEME.text, 11, "bold");
+    doc.text(title, PAGE_PAD_X, PAGE_TOP_SPACING);
+    return PAGE_TOP_SPACING + 8;
+  }
+
+  let y = await startNewPage();
+  y += 10;
+
+  // Header row
+  setText(doc, THEME.subtext, 9);
+  doc.text("Parts", PAGE_PAD_X, y);
+  doc.text("Rough Operation", PAGE_PAD_X + 50, y);
+  doc.text("Gap Observed", PAGE_PAD_X + 90, y);
+  doc.text("Gap Top", PAGE_PAD_X + 125, y);
+  doc.text("Gap Down", PAGE_PAD_X + 155, y);
+  divider(doc, PAGE_PAD_X, y + 2, A4.w - PAGE_PAD_X, THEME.faintLine);
+  setText(doc);
+
+  y += 12;
+
+  // Mapping parts to backend keys
+  const parts = [
+    {
+      label: "Bonnet Right",
+      key: "bonnet_right",
+    },
+    {
+      label: "Bonnet Left",
+      key: "bonnet_left",
+    },
+    {
+      label: "Front Right Door",
+      key: "front_right_door",
+    },
+    {
+      label: "Front Left Door",
+      key: "front_left_door",
+    },
+    {
+      label: "Rear Right Door",
+      key: "rear_right_door",
+    },
+  ];
+
+  for (const item of parts) {
+    const rough = r[`${item.key}_rough_operation`] ? "Yes" : "No";
+    const gapObs = r[`${item.key}_gap_observed`] ? "Yes" : "No";
+    const gapTop = r[`${item.key}_gap_reading_top`] ?? "—";
+    const gapDown = r[`${item.key}_gap_reading_down`] ?? "—";
+
+    setText(doc, THEME.text, 9.5);
+    doc.text(item.label, PAGE_PAD_X, y);
+    setText(doc, THEME.subtext, 9);
+    doc.text(rough, PAGE_PAD_X + 52, y);
+    doc.text(gapObs, PAGE_PAD_X + 92, y);
+    doc.text(String(gapTop), PAGE_PAD_X + 127, y);
+    doc.text(String(gapDown), PAGE_PAD_X + 157, y);
+
+    divider(doc, PAGE_PAD_X, y + 3.5, A4.w - PAGE_PAD_X, THEME.faintLine);
+
+    y += 12;
+
+    // Page overflow check
+    if (y > mm(270)) {
+      drawFooter(doc);
+      y = await startNewPage("Flushes & Gaps (contd.)");
+      y += 10;
     }
   }
 
@@ -2183,6 +2254,7 @@ export default async function generateInspectionPDF(report) {
   await addSeatsAndFabricsSection(doc, report);
   await addSeatbeltsSection(doc, report);
   await addPlasticsPage(doc, report);
+  await addFlushesGapsPage(doc, report);
   await addFeaturesPage(doc, report);
   await addLiveFluidsDiagnosticsPage(doc, report);
   await addTyresPage(doc, report);

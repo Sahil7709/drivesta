@@ -9,6 +9,7 @@ import RubberComponents from "./RubberComponent";
 import SeatFabrics from "./SeatsFabrics";
 import SeatBelts from "./SeatBelts";
 import PlasticPanels from "./PlasticPanel";
+import FlushesGaps from "./FlushesGaps";
 import FeaturesFunctions from "./FeaturesFunctions";
 import LiveParameters from "./LiveParameters";
 import FluidLevels from "./FluidLevels";
@@ -49,6 +50,7 @@ export default function Report() {
     "Seat & Fabrics",
     "Seat Belts",
     "Plastic Panels",
+    "Flushes & Gaps",
     "Features & Functions",
     "Live Parameters",
     "Fluid Levels",
@@ -166,6 +168,8 @@ export default function Report() {
         return <SeatBelts data={formData} onChange={handleChange} />;
       case "Plastic Panels":
         return <PlasticPanels data={formData} onChange={handleChange} />;
+      case "Flushes & Gaps":
+        return <FlushesGaps data={formData} onChange={handleChange} />;
       case "Features & Functions":
         return <FeaturesFunctions data={formData} onChange={handleChange} />;
       case "Live Parameters":

@@ -210,6 +210,20 @@ const BasicDetails = ({ data, onChange }) => {
             maxDate={new Date()}
           />
         </div>
+
+        <div className="flex items-center animate-fade-in sm:col-span-2">
+          <label className="text-md text-white font-medium">Dealer PDI</label>
+          <div className="ml-auto flex items-center">
+            <input
+              type="checkbox"
+              name="dealer_pdi"
+              checked={data.dealer_pdi || false}
+              onChange={handleInputChange}
+              className="h-5 w-5 text-lime-600 focus:ring-lime-500 border-gray-300 rounded mr-2"
+            />
+            <span>Completed</span>
+          </div>
+        </div>
       </div>
 
       {/* Preview Modal */}
