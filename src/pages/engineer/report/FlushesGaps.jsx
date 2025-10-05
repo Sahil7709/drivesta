@@ -8,11 +8,18 @@ const FlushesGaps = ({ data, onChange }) => {
     "Front Right Door": "front_right_door",
     "Front Left Door": "front_left_door",
     "Rear Right Door": "rear_right_door",
+    "Rear Left Door": "rear_left_door",
+    "Boot Right": "boot_right",
+    "Boot Left": "boot_left",
+    "Front Bumper Right": "front_bumper_right",
+    "Front Bumper Left": "front_bumper_left",
+    "Rear Bumper Right": "rear_bumper_right",
+    "Rear Bumper Left": "rear_bumper_left",
   };
 
   const handleChange = (e, key, field) => {
     const { type, checked, value } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
+    const newValue = type === "checkbox" ? checked : value === "" ? null : Number(value);
     onChange(`${key}_${field}`, newValue);
   };
 
@@ -56,8 +63,8 @@ const FlushesGaps = ({ data, onChange }) => {
             <div className="flex flex-col mb-3">
               <label className="text-sm mb-1">Gap Reading (Top)</label>
               <input
-                type="text"
-                value={data?.[`${key}_gap_reading_top`] || ""}
+                type="number"
+                value={data?.[`${key}_gap_reading_top`] ?? ""}
                 onChange={(e) => handleChange(e, key, "gap_reading_top")}
                 className="p-2 bg-transparent border border-green-200 rounded-md focus:outline-none focus:ring-2 focus:ring-lime-400"
                 placeholder="Enter gap reading top"
@@ -68,8 +75,8 @@ const FlushesGaps = ({ data, onChange }) => {
             <div className="flex flex-col">
               <label className="text-sm mb-1">Gap Reading (Down)</label>
               <input
-                type="text"
-                value={data?.[`${key}_gap_reading_down`] || ""}
+                type="number"
+                value={data?.[`${key}_gap_reading_down`] ?? ""}
                 onChange={(e) => handleChange(e, key, "gap_reading_down")}
                 className="p-2 bg-transparent border border-green-200 rounded-md focus:outline-none focus:ring-2 focus:ring-lime-400"
                 placeholder="Enter gap reading down"

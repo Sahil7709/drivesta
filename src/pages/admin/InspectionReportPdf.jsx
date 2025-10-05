@@ -1143,7 +1143,6 @@ async function addRubberPage(doc, r) {
   drawFooter(doc);
 }
 
-
 /** =========================================================================
  * PAGE 6: SEATS & Fabrics
  * ========================================================================= */
@@ -1426,7 +1425,7 @@ async function addPlasticsPage(doc, r) {
 
   async function startNewPage(title = "Plastic Panel") {
     doc.addPage("a4", "portrait");
-    await drawTopBand(doc); // Await here to ensure logo is drawn before continuing
+    await drawTopBand(doc); // Await to ensure logo is drawn before continuing
     setText(doc, THEME.text, 11, "bold");
     doc.text(title, PAGE_PAD_X, PAGE_TOP_SPACING);
     return PAGE_TOP_SPACING + 8;
@@ -1446,66 +1445,21 @@ async function addPlasticsPage(doc, r) {
 
   // Define all parts mapping to issues array keys and image URL keys
   const parts = [
-    {
-      part: "Driver Door",
-      issueKey: "plastic_driver_door_issues",
-      imageKey: "plastic_driver_door_imageUrls",
-    },
-    {
-      part: "Co-driver Door",
-      issueKey: "plastic_codriver_door_issues",
-      imageKey: "plastic_codriver_door_imageUrls",
-    },
-    {
-      part: "Rear Left Passenger Door",
-      issueKey: "plastic_rear_left_passenger_door_issues",
-      imageKey: "plastic_rear_left_passenger_door_imageUrls",
-    },
-    {
-      part: "Rear Right Passenger Door",
-      issueKey: "plastic_rear_right_passenger_door_issues",
-      imageKey: "plastic_rear_right_passenger_door_imageUrls",
-    },
-    {
-      part: "Third Row",
-      issueKey: "plastic_third_row_issues",
-      imageKey: "plastic_third_row_imageUrls",
-      toggleKey: "plastic_third_row_toggle",
-    },
-    {
-      part: "Dashboard",
-      issueKey: "plastic_dashboard_issues",
-      imageKey: "plastic_dashboard_imageUrls",
-    },
-    {
-      part: "Gear Console",
-      issueKey: "plastic_gear_console_issues",
-      imageKey: "plastic_gear_console_imageUrls",
-    },
-    {
-      part: "Steering",
-      issueKey: "plastic_steering_issues",
-      imageKey: "plastic_steering_imageUrls",
-    },
-    {
-      part: "AC Vents",
-      issueKey: "plastic_ac_vents_issues",
-      imageKey: "plastic_ac_vents_imageUrls",
-    },
-    {
-      part: "Rear AC Vents",
-      issueKey: "plastic_rear_ac_vents_issues",
-      imageKey: "plastic_rear_ac_vents_imageUrls",
-    },
-    {
-      part: "IRVM",
-      issueKey: "plastic_irvm_issues",
-      imageKey: "plastic_irvm_imageUrls",
-    },
+    { part: "Driver Door", issueKey: "plastic_driver_door_issues", imageKey: "plastic_driver_door_imageUrls" },
+    { part: "Co-driver Door", issueKey: "plastic_codriver_door_issues", imageKey: "plastic_codriver_door_imageUrls" },
+    { part: "Rear Left Passenger Door", issueKey: "plastic_rear_left_passenger_door_issues", imageKey: "plastic_rear_left_passenger_door_imageUrls" },
+    { part: "Rear Right Passenger Door", issueKey: "plastic_rear_right_passenger_door_issues", imageKey: "plastic_rear_right_passenger_door_imageUrls" },
+    { part: "Third Row", issueKey: "plastic_third_row_issues", imageKey: "plastic_third_row_imageUrls", toggleKey: "plastic_third_row_toggle" },
+    { part: "Dashboard", issueKey: "plastic_dashboard_issues", imageKey: "plastic_dashboard_imageUrls" },
+    { part: "Gear Console", issueKey: "plastic_gear_console_issues", imageKey: "plastic_gear_console_imageUrls" },
+    { part: "Steering", issueKey: "plastic_steering_issues", imageKey: "plastic_steering_imageUrls" },
+    { part: "AC Vents", issueKey: "plastic_ac_vents_issues", imageKey: "plastic_ac_vents_imageUrls" },
+    { part: "Rear AC Vents", issueKey: "plastic_rear_ac_vents_issues", imageKey: "plastic_rear_ac_vents_imageUrls" },
+    { part: "IRVM", issueKey: "plastic_irvm_issues", imageKey: "plastic_irvm_imageUrls" },
   ];
 
   for (const item of parts) {
-    // Extract issues array and convert to string, or "—" if empty
+    // Extract issues array and convert to string, or "All OK" if empty
     const issuesArr = Array.isArray(r[item.issueKey]) ? r[item.issueKey] : [];
     const issuesStr = issuesArr.length > 0 ? issuesArr.join(", ") : "All OK";
 
@@ -1516,11 +1470,11 @@ async function addPlasticsPage(doc, r) {
     // Print part name
     doc.text(item.part, PAGE_PAD_X + 6, y);
 
-    // Print issues, bold
+    // Print issues
     setText(doc, THEME.text, 9.5, "bold");
     doc.text(issuesStr, A4.w / 2, y);
 
-    // If toggleKey exists, print toggle status (boolean)
+    // Toggle status (if exists)
     if (item.toggleKey !== undefined) {
       setText(doc, THEME.subtext, 8.5);
       const toggleVal = r[item.toggleKey];
@@ -1539,8 +1493,9 @@ async function addPlasticsPage(doc, r) {
     const spacing = 6;
     let x = PAGE_PAD_X + 6;
 
-    for (let i = 0; i < maxImages; i++) {
-      if (urls[i]) {
+    if (urls.length > 0) {
+      // ✅ Only loop images if they exist
+      for (let i = 0; i < Math.min(maxImages, urls.length); i++) {
         try {
           doc.addImage(
             `${ServerUrl.IMAGE_URL}${urls[i]}`,
@@ -1552,27 +1507,29 @@ async function addPlasticsPage(doc, r) {
           );
         } catch (err) {
           console.warn("Image load failed:", err);
-          // doc.roundedRect(x, y, imageSize, imageSize, 2, 2);
         }
+        x += imageSize + spacing;
+      }
+      y += imageSize + 10; // move after images
     } else {
+      // ✅ Only show message if no photos at all
       setText(doc, THEME.subtext, 8.4);
       doc.text("No photos available", PAGE_PAD_X + 6, y + 12);
       setText(doc);
+      y += 22; // spacing for text
     }
-      x += imageSize + spacing;
-    }
-
-    y += imageSize + 10;
 
     // Pagination check
     if (y > mm(250)) {
       drawFooter(doc);
-      y = await startNewPage("Plastic Panel  ");
+      y = await startNewPage("Plastic Panel");
+      y += 10;
     }
   }
 
   drawFooter(doc);
 }
+
 
 /** =========================================================================
  * PAGE 8: FLUSHES & GAPS
@@ -1604,28 +1561,20 @@ async function addFlushesGapsPage(doc, r) {
 
   y += 12;
 
-  // Mapping parts to backend keys
+  // All parts mapping
   const parts = [
-    {
-      label: "Bonnet Right",
-      key: "bonnet_right",
-    },
-    {
-      label: "Bonnet Left",
-      key: "bonnet_left",
-    },
-    {
-      label: "Front Right Door",
-      key: "front_right_door",
-    },
-    {
-      label: "Front Left Door",
-      key: "front_left_door",
-    },
-    {
-      label: "Rear Right Door",
-      key: "rear_right_door",
-    },
+    { label: "Bonnet Right", key: "bonnet_right" },
+    { label: "Bonnet Left", key: "bonnet_left" },
+    { label: "Front Right Door", key: "front_right_door" },
+    { label: "Front Left Door", key: "front_left_door" },
+    { label: "Rear Right Door", key: "rear_right_door" },
+    { label: "Rear Left Door", key: "rear_left_door" },
+    { label: "Boot Right", key: "boot_right" },
+    { label: "Boot Left", key: "boot_left" },
+    { label: "Front Bumper Left", key: "front_bumper_left" },
+    { label: "Front Bumper Right", key: "front_bumper_right" },
+    { label: "Rear Bumper Left", key: "rear_bumper_left" },
+    { label: "Rear Bumper Right", key: "rear_bumper_right" },
   ];
 
   for (const item of parts) {
