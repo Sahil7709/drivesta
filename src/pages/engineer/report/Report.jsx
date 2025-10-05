@@ -218,22 +218,6 @@ export default function Report() {
             formData.status ==
               APPLICATION_CONSTANTS.REQUEST_STATUS.IN_PROGRESS.value) && (
             <div className="flex justify-end gap-2 w-full max-w-4xl mb-4 ml-auto">
-              {/* `<button
-          onClick={() => {
-            if (window.confirm("Are you sure you want to approve this inspection?")) {
-              handleSave(APPLICATION_CONSTANTS.REQUEST_STATUS.ADMIN_APPROVED.value)
-                .then(() => {
-                  const adminRoles = ["admin", "superadmin"];
-                  if (adminRoles.includes(user.role)) {
-                    navigate(`/${user.role}/dashboard/inspection-report`);
-                  }
-                });
-            }
-          }}
-          className="bg-button hover:bg-green-700 text-white px-4 py-2 rounded-2xl"
-        >
-          
-        </button> */}
 
               <button
                 onClick={() =>

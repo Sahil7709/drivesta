@@ -17,9 +17,20 @@ const FlushesGaps = ({ data, onChange }) => {
     "Rear Bumper Left": "rear_bumper_left",
   };
 
+  // Fixed handleChange to properly parse numbers and booleans
   const handleChange = (e, key, field) => {
     const { type, checked, value } = e.target;
-    const newValue = type === "checkbox" ? checked : value === "" ? null : Number(value);
+    let newValue;
+
+    if (type === "checkbox") {
+      newValue = checked;
+    } else if (value === "") {
+      newValue = ""; // keep empty string if input is blank
+    } else {
+      const parsed = parseFloat(value);
+      newValue = isNaN(parsed) ? "" : parsed; // valid number only
+    }
+
     onChange(`${key}_${field}`, newValue);
   };
 
