@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const Engine = ({ data = {}, onChange }) => {
-  // Full list of engine condition issues
   const conditionIssues = [ 
     "Bearing Roughness Or Noise",
     "There Has Been A Timing Belt Replacement",
@@ -158,25 +157,16 @@ const Engine = ({ data = {}, onChange }) => {
     "Bleeder Valve Will Not Open."
   ];
 
-  // Convert into options with value + label
-  const options = conditionIssues.map((issue, idx) => ({
-    value: `engine_issue_${idx}`,
-    label: issue,
-  }));
-
   const [selectedIssues, setSelectedIssues] = useState(() => {
     if (Array.isArray(data.engine_issues)) return data.engine_issues;
-    if (data.engine_issue && data.engine_issue !== "none")
-      return [data.engine_issue];
     return [];
   });
-
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // <-- Add search state
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    if (onChange) onChange("engine_issues", selectedIssues);
+    onChange && onChange("engine_issues", selectedIssues);
   }, [selectedIssues, onChange]);
 
   useEffect(() => {
@@ -189,68 +179,52 @@ const Engine = ({ data = {}, onChange }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleCheckboxChange = (value) => {
+  const toggleIssue = (issue) => {
     setSelectedIssues((prev) =>
-      prev.includes(value)
-        ? prev.filter((v) => v !== value)
-        : [...prev, value]
+      prev.includes(issue) ? prev.filter((i) => i !== issue) : [...prev, issue]
     );
   };
 
-  const displayText = selectedIssues.length
-    ? options
-        .filter((o) => selectedIssues.includes(o.value))
-        .map((o) => o.label)
-        .join(", ")
-    : "Select engine issues";
+  const displayText = selectedIssues.length > 0 ? selectedIssues.join(", ") : "Select Engine Issues";
 
-  // Filter options based on search term
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredIssues = conditionIssues.filter((issue) =>
+    issue.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white relative">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">
-        Engine Issues
-      </h2>
-
+    <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-lg w-full max-w-4xl mx-auto text-white">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Engine Issues</h2>
       <div ref={dropdownRef} className="relative w-full">
         <button
           type="button"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="w-full p-2 bg-gray-800 text-white rounded-md border border-white/20 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-lime-500"
+          className="w-full p-2 bg-gray-800 text-white rounded-md border border-white/20 text-left flex justify-between items-center"
         >
-          <span>{displayText}</span>
-          <span className="ml-2">{dropdownOpen ? "▲" : "▼"}</span>
+          {displayText}
+          <span>{dropdownOpen ? "▲" : "▼"}</span>
         </button>
 
         {dropdownOpen && (
-          <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-white/20 rounded-md shadow-lg max-h-60 overflow-auto">
-            <div className="px-4 py-2">
-              <input
-                type="text"
-                placeholder="Search issues..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 rounded bg-gray-700 text-white border border-white/20 mb-2"
-              />
-            </div>
-            {filteredOptions.length === 0 ? (
-              <div className="px-4 py-2 text-gray-400">No issues found</div>
+          <div className="absolute z-20 mt-1 w-full bg-gray-800 border border-white/20 rounded-md shadow-lg max-h-60 overflow-auto p-2">
+            <input
+              type="text"
+              placeholder="Search issues..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-2 mb-2 rounded bg-gray-700 text-white border border-white/20"
+            />
+            {filteredIssues.length === 0 ? (
+              <div className="px-2 py-1 text-gray-400">No issues found</div>
             ) : (
-              filteredOptions.map(({ value, label }) => (
-                <label
-                  key={value}
-                  className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-700"
-                >
+              filteredIssues.map((issue) => (
+                <label key={issue} className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-700 rounded-md">
                   <input
                     type="checkbox"
-                    checked={selectedIssues.includes(value)}
-                    onChange={() => handleCheckboxChange(value)}
+                    checked={selectedIssues.includes(issue)}
+                    onChange={() => toggleIssue(issue)}
                     className="w-4 h-4"
                   />
-                  <span className="text-white">{label}</span>
+                  <span>{issue}</span>
                 </label>
               ))
             )}
