@@ -1,37 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
 const DiagnosticsCodes = ({ data = {}, onChange }) => {
-  const [code, setCode] = useState("");
+  // data.diagnostic_codes is expected to be an array of codes
+  const [code, setCode] = useState('');
   const [codeList, setCodeList] = useState(data.diagnostic_codes || []);
 
+  // Sync local codeList when parent data changes
   useEffect(() => {
     setCodeList(data.diagnostic_codes || []);
   }, [data.diagnostic_codes]);
 
   const handleAddCode = () => {
-    const trimmedCode = code.trim();
-    if (trimmedCode) {
-      const updatedList = [...codeList, trimmedCode];
+    if (code.trim()) {
+      const updatedList = [...codeList, code.trim()];
       setCodeList(updatedList);
-      setCode("");
-      onChange?.("diagnostic_codes", updatedList);
+      setCode('');
+      if (typeof onChange === 'function') {
+        onChange('diagnostic_codes', updatedList);
+      }
     }
   };
 
   const handleRemoveCode = (indexToRemove) => {
     const updatedList = codeList.filter((_, index) => index !== indexToRemove);
     setCodeList(updatedList);
-    onChange?.("diagnostic_codes", updatedList);
+    if (typeof onChange === 'function') {
+      onChange('diagnostic_codes', updatedList);
+    }
   };
 
   return (
     <div className="bg-[#ffffff0a] backdrop-blur-[16px] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_4px_30px_rgba(0,0,0,0.2)] w-full max-w-4xl mx-auto text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-left">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white text-left">
         Diagnostic Codes
       </h2>
-
       <div className="flex flex-col w-full gap-4">
-        {/* Input for new code */}
         <input
           type="text"
           value={code}
@@ -39,8 +42,6 @@ const DiagnosticsCodes = ({ data = {}, onChange }) => {
           placeholder="Enter diagnostic code"
           className="w-full p-2 border border-white/20 rounded bg-[#ffffff0a] text-white focus:outline-none focus:ring-2 focus:ring-lime-500"
         />
-
-        {/* Add button */}
         <div className="flex justify-end">
           <button
             onClick={handleAddCode}
@@ -49,8 +50,6 @@ const DiagnosticsCodes = ({ data = {}, onChange }) => {
             <i className="fas fa-plus"></i> Add
           </button>
         </div>
-
-        {/* Display added codes */}
         {codeList.length > 0 && (
           <div className="mt-4">
             <h3 className="text-lg font-medium text-white mb-2">Added Codes:</h3>
