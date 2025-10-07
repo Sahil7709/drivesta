@@ -43,9 +43,12 @@ const Brakes = ({ data = {}, onChange }) => {
 
   // Convert issues into options
   const options = conditionIssues.map((issue, idx) => ({
-    value: `issue_${idx}`,
+    value: issue,
     label: issue,
   }));
+
+  console.log("Options from brakes"+options);
+  
 
   const [selectedIssues, setSelectedIssues] = useState(() => {
     if (Array.isArray(data.brakes_issues)) return data.brakes_issues;

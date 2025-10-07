@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const Transmission = ({ data = {}, onChange }) => {
   const options = [
-    { value: 'slipping', label: 'Slipping' },
-    { value: 'hard_shift', label: 'Hard Shifting' },
-    { value: 'delayed_engagement', label: 'Delayed Engagement' },
-    { value: 'noisy_gear', label: 'Noisy Gear' },
+    { value: 'Slipping', label: 'Slipping' },
+    { value: 'Hard Shifting', label: 'Hard Shifting' },
+    { value: 'Delayed Engagement', label: 'Delayed Engagement' },
+    { value: 'Noisy Gear', label: 'Noisy Gear' },
   ];
 
   const [selectedIssues, setSelectedIssues] = useState(() => {

@@ -160,7 +160,7 @@ const Engine = ({ data = {}, onChange }) => {
 
   // Convert into options with value + label
   const options = conditionIssues.map((issue, idx) => ({
-    value: `engine_issue_${idx}`,
+    value: issue,
     label: issue,
   }));
 
