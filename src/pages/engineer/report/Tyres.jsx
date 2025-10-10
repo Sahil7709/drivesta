@@ -37,6 +37,9 @@ const BRAND_OPTIONS = [
   "Yokohama",
   "Pirelli",
   "Continental",
+  "Bridgestone",
+  "Goodyear",
+  "CEAT",
   "Other",
 ];
 
@@ -69,6 +72,9 @@ const SUB_BRAND_OPTIONS = [
   "P Zero",
   "Scorpion",
   "Continental",
+  "Dueler",
+  "Efficient Grip",
+  "Crossdrive AT",
   "Other",
 ];
 
@@ -130,6 +136,9 @@ const VARIANT_OPTIONS = [
   "ContiComfortContact CC6",
   "ContiCrossContact AT",
   "ContiSportContact",
+  "H/T",
+  "Performance",
+  "Crossdrive AT",
   "Other",
 ];
 

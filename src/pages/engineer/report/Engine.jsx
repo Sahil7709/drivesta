@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 
 const Engine = ({ data = {}, onChange }) => {
-  // Full list of engine condition issues
   const conditionIssues = [ 
     "Bearing Roughness Or Noise",
     "There Has Been A Timing Belt Replacement",
