@@ -20,7 +20,7 @@ export default function Footer() {
       <div className="bg-black py-4">
         <motion.img
           src={logo}
-          alt="DriveSta Logo"
+          alt="Carnomia Logo"
           className="h-12 mx-auto"
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -39,11 +39,31 @@ export default function Footer() {
           <h3 className="font-bold mb-4 text-lg">Social Media</h3>
           <ul className="space-y-2">
             {[
-              { label: "Instagram", icon: <FaInstagram />, url: "https://instagram.com" },
-              { label: "LinkedIn", icon: <FaLinkedin />, url: "https://www.linkedin.com/company/108622309/admin/dashboard/ " },
-              { label: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/profile.php?id=61579184318790" },
-              { label: "YouTube", icon: <FaYoutube />, url: "https://www.youtube.com/@CarnomiaTechnologies" },
-              { label: "Twitter", icon: <FaTwitter />, url: "https://x.com/carnomia" },
+              {
+                label: "Instagram",
+                icon: <FaInstagram />,
+                url: " https://www.instagram.com/carnomiatechnologies/?next=https%3A%2F%2Fwww.instagram.com%2F%3Fhl%3Den%26__coig_ufac%3D1",
+              },
+              {
+                label: "LinkedIn",
+                icon: <FaLinkedin />,
+                url: "https://www.linkedin.com/company/108622309/admin/dashboard/ ",
+              },
+              {
+                label: "Facebook",
+                icon: <FaFacebook />,
+                url: "https://www.facebook.com/profile.php?id=61579184318790",
+              },
+              {
+                label: "YouTube",
+                icon: <FaYoutube />,
+                url: "https://www.youtube.com/@CarnomiaTechnologies",
+              },
+              {
+                label: "Twitter",
+                icon: <FaTwitter />,
+                url: "https://x.com/carnomia",
+              },
             ].map((item, i) => (
               <li key={i}>
                 <a
@@ -91,7 +111,10 @@ export default function Footer() {
           <h3 className="font-bold mb-4 text-lg">Support</h3>
           <ul className="space-y-2">
             <li>
-              <Link to="/privacy-policy" className="hover:text-button transition">
+              <Link
+                to="/privacy-policy"
+                className="hover:text-button transition"
+              >
                 Privacy Policy
               </Link>
             </li>
@@ -138,12 +161,23 @@ export default function Footer() {
       </motion.div>
 
       {/* Copyright */}
-      <div className="flex justify-center items-center gap-2 text-xs py-3 border-t border-gray-800 text-gray-400">
-        <FaCopyright />
-        <span>2025 Carnomia. All Rights Reserved.</span>
-        <div>Developed By Smart Software Solutions Pvt Ltd</div>
+      <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-xs py-3 border-t border-gray-800 text-gray-400 text-center">
+        <div className="flex items-center gap-1">
+          <FaCopyright />
+          <span>2025 Carnomia. All Rights Reserved.</span>
+        </div>
+        <div className="text-gray-400">
+          Developed and Maintained by{" "}
+          <a
+            href="https://smartsoftwareservice.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white font-medium hover:text-button transition-colors duration-200"
+          >
+            Smart Software Services Pvt. Ltd.
+          </a>
+        </div>
       </div>
-
     </footer>
   );
 }
