@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../core/contexts/AuthContext";
 import { FaCheckCircle } from "react-icons/fa";
 import ApiService from "../../core/services/api.service";
 import ServerUrl from "../../core/constants/serverUrl.constant";
@@ -7,6 +8,7 @@ import ServerUrl from "../../core/constants/serverUrl.constant";
 const RequestSuccess = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchPDIRequest = async () => {
@@ -27,6 +29,33 @@ const RequestSuccess = () => {
   if (!data) return null;
 
   const { bookingId, brand, model, imageUrl } = data;
+
+  const handleGoToDashboard = () => {
+    if (!user?.role) {
+      navigate("/");
+      return;
+    }
+
+    const role = user.role.toLowerCase();
+
+    switch (role) {
+      case "admin":
+        navigate("/admin/dashboard");
+        break;
+      case "superadmin":
+        navigate("/superadmin/dashboard");
+        break;
+      case "engineer":
+        navigate("/engineer/dashboard");
+        break;
+      case "customer":
+        navigate("/customer/dashboard");
+        break;
+      default:
+        navigate("/");
+        break;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center font-sans px-4 py-8 sm:px-6 md:px-10 lg:px-16">
@@ -68,7 +97,7 @@ const RequestSuccess = () => {
         {/* Button */}
         <div className="flex justify-center sm:justify-end">
           <button
-            onClick={() => navigate("/customer/dashboard")}
+            onClick={handleGoToDashboard}
             className="bg-green-800 hover:bg-green-900 text-white font-bold px-5 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-md transition text-sm sm:text-base md:text-lg"
           >
             Go to your Dashboard

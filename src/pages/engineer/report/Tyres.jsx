@@ -629,7 +629,10 @@ const TYRE_DATA = {
     variants: {
       ContiSportContact: ["ContiSportContact 5"],
       ContiMaxContact: ["ContiMaxContact MC5"],
-      ContiComfortContact: ["ContiComfortContact CC5", "ContiComfortContact CC6"],
+      ContiComfortContact: [
+        "ContiComfortContact CC5",
+        "ContiComfortContact CC6",
+      ],
       ContiCrossContact: ["ContiCrossContact AT"],
     },
   },
@@ -672,7 +675,9 @@ const Tyres = ({ data = {}, onChange }) => {
         size: data[`${key}_size`] || "",
         manufacturingDate: data[`${key}_manufacturingDate`] || "",
         threadDepth: data[`${key}_threadDepth`] || "",
-        issues: Array.isArray(data[`${key}_issues`]) ? data[`${key}_issues`] : [],
+        issues: Array.isArray(data[`${key}_issues`])
+          ? data[`${key}_issues`]
+          : [],
         photos: Array.isArray(data[`${key}_imageUrls`])
           ? data[`${key}_imageUrls`].slice(0, PHOTO_LIMIT)
           : [],
@@ -698,6 +703,7 @@ const Tyres = ({ data = {}, onChange }) => {
   }, [showDropdown]);
 
   // ✅ Handle field changes
+  // ✅ Handle field changes
   const handleFieldChange = (tyreKey, field, value) => {
     setTyreState((prev) => {
       const updated = { ...prev, [tyreKey]: { ...prev[tyreKey] } };
@@ -712,7 +718,41 @@ const Tyres = ({ data = {}, onChange }) => {
       }
 
       updated[tyreKey][field] = value;
+
+      // ✅ Notify parent
       onChange?.(`${tyreKey}_${field}`, value);
+
+      // ✅ If user changed front left tyre → auto copy to others
+      if (
+        tyreKey === "tyre_front_left" &&
+        ["brand", "subBrand", "variant"].includes(field)
+      ) {
+        const linkedTyres = [
+          "tyre_rear_left",
+          "tyre_rear_right",
+          "tyre_front_right",
+        ];
+
+        linkedTyres.forEach((tKey) => {
+          updated[tKey] = {
+            ...updated[tKey],
+            [field]: value,
+          };
+
+          // Reset dependent fields properly
+          if (field === "brand") {
+            updated[tKey].subBrand = "";
+            updated[tKey].variant = "";
+          }
+          if (field === "subBrand") {
+            updated[tKey].variant = "";
+          }
+
+          // Also notify parent for synced fields
+          onChange?.(`${tKey}_${field}`, value);
+        });
+      }
+
       return updated;
     });
   };
@@ -830,9 +870,7 @@ const Tyres = ({ data = {}, onChange }) => {
             tyreKey !== "tyre_spare" || tyreData.toggle === true;
           const selectedIssues = tyreData.issues || [];
           const filteredIssues = issues_OPTIONS.filter((i) =>
-            i
-              .toLowerCase()
-              .includes((issueSearch[tyreKey] || "").toLowerCase())
+            i.toLowerCase().includes((issueSearch[tyreKey] || "").toLowerCase())
           );
           const photosArr = tyreData.photos || [];
 
@@ -1018,9 +1056,7 @@ const Tyres = ({ data = {}, onChange }) => {
                       {photosArr.length < PHOTO_LIMIT && (
                         <div className="relative w-24 h-24 flex items-center justify-center">
                           <button
-                            onClick={() =>
-                              toggleDropdown(`${tyreKey}-photo`)
-                            }
+                            onClick={() => toggleDropdown(`${tyreKey}-photo`)}
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-500 hover:bg-gray-600 text-white text-xl"
                           >
                             <AiOutlinePlus />
@@ -1034,9 +1070,7 @@ const Tyres = ({ data = {}, onChange }) => {
                                   type="file"
                                   accept="image/*"
                                   capture="environment"
-                                  onChange={(e) =>
-                                    handleFileSelect(e, tyreKey)
-                                  }
+                                  onChange={(e) => handleFileSelect(e, tyreKey)}
                                   className="hidden"
                                 />
                               </label>
@@ -1046,9 +1080,7 @@ const Tyres = ({ data = {}, onChange }) => {
                                 <input
                                   type="file"
                                   accept="image/*"
-                                  onChange={(e) =>
-                                    handleFileSelect(e, tyreKey)
-                                  }
+                                  onChange={(e) => handleFileSelect(e, tyreKey)}
                                   className="hidden"
                                 />
                               </label>
@@ -1132,4 +1164,3 @@ const InputField = ({ label, placeholder, value, onChange, validate }) => (
 );
 
 export default Tyres;
-

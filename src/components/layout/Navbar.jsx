@@ -215,7 +215,7 @@ export default function Navbar({ onToggleSidebar }) {
       (user.role === "customer" && currentPath.startsWith("/customer")) ||
       (!user.role && currentPath === "/dashboard")
     );
-  };
+  }; 
 
   const hideLocationOnDashboard = location.pathname.includes("dashboard");
 
