@@ -58,7 +58,7 @@ export default function ServicesCard() {
   ];
 
   // ✅ Infinite auto-scroll hook (direction: 1 = right, -1 = left)
-  const useInfiniteAutoScroll = (direction = 1, speed = 1.2) => {
+  const useInfiniteAutoScroll = (direction = 1, speed = 0.7) => {
     const ref = useRef(null);
     const [paused, setPaused] = useState(false);
 
@@ -66,21 +66,23 @@ export default function ServicesCard() {
       const container = ref.current;
       if (!container) return;
 
-      // Duplicate items for seamless looping
-      const totalWidth = container.scrollWidth / 2;
+      // Duplicate contents if not already duplicated
+      if (container.children.length === container.dataset.originalCount * 2) {
+        // already duplicated
+      }
 
       const scroll = setInterval(() => {
-        if (!paused) {
+        if (!paused && container.scrollWidth > container.clientWidth) {
           container.scrollLeft += direction * speed;
 
-          // Loop when reaching end or start
-          if (direction > 0 && container.scrollLeft >= totalWidth) {
+          // Infinite loop logic
+          if (direction > 0 && container.scrollLeft >= container.scrollWidth / 2) {
             container.scrollLeft = 0;
           } else if (direction < 0 && container.scrollLeft <= 0) {
-            container.scrollLeft = totalWidth;
+            container.scrollLeft = container.scrollWidth / 2;
           }
         }
-      }, 20);
+      }, 16);
 
       return () => clearInterval(scroll);
     }, [direction, paused, speed]);
@@ -93,7 +95,7 @@ export default function ServicesCard() {
 
   // ✅ Checklist section renderer
   const renderChecklist = (title, checklist, type, scrollDirection) => {
-    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 1.5);
+    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 1.2);
 
     return (
       <div className="mb-20">
@@ -104,9 +106,10 @@ export default function ServicesCard() {
         {/* Scrollable Section */}
         <div
           ref={ref}
+          data-original-count={checklist.length}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="flex overflow-x-hidden space-x-6 pb-4 scroll-smooth scrollbar-hide"
+          className="flex overflow-x-auto space-x-6 pb-4 scroll-smooth scrollbar-hide cursor-grab active:cursor-grabbing"
         >
           {[...checklist, ...checklist].map((item, index) => (
             <div
@@ -136,9 +139,9 @@ export default function ServicesCard() {
         <div className="flex justify-center mt-10">
           <button
             onClick={() => handleBookPDI(type)}
-            className="bg-button hover:bg-green-500 text-white px-8 py-3 rounded-full text-sm sm:text-base cursor-pointer font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
+            className="bg-button hover:bg-green-500 text-white px-10 py-3 rounded-full text-sm sm:text-base cursor-pointer font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
           >
-            Book {title}
+            {type === "new" ? "Book New Car PDI" : "Book Used Car PDI"}
           </button>
         </div>
       </div>
@@ -146,7 +149,7 @@ export default function ServicesCard() {
   };
 
   return (
-    <div className="py-12 sm:py-16 px-4 sm:px-6 lg:px-10">
+    <div className="bg-primary py-16 px-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-extrabold text-center text-regal-blue mb-12">
           Our Services
