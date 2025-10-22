@@ -17,6 +17,7 @@ export default function ServicesCard() {
   const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ Handle booking logic
   const handleBookPDI = (type) => {
     if (!isLoggedIn || !user) {
       toast.info("Please login to book your PDI.");
@@ -57,35 +58,75 @@ export default function ServicesCard() {
     { title: "Test Drive", image: service9, details: ["Steering", "Clutch", "Gearshift", "Acceleration"] },
   ];
 
-  // ✅ Infinite auto-scroll hook (direction: 1 = right, -1 = left)
+  // ✅ Continuous single-direction auto-scroll (with manual scroll support)
   const useInfiniteAutoScroll = (direction = 1, speed = 0.7) => {
     const ref = useRef(null);
     const [paused, setPaused] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const startX = useRef(0);
+    const scrollLeft = useRef(0);
 
     useEffect(() => {
       const container = ref.current;
       if (!container) return;
 
-      // Duplicate contents if not already duplicated
-      if (container.children.length === container.dataset.originalCount * 2) {
-        // already duplicated
+      // Duplicate contents once for infinite effect
+      if (!container.dataset.duplicated) {
+        const clone = container.innerHTML;
+        container.innerHTML += clone;
+        container.dataset.duplicated = "true";
       }
 
-      const scroll = setInterval(() => {
-        if (!paused && container.scrollWidth > container.clientWidth) {
+      let animationFrame;
+      const smoothScroll = () => {
+        if (!paused && !isDragging && container.scrollWidth > container.clientWidth) {
           container.scrollLeft += direction * speed;
-
-          // Infinite loop logic
-          if (direction > 0 && container.scrollLeft >= container.scrollWidth / 2) {
+          // Reset position for infinite loop
+          if (container.scrollLeft >= container.scrollWidth / 2) {
             container.scrollLeft = 0;
-          } else if (direction < 0 && container.scrollLeft <= 0) {
-            container.scrollLeft = container.scrollWidth / 2;
           }
         }
-      }, 16);
+        animationFrame = requestAnimationFrame(smoothScroll);
+      };
 
-      return () => clearInterval(scroll);
-    }, [direction, paused, speed]);
+      animationFrame = requestAnimationFrame(smoothScroll);
+      return () => cancelAnimationFrame(animationFrame);
+    }, [direction, paused, speed, isDragging]);
+
+    // ✅ Manual scroll handlers (drag / swipe)
+    useEffect(() => {
+      const container = ref.current;
+      if (!container) return;
+
+      const handleMouseDown = (e) => {
+        setIsDragging(true);
+        startX.current = e.pageX - container.offsetLeft;
+        scrollLeft.current = container.scrollLeft;
+      };
+
+      const handleMouseMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - startX.current) * 1.2; // scroll speed multiplier
+        container.scrollLeft = scrollLeft.current - walk;
+      };
+
+      const handleMouseUp = () => setIsDragging(false);
+      const handleMouseLeave = () => setIsDragging(false);
+
+      container.addEventListener("mousedown", handleMouseDown);
+      container.addEventListener("mousemove", handleMouseMove);
+      container.addEventListener("mouseup", handleMouseUp);
+      container.addEventListener("mouseleave", handleMouseLeave);
+
+      return () => {
+        container.removeEventListener("mousedown", handleMouseDown);
+        container.removeEventListener("mousemove", handleMouseMove);
+        container.removeEventListener("mouseup", handleMouseUp);
+        container.removeEventListener("mouseleave", handleMouseLeave);
+      };
+    }, [isDragging]);
 
     const handleMouseEnter = () => setPaused(true);
     const handleMouseLeave = () => setPaused(false);
@@ -93,9 +134,9 @@ export default function ServicesCard() {
     return { ref, handleMouseEnter, handleMouseLeave };
   };
 
-  // ✅ Checklist section renderer
+  // ✅ Checklist Renderer
   const renderChecklist = (title, checklist, type, scrollDirection) => {
-    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 1.2);
+    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 0.8);
 
     return (
       <div className="mb-20">
@@ -106,12 +147,11 @@ export default function ServicesCard() {
         {/* Scrollable Section */}
         <div
           ref={ref}
-          data-original-count={checklist.length}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="flex overflow-x-auto space-x-6 pb-4 scroll-smooth scrollbar-hide cursor-grab active:cursor-grabbing"
+          className="flex overflow-x-auto space-x-6 pb-4 scroll-smooth scrollbar-hide cursor-grab active:cursor-grabbing select-none"
         >
-          {[...checklist, ...checklist].map((item, index) => (
+          {checklist.map((item, index) => (
             <div
               key={index}
               className="min-w-[250px] sm:min-w-[280px] md:min-w-[300px] lg:min-w-[320px] bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-button overflow-hidden group"
@@ -124,7 +164,9 @@ export default function ServicesCard() {
                 />
               </div>
               <div className="p-4 sm:p-5">
-                <h3 className="text-lg font-semibold text-button mb-2 text-center sm:text-left">{item.title}</h3>
+                <h3 className="text-lg font-semibold text-button mb-2 text-center sm:text-left">
+                  {item.title}
+                </h3>
                 <ul className="text-regal-blue text-sm leading-relaxed list-disc pl-5 space-y-1">
                   {item.details.map((point, i) => (
                     <li key={i}>{point}</li>
@@ -148,6 +190,7 @@ export default function ServicesCard() {
     );
   };
 
+  // ✅ Main Return
   return (
     <div className="bg-primary py-16 px-4">
       <div className="max-w-7xl mx-auto">
@@ -155,11 +198,11 @@ export default function ServicesCard() {
           Our Services
         </h1>
 
-        {/* New Car → scrolls LEFT */}
-        {renderChecklist("New Car PDI Checklist", newCarChecklist, "new", -1)}
+        {/* New Car → scrolls RIGHT */}
+        {renderChecklist("New Car PDI Checklist", newCarChecklist, "new", 1)}
 
-        {/* Used Car → scrolls RIGHT */}
-        {renderChecklist("Used Car PDI Checklist", usedCarChecklist, "used", 1)}
+        {/* Used Car → scrolls LEFT */}
+        {renderChecklist("Used Car PDI Checklist", usedCarChecklist, "used", -1)}
       </div>
     </div>
   );
