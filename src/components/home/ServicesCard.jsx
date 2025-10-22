@@ -33,10 +33,11 @@ export default function ServicesCard() {
     }
   };
 
+  // ✅ Checklists
   const newCarChecklist = [
     { title: "Exterior", image: service1, details: ["Body condition", "Paint quality", "Dents / Scratches", "Glass", "Lights"] },
     { title: "Tyres & Wheels", image: service2, details: ["Tread depth", "Manufacturing date", "Spare tyre"] },
-    { title: "Engine", image: service3, details: ["Oil level", "Coolant level", "Brake fluid", "Windshield washer fluid", "Battery condition"] },
+    { title: "Engine", image: service3, details: ["Oil level", "Coolant level", "Brake fluid", "Washer fluid", "Battery condition"] },
     { title: "Interior", image: service4, details: ["Seats", "Dashboard", "Infotainment system", "Controls", "AC / Heater"] },
     { title: "Electricals", image: service5, details: ["Headlights", "Indicators", "Wipers", "Horn", "Power windows"] },
     { title: "Odometer & Warning Lights", image: service6, details: ["Reading accuracy", "No error codes"] },
@@ -56,120 +57,90 @@ export default function ServicesCard() {
   ];
 
   /**
-   * Auto-scroll hook:
-   * - direction: 1 => scroll right, -1 => scroll left
-   * - speed: px per frame (approx)
-   *
-   * This version expects the caller to render duplicated items in JSX:
-   *   [...items, ...items]
+   * ✅ Infinite Auto Scroll Hook
+   * Supports mobile & desktop, drag, and infinite loop.
    */
   const useInfiniteAutoScroll = (direction = 1, speed = 0.8) => {
     const ref = useRef(null);
     const [paused, setPaused] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const dragState = useRef({ active: false, startX: 0, startScroll: 0 });
 
-    // pointer drag state
-    const pointerInfo = useRef({
-      active: false,
-      startX: 0,
-      startScroll: 0,
-      pointerId: null,
-    });
-
-    // auto scroll loop
+    // Auto-scroll loop
     useEffect(() => {
       const container = ref.current;
       if (!container) return;
 
-      let rafId = 0;
-      const step = () => {
+      let rafId;
+      const halfScroll = Math.floor(container.scrollWidth / 2);
+
+      const loop = () => {
         if (!paused && !isDragging && container.scrollWidth > container.clientWidth) {
           container.scrollLeft += direction * speed;
-          // wrap-around when half (because we rendered duplicate set)
-          if (container.scrollLeft >= container.scrollWidth / 2) {
+
+          // ✅ wrap-around logic with tolerance
+          if (direction > 0 && container.scrollLeft >= halfScroll - 1) {
             container.scrollLeft = 0;
-          } else if (container.scrollLeft <= 0 && direction < 0) {
-            // handle left-scrolling wrap
-            container.scrollLeft = container.scrollWidth / 2;
+          } else if (direction < 0 && container.scrollLeft <= 1) {
+            container.scrollLeft = halfScroll;
           }
         }
-        rafId = requestAnimationFrame(step);
+        rafId = requestAnimationFrame(loop);
       };
-      rafId = requestAnimationFrame(step);
+      rafId = requestAnimationFrame(loop);
       return () => cancelAnimationFrame(rafId);
     }, [direction, paused, isDragging, speed]);
 
-    // Pointer handlers (work for mouse + touch via Pointer Events)
+    // Manual drag
     useEffect(() => {
       const container = ref.current;
       if (!container) return;
 
-      const onPointerDown = (e) => {
-        // only left mouse or touch/stylus
-        if (e.pointerType === "mouse" && e.button !== 0) return;
-        pointerInfo.current.active = true;
-        pointerInfo.current.pointerId = e.pointerId;
-        pointerInfo.current.startX = e.clientX;
-        pointerInfo.current.startScroll = container.scrollLeft;
+      const start = (e) => {
+        dragState.current.active = true;
+        dragState.current.startX = e.clientX || e.touches?.[0]?.clientX;
+        dragState.current.startScroll = container.scrollLeft;
         setIsDragging(true);
-        // capture pointer so we continue receiving move/up
-        container.setPointerCapture(e.pointerId);
-        // pause auto scroll while dragging
         setPaused(true);
       };
 
-      const onPointerMove = (e) => {
-        if (!pointerInfo.current.active) return;
-        const dx = e.clientX - pointerInfo.current.startX;
-        // invert sign so drag direction matches natural scroll
-        container.scrollLeft = pointerInfo.current.startScroll - dx * 1.2;
+      const move = (e) => {
+        if (!dragState.current.active) return;
+        const clientX = e.clientX || e.touches?.[0]?.clientX;
+        const dx = clientX - dragState.current.startX;
+        container.scrollLeft = dragState.current.startScroll - dx;
       };
 
-      const endDrag = (e) => {
-        if (!pointerInfo.current.active) return;
-        pointerInfo.current.active = false;
-        try {
-          container.releasePointerCapture(pointerInfo.current.pointerId);
-        } catch (_) {}
-        pointerInfo.current.pointerId = null;
+      const end = () => {
+        dragState.current.active = false;
         setIsDragging(false);
-        // small timeout before resume to avoid flicker
-        setTimeout(() => setPaused(false), 120);
+        setTimeout(() => setPaused(false), 200);
       };
 
-      container.addEventListener("pointerdown", onPointerDown);
-      container.addEventListener("pointermove", onPointerMove);
-      container.addEventListener("pointerup", endDrag);
-      container.addEventListener("pointercancel", endDrag);
-      container.addEventListener("lostpointercapture", endDrag);
-
-      // allow vertical page scroll but prefer horizontal swipes
-      // CSS below (touchAction) helps; no JS needed here.
+      // Mouse + touch
+      container.addEventListener("pointerdown", start);
+      container.addEventListener("pointermove", move);
+      container.addEventListener("pointerup", end);
+      container.addEventListener("pointercancel", end);
+      container.addEventListener("pointerleave", end);
 
       return () => {
-        container.removeEventListener("pointerdown", onPointerDown);
-        container.removeEventListener("pointermove", onPointerMove);
-        container.removeEventListener("pointerup", endDrag);
-        container.removeEventListener("pointercancel", endDrag);
-        container.removeEventListener("lostpointercapture", endDrag);
+        container.removeEventListener("pointerdown", start);
+        container.removeEventListener("pointermove", move);
+        container.removeEventListener("pointerup", end);
+        container.removeEventListener("pointercancel", end);
+        container.removeEventListener("pointerleave", end);
       };
     }, []);
 
-    const handleMouseEnter = () => setPaused(true);
-    const handleMouseLeave = () => {
-      // don't unpause if user is dragging
-      if (!isDragging) setPaused(false);
-    };
-
-    return { ref, handleMouseEnter, handleMouseLeave };
+    return { ref, setPaused };
   };
 
+  // ✅ Renderer
   const renderChecklist = (title, checklist, type, scrollDirection) => {
-    // pass direction and speed
-    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 0.9);
+    const { ref, setPaused } = useInfiniteAutoScroll(scrollDirection, 0.9);
 
-    // duplicate list in JSX so structure is maintained by React
-    const itemsToRender = [...checklist, ...checklist];
+    const duplicated = [...checklist, ...checklist];
 
     return (
       <div className="mb-20">
@@ -179,27 +150,25 @@ export default function ServicesCard() {
 
         <div
           ref={ref}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide cursor-grab active:cursor-grabbing select-none"
           style={{
-            // allow native momentum on iOS & mobile
             WebkitOverflowScrolling: "touch",
-            touchAction: "pan-y", // allow vertical page scroll, let pointer events handle horizontal
+            overscrollBehavior: "none",
+            touchAction: "pan-y pinch-zoom",
           }}
-          className="flex overflow-x-auto space-x-6 pb-4 scroll-smooth scrollbar-hide cursor-grab active:cursor-grabbing select-none"
         >
-          {itemsToRender.map((item, idx) => (
+          {duplicated.map((item, idx) => (
             <div
               key={idx}
               className="min-w-[250px] sm:min-w-[280px] md:min-w-[300px] lg:min-w-[320px] bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-button overflow-hidden group"
             >
-              <div className="relative">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-40 sm:h-44 md:h-48 object-cover transform group-hover:scale-105 transition duration-500"
-                />
-              </div>
+              <img
+                src={item.image}
+                alt={item.title}
+                className="w-full h-40 sm:h-44 md:h-48 object-cover transform group-hover:scale-105 transition duration-500"
+              />
               <div className="p-4 sm:p-5">
                 <h3 className="text-lg font-semibold text-button mb-2 text-center sm:text-left">
                   {item.title}
@@ -217,7 +186,7 @@ export default function ServicesCard() {
         <div className="flex justify-center mt-10">
           <button
             onClick={() => handleBookPDI(type)}
-            className="bg-button hover:bg-green-500 text-white px-10 py-3 rounded-full text-sm sm:text-base cursor-pointer font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
+            className="bg-button hover:bg-green-500 text-white px-10 py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 shadow-md hover:shadow-xl"
           >
             {type === "new" ? "Book New Car PDI" : "Book Used Car PDI"}
           </button>
