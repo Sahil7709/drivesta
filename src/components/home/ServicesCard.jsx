@@ -17,7 +17,6 @@ export default function ServicesCard() {
   const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ Handle booking logic
   const handleBookPDI = (type) => {
     if (!isLoggedIn || !user) {
       toast.info("Please login to book your PDI.");
@@ -34,7 +33,6 @@ export default function ServicesCard() {
     }
   };
 
-  // ✅ New Car Checklist
   const newCarChecklist = [
     { title: "Exterior", image: service1, details: ["Body condition", "Paint quality", "Dents / Scratches", "Glass", "Lights"] },
     { title: "Tyres & Wheels", image: service2, details: ["Tread depth", "Manufacturing date", "Spare tyre"] },
@@ -45,7 +43,6 @@ export default function ServicesCard() {
     { title: "OBD Scanning", image: service7, details: ["Ensure system check complete", "Verify no diagnostic error codes"] },
   ];
 
-  // ✅ Used Car Checklist
   const usedCarChecklist = [
     { title: "Exterior", image: service1, details: ["Body condition", "Paint quality", "Dents / Scratches", "Glass", "Lights"] },
     { title: "Tyres & Wheels", image: service2, details: ["Tread depth", "Manufacturing date", "Spare tyre"] },
@@ -58,85 +55,121 @@ export default function ServicesCard() {
     { title: "Test Drive", image: service9, details: ["Steering", "Clutch", "Gearshift", "Acceleration"] },
   ];
 
-  // ✅ Continuous single-direction auto-scroll (with manual scroll support)
-  const useInfiniteAutoScroll = (direction = 1, speed = 0.7) => {
+  /**
+   * Auto-scroll hook:
+   * - direction: 1 => scroll right, -1 => scroll left
+   * - speed: px per frame (approx)
+   *
+   * This version expects the caller to render duplicated items in JSX:
+   *   [...items, ...items]
+   */
+  const useInfiniteAutoScroll = (direction = 1, speed = 0.8) => {
     const ref = useRef(null);
     const [paused, setPaused] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const startX = useRef(0);
-    const scrollLeft = useRef(0);
 
+    // pointer drag state
+    const pointerInfo = useRef({
+      active: false,
+      startX: 0,
+      startScroll: 0,
+      pointerId: null,
+    });
+
+    // auto scroll loop
     useEffect(() => {
       const container = ref.current;
       if (!container) return;
 
-      // Duplicate contents once for infinite effect
-      if (!container.dataset.duplicated) {
-        const clone = container.innerHTML;
-        container.innerHTML += clone;
-        container.dataset.duplicated = "true";
-      }
-
-      let animationFrame;
-      const smoothScroll = () => {
+      let rafId = 0;
+      const step = () => {
         if (!paused && !isDragging && container.scrollWidth > container.clientWidth) {
           container.scrollLeft += direction * speed;
-          // Reset position for infinite loop
+          // wrap-around when half (because we rendered duplicate set)
           if (container.scrollLeft >= container.scrollWidth / 2) {
             container.scrollLeft = 0;
+          } else if (container.scrollLeft <= 0 && direction < 0) {
+            // handle left-scrolling wrap
+            container.scrollLeft = container.scrollWidth / 2;
           }
         }
-        animationFrame = requestAnimationFrame(smoothScroll);
+        rafId = requestAnimationFrame(step);
       };
+      rafId = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(rafId);
+    }, [direction, paused, isDragging, speed]);
 
-      animationFrame = requestAnimationFrame(smoothScroll);
-      return () => cancelAnimationFrame(animationFrame);
-    }, [direction, paused, speed, isDragging]);
-
-    // ✅ Manual scroll handlers (drag / swipe)
+    // Pointer handlers (work for mouse + touch via Pointer Events)
     useEffect(() => {
       const container = ref.current;
       if (!container) return;
 
-      const handleMouseDown = (e) => {
+      const onPointerDown = (e) => {
+        // only left mouse or touch/stylus
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        pointerInfo.current.active = true;
+        pointerInfo.current.pointerId = e.pointerId;
+        pointerInfo.current.startX = e.clientX;
+        pointerInfo.current.startScroll = container.scrollLeft;
         setIsDragging(true);
-        startX.current = e.pageX - container.offsetLeft;
-        scrollLeft.current = container.scrollLeft;
+        // capture pointer so we continue receiving move/up
+        container.setPointerCapture(e.pointerId);
+        // pause auto scroll while dragging
+        setPaused(true);
       };
 
-      const handleMouseMove = (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - container.offsetLeft;
-        const walk = (x - startX.current) * 1.2; // scroll speed multiplier
-        container.scrollLeft = scrollLeft.current - walk;
+      const onPointerMove = (e) => {
+        if (!pointerInfo.current.active) return;
+        const dx = e.clientX - pointerInfo.current.startX;
+        // invert sign so drag direction matches natural scroll
+        container.scrollLeft = pointerInfo.current.startScroll - dx * 1.2;
       };
 
-      const handleMouseUp = () => setIsDragging(false);
-      const handleMouseLeave = () => setIsDragging(false);
+      const endDrag = (e) => {
+        if (!pointerInfo.current.active) return;
+        pointerInfo.current.active = false;
+        try {
+          container.releasePointerCapture(pointerInfo.current.pointerId);
+        } catch (_) {}
+        pointerInfo.current.pointerId = null;
+        setIsDragging(false);
+        // small timeout before resume to avoid flicker
+        setTimeout(() => setPaused(false), 120);
+      };
 
-      container.addEventListener("mousedown", handleMouseDown);
-      container.addEventListener("mousemove", handleMouseMove);
-      container.addEventListener("mouseup", handleMouseUp);
-      container.addEventListener("mouseleave", handleMouseLeave);
+      container.addEventListener("pointerdown", onPointerDown);
+      container.addEventListener("pointermove", onPointerMove);
+      container.addEventListener("pointerup", endDrag);
+      container.addEventListener("pointercancel", endDrag);
+      container.addEventListener("lostpointercapture", endDrag);
+
+      // allow vertical page scroll but prefer horizontal swipes
+      // CSS below (touchAction) helps; no JS needed here.
 
       return () => {
-        container.removeEventListener("mousedown", handleMouseDown);
-        container.removeEventListener("mousemove", handleMouseMove);
-        container.removeEventListener("mouseup", handleMouseUp);
-        container.removeEventListener("mouseleave", handleMouseLeave);
+        container.removeEventListener("pointerdown", onPointerDown);
+        container.removeEventListener("pointermove", onPointerMove);
+        container.removeEventListener("pointerup", endDrag);
+        container.removeEventListener("pointercancel", endDrag);
+        container.removeEventListener("lostpointercapture", endDrag);
       };
-    }, [isDragging]);
+    }, []);
 
     const handleMouseEnter = () => setPaused(true);
-    const handleMouseLeave = () => setPaused(false);
+    const handleMouseLeave = () => {
+      // don't unpause if user is dragging
+      if (!isDragging) setPaused(false);
+    };
 
     return { ref, handleMouseEnter, handleMouseLeave };
   };
 
-  // ✅ Checklist Renderer
   const renderChecklist = (title, checklist, type, scrollDirection) => {
-    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 0.8);
+    // pass direction and speed
+    const { ref, handleMouseEnter, handleMouseLeave } = useInfiniteAutoScroll(scrollDirection, 0.9);
+
+    // duplicate list in JSX so structure is maintained by React
+    const itemsToRender = [...checklist, ...checklist];
 
     return (
       <div className="mb-20">
@@ -144,16 +177,20 @@ export default function ServicesCard() {
           {title}
         </h2>
 
-        {/* Scrollable Section */}
         <div
           ref={ref}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          style={{
+            // allow native momentum on iOS & mobile
+            WebkitOverflowScrolling: "touch",
+            touchAction: "pan-y", // allow vertical page scroll, let pointer events handle horizontal
+          }}
           className="flex overflow-x-auto space-x-6 pb-4 scroll-smooth scrollbar-hide cursor-grab active:cursor-grabbing select-none"
         >
-          {checklist.map((item, index) => (
+          {itemsToRender.map((item, idx) => (
             <div
-              key={index}
+              key={idx}
               className="min-w-[250px] sm:min-w-[280px] md:min-w-[300px] lg:min-w-[320px] bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-button overflow-hidden group"
             >
               <div className="relative">
@@ -177,7 +214,6 @@ export default function ServicesCard() {
           ))}
         </div>
 
-        {/* Book Button */}
         <div className="flex justify-center mt-10">
           <button
             onClick={() => handleBookPDI(type)}
@@ -190,7 +226,6 @@ export default function ServicesCard() {
     );
   };
 
-  // ✅ Main Return
   return (
     <div className="bg-primary py-16 px-4">
       <div className="max-w-7xl mx-auto">
