@@ -521,3 +521,5 @@ const Tyres = ({ data = {}, onChange }) => {
 };
 
 export default Tyres;
+
+

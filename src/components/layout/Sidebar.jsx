@@ -68,7 +68,7 @@ const Sidebar = ({ role, links, mobileOpen, onCloseMobile }) => {
         </div>
 
         {/* Logout Button */}
-        <div className="p-4">
+        <div className="p-4"> 
           <button
             onClick={handleLogout}
             className={clsx(
