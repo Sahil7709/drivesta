@@ -153,6 +153,7 @@ const AdminAnalytics = () => {
     try {
       const exportData = filteredData.inspections.map((inspection) => ({
         PDIRequestID: inspection.PDIRequestID || "N/A",
+        "Customer Name": inspection.customerName || "N/A",
         Date: inspection.date
           ? format(new Date(inspection.date), "MMM dd, yyyy")
           : "N/A",
@@ -160,6 +161,8 @@ const AdminAnalytics = () => {
         Brand: inspection.vehicle?.brand || inspection.brand || "N/A",
         Engineer: inspection.engineer_name || "N/A",
         Status: inspection.status || "N/A",
+        "Payment Status": inspection.paymentStatus || "N/A",
+        Amount: inspection.price || inspection.amount || 0,
       }));
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
@@ -663,11 +666,14 @@ const AdminAnalytics = () => {
                     <tr>
                       {[
                         "PDIRequestID",
+                        "Customer Name",
                         "Date",
                         "Location",
                         "Brand",
                         "Engineer",
                         "Status",
+                        "Payment Status",
+                        "Amount",
                       ].map((header) => (
                         <th
                           key={header}
@@ -692,6 +698,9 @@ const AdminAnalytics = () => {
                         >
                           <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                             {inspection.PDIRequestID || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {inspection.customerName || "N/A"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                             {inspection.date
@@ -725,6 +734,22 @@ const AdminAnalytics = () => {
                             >
                               {inspection.status || "N/A"}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${inspection.paymentStatus === "PAID"
+                                ? "bg-green-100 text-green-800"
+                                : inspection.paymentStatus === "PENDING"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {inspection.paymentStatus || "N/A"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            ₹{inspection.price || inspection.amount || "0"}
                           </td>
                         </tr>
                       ))}

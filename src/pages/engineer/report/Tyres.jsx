@@ -95,7 +95,7 @@ const Tyres = ({ data = {}, onChange }) => {
       // Auto copy from front-left tyre
       if (
         tyreKey === "tyre_front_left" &&
-        ["brand", "subBrand", "variant"].includes(field)
+        ["brand", "subBrand", "variant", "size"].includes(field)
       ) {
         ["tyre_rear_left", "tyre_rear_right", "tyre_front_right"].forEach(
           (tKey) => {
@@ -266,21 +266,27 @@ const Tyres = ({ data = {}, onChange }) => {
                     label="Brand"
                     placeholder="Enter brand name"
                     value={tyreData.brand}
-                    onChange={(v) => handleFieldChange(tyreKey, "brand", v)}
+                    onChange={(v) =>
+                      handleFieldChange(tyreKey, "brand", v.toUpperCase())
+                    }
                   />
 
                   <InputField
                     label="Sub-Brand"
                     placeholder="Enter sub-brand"
                     value={tyreData.subBrand}
-                    onChange={(v) => handleFieldChange(tyreKey, "subBrand", v)}
+                    onChange={(v) =>
+                      handleFieldChange(tyreKey, "subBrand", v.toUpperCase())
+                    }
                   />
 
                   <InputField
                     label="Variant"
                     placeholder="Enter variant"
                     value={tyreData.variant}
-                    onChange={(v) => handleFieldChange(tyreKey, "variant", v)}
+                    onChange={(v) =>
+                      handleFieldChange(tyreKey, "variant", v.toUpperCase())
+                    }
                   />
 
                   <InputField
@@ -323,7 +329,9 @@ const Tyres = ({ data = {}, onChange }) => {
                     label="Thread Depth (mm)"
                     placeholder="Enter thread depth"
                     value={tyreData.threadDepth}
-                    onChange={(v) => handleFieldChange(tyreKey, "threadDepth", v)}
+                    onChange={(v) =>
+                      handleFieldChange(tyreKey, "threadDepth", v)
+                    }
                     validate={(val) => /^\d*\.?\d*$/.test(val)}
                   />
 
@@ -417,9 +425,7 @@ const Tyres = ({ data = {}, onChange }) => {
                                   accept="image/*"
                                   capture="environment"
                                   className="hidden"
-                                  onChange={(e) =>
-                                    handleFileSelect(e, tyreKey)
-                                  }
+                                  onChange={(e) => handleFileSelect(e, tyreKey)}
                                 />
                               </label>
                               <label className="flex items-center px-4 py-3 w-full cursor-pointer hover:bg-gray-700">
@@ -429,9 +435,7 @@ const Tyres = ({ data = {}, onChange }) => {
                                   type="file"
                                   accept="image/*"
                                   className="hidden"
-                                  onChange={(e) =>
-                                    handleFileSelect(e, tyreKey)
-                                  }
+                                  onChange={(e) => handleFileSelect(e, tyreKey)}
                                 />
                               </label>
                             </div>
@@ -450,7 +454,10 @@ const Tyres = ({ data = {}, onChange }) => {
       {/* Preview Modal */}
       {previewUrl && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="fixed inset-0 bg-black/60" onClick={handleCancel}></div>
+          <div
+            className="fixed inset-0 bg-black/60"
+            onClick={handleCancel}
+          ></div>
           <div className="relative bg-gray-900 rounded-lg p-6 w-96 text-center z-50">
             <h3 className="text-lg font-semibold mb-4">Preview Photo</h3>
             <img
