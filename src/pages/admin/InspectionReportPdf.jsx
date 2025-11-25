@@ -461,7 +461,7 @@ async function addCoverPage(doc, r) {
   const fields = [
     ["Booking ID", String(r.bookingId ?? "—")],
     ["Name", r.customerName],
-    ["Location", r.address],
+    ["Location", r.engineer_location],
     ["Engineer Name", r.engineer_name],
     [
       "PDI Date & Time",
@@ -469,7 +469,7 @@ async function addCoverPage(doc, r) {
         r.engineer_assignedSlot ?? ""
       }`,
     ],
-    ["Address", r.address],
+    ["Address", r.engineer_location],
   ];
 
   fields.forEach(([label, value]) => {

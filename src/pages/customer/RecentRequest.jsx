@@ -146,10 +146,12 @@ const Recent = () => {
     }
   };
 
-  const handleAssistanceClick = (i) => {
-    if (i === 0) navigate("/customer/dashboard/contact-support");
-    else if (i === 2) handleState("showEditModal", true);
-  };
+const handleAssistanceClick = (i) => {
+  if (i === 0) navigate("/customer/dashboard/contact-support");
+  else if (i === 1) navigate("/faq"); 
+  else if (i === 2) setShowEditModal(true);
+};
+
 
   // console.log("form data ", state);
 
